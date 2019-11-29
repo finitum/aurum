@@ -1,4 +1,4 @@
-module go-auth-me
+module go-auth
 
 go 1.13
 
