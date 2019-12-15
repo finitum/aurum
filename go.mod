@@ -1,4 +1,4 @@
-module go-auth
+module aurum
 
 go 1.13
 
