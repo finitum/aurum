@@ -11,7 +11,10 @@ services:
 before_script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
-test:
+variables:
+  CORE_IMG: "$CI_REGISTRY_IMAGE/core"
+
+core-test:
   stage: test
   image: golang
   cache:
@@ -19,6 +22,7 @@ test:
       - $GOPATH/pkg/mod
   coverage: /^total:.+\)\s+(\d+.?\d*)%$/
   script:
+    - cd core
     - go mod download
     - go test -covermode=count -coverprofile cover.cov ./...
     - go tool cover -func=cover.cov
@@ -26,15 +30,19 @@ test:
 build-master:
   stage: deploy
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
-    - docker push "$CI_REGISTRY_IMAGE"
+    - cd core
+    - docker build --pull -t "$CORE_IMG" .
+    - docker push "$CORE_IMG"
+    - cd ..
   only:
     - master
 
 build:
   stage: deploy
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - cd core
+    - docker build --pull -t "CORE_IMG:$CI_COMMIT_REF_SLUG" .
+    - docker push "CORE_IMG:$CI_COMMIT_REF_SLUG"
+    - cd ..
   except:
     - master
