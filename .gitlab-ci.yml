@@ -1,13 +1,30 @@
 image: docker:latest
 
+stages:
+  - build
+  - test
+  - deploy
+
 services:
   - docker:dind
 
 before_script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
+test:
+  stage: test
+  image: golang
+  cache:
+    paths:
+      - $GOPATH/pkg/mod
+  coverage: /^total:.+\)\s+(\d+.?\d*)%$/
+  script:
+    - go mod download
+    - go test -covermode=count -coverprofile cover.cov ./...
+    - go tool cover -func=cover.cov
+
 build-master:
-  stage: build
+  stage: deploy
   script:
     - docker build --pull -t "$CI_REGISTRY_IMAGE" .
     - docker push "$CI_REGISTRY_IMAGE"
@@ -15,7 +32,7 @@ build-master:
     - master
 
 build:
-  stage: build
+  stage: deploy
   script:
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"

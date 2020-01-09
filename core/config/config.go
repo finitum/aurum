@@ -1,0 +1,54 @@
+package config
+
+import "os"
+
+// A struct containing the various config options of Aurum
+type Config struct {
+	JWTKey []byte
+	WebURL string
+}
+
+// An interface for Config builder
+type BuilderProcess interface {
+	// Sets config options to their default
+	SetDefault() BuilderProcess
+	// Gets config options from env vars
+	SetFromEnvironment() BuilderProcess
+	// Gets config options from a specified file
+	SetFromFile(path string) BuilderProcess
+	// Builds the config
+	Build() *Config
+}
+
+// A builder to build the config
+type Builder struct {
+	Config
+}
+
+func (b *Builder) SetDefault() BuilderProcess {
+	b.Config = Config{
+		JWTKey: []byte("ChangeMe"),
+		WebURL: "127.0.0.1:8042",
+	}
+	return b
+}
+
+func (b *Builder) SetFromEnvironment() BuilderProcess {
+	if jwt := os.Getenv("JWTKEY"); jwt != "" {
+		b.JWTKey = []byte(jwt)
+	}
+
+	if web := os.Getenv("WEBURL"); web != "" {
+		b.WebURL = web
+	}
+
+	return b
+}
+
+func (b *Builder) SetFromFile(path string) BuilderProcess {
+	panic("implement me")
+}
+
+func (b *Builder) Build() *Config {
+	return &b.Config
+}
