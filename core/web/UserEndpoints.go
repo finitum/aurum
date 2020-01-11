@@ -1,102 +1,95 @@
 package web
 
 import (
-	"aurum/config"
 	"aurum/db"
-	"aurum/util"
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
-	"strings"
 )
 
-type Endpoints struct {
-	conn   db.Connection
-	config *config.Config
-}
-
-// Creates a user based on the user in the json body
-func (e Endpoints) signup(w http.ResponseWriter, r *http.Request) {
-
-	var u db.User
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-		http.Error(w, "Please yeet us a valid json body", http.StatusBadRequest)
-		return
-	}
-
-	if u.Username == "" || u.Password == "" || u.Email == "" || u.Role != 0 {
-		http.Error(w, "Please yeet us a valid json body", http.StatusBadRequest)
-		return
-	}
-
-	// Actually add the user to the db
-	err := e.conn.CreateUser(u)
+// Returns the user info of the currently logged in user.
+func (e *Endpoints) getMe(w http.ResponseWriter, r *http.Request) {
+	claims, err := e.authenticateRequest(w, r)
 	if err != nil {
-		// look if the error was caused by the username already existing
-		// TODO: This error is SQL specific so should not be handled here probably
-		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed:") {
-			http.Error(w, "Server error", http.StatusConflict)
-		} else {
-			http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+
+	user, err := e.conn.GetUserByName(claims.Username)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	bytes, err := json.Marshal(db.User{
+		Username: user.Username,
+		Email:    user.Email,
+		Role:     user.Role,
+		Blocked:  user.Blocked,
+	})
+
+	_, err = w.Write(bytes)
+	if err != nil {
+		log.Error("Couldn't write to client")
+	}
+}
+
+type Range struct {
+	Start int `json:"start"`
+	End   int `json:"end"`
+}
+
+// Returns the user info of the currently logged in user.
+func (e *Endpoints) getUsers(w http.ResponseWriter, req *http.Request) {
+	claims, err := e.authenticateRequest(w, req)
+	if err != nil {
+		return
+	}
+
+	if claims.Role != db.AdminRoleID {
+		user, err := e.conn.GetUserByName(claims.Username)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
 		}
-		return
+
+		if user.Role != db.AdminRoleID {
+			http.Error(w, "You're not an admin!", http.StatusUnauthorized)
+			return
+		}
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	return
-}
-
-// uses the refresh token to return a new login token
-func (e Endpoints) refresh(w http.ResponseWriter, r *http.Request) {
-	if r.Body == nil {
-		http.Error(w, "Please specify a body", http.StatusBadRequest)
-		return
-	}
-
-	return
-}
-
-// Expects a JSON body with the user object
-// returns the refresh and login token
-func (e Endpoints) login(w http.ResponseWriter, r *http.Request) {
-
-	// Decode user struct and check if anything is invalid.
-	var u db.User
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil || len(u.Username) == 0 || len(u.Password) == 0 {
+	var r Range
+	if err := json.NewDecoder(req.Body).Decode(&r); err != nil {
 		http.Error(w, "Please yeet us a valid body", http.StatusBadRequest)
 		return
 	}
 
-	user, err := e.conn.GetUserByName(u.Username)
+	// check if there's at least one entry in the range
+	if r.End <= r.Start {
+		http.Error(w, "Invalid Range", http.StatusBadRequest)
+		return
+	}
+
+	users, err := e.conn.GetUsers(r.Start, r.End)
 	if err != nil {
-		http.Error(w, "User is not authorized", http.StatusUnauthorized)
+		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
 
-	// Invalid password
-	if !util.CheckPasswordHash(u.Password, user.Password) {
-		http.Error(w, "User is not authorized", http.StatusUnauthorized)
-		return
+	var strippedusers []db.User
+	for _, user := range users {
+		strippedusers = append(strippedusers, db.User{
+			Username: user.Username,
+			Email:    user.Email,
+			Role:     user.Role,
+			Blocked:  user.Blocked,
+		})
 	}
 
-	// Generate a JWT pair (login + refresh)
-	token, err := GenerateJWTPair(&user, e.config)
+	bytes, err := json.Marshal(strippedusers)
+
+	_, err = w.Write(bytes)
 	if err != nil {
-		http.Error(w, "Error in JWT generation", http.StatusInternalServerError)
-		return
+		log.Error("Couldn't write to client")
 	}
-
-	// Convert the tokens into json bytes
-	bytes, err := json.Marshal(token)
-	if err != nil {
-		http.Error(w, "Error in serializing JWT", http.StatusInternalServerError)
-		return
-	}
-
-	// push them to the client
-	if _, err = w.Write(bytes); err != nil {
-		log.Fatalf("Error writing response to client")
-	}
-
-	return
 }

@@ -40,6 +40,11 @@ func (conn SQLConnectionMock) UpdateUser(user db.User) error {
 	return args.Error(0)
 }
 
+func (conn SQLConnectionMock) GetUsers(start int, end int) ([]db.User, error) {
+	args := conn.Called(start, end)
+	return args.Get(0).([]db.User), args.Error(1)
+}
+
 func TestSignup(t *testing.T) {
 	conn := SQLConnectionMock{}
 	conn.On("CreateUser", db.User{

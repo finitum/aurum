@@ -3,7 +3,7 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 // An interface for database connections, abstracting underlying DB access
@@ -13,15 +13,30 @@ type Connection interface {
 
 	// Gets the user based on the username
 	GetUserByName(username string) (User, error)
+
+	// Counts the number of users in the database
+	CountUsers() (int, error)
+
+	// changes the fields of a user matching the username
+	UpdateUser(user User) error
+
+	// Gets users using specified start and end range
+	GetUsers(start int, end int) ([]User, error)
 }
+
+// The connection types (wtb enums)
+const (
+	INMEMORY = "inmemory"
+)
 
 func InitDB(connectiontype string) Connection {
 	// Database connection
-	log.Printf("Starting up database ...")
+	log.Info("Starting up database ...")
 
 	switch connectiontype {
 	// in memory
 	default:
+		log.Debug("Using default in memory sqlite3 database")
 		connection := SQLConnection{}
 
 		var err error
