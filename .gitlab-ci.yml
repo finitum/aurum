@@ -21,6 +21,7 @@ stages:
 
 variables:
   CORE_IMG: "$CI_REGISTRY_IMAGE/core"
+  WEBCLIENT_IMG: "$CI_REGISTRY_IMAGE/webclient"
 
 core-test:
   stage: test
@@ -53,24 +54,42 @@ webclient-test:
   script:
     - yarn test --collect-coverage
 
-build-master:
+build-master-core:
   stage: deploy
   <<: *docker
   script:
     - cd core
     - docker build --pull -t "$CORE_IMG" .
     - docker push "$CORE_IMG"
-    - cd ..
   only:
     - master
 
-build:
+build-core:
   stage: deploy
   <<: *docker
   script:
     - cd core
     - docker build --pull -t "$CORE_IMG:$CI_COMMIT_REF_SLUG" .
     - docker push "$CORE_IMG:$CI_COMMIT_REF_SLUG"
-    - cd ..
+  except:
+    - master
+
+build-master-webclient:
+  stage: deploy
+  <<: *docker
+  script:
+    - cd webclient
+    - docker build --pull -t "$WEBCLIENT_IMG" .
+    - docker push "$WEBCLIENT_IMG"
+  only:
+    - master
+
+build-webclient:
+  stage: deploy
+  <<: *docker
+  script:
+    - cd webclient
+    - docker build --pull -t "$WEBCLIENT_IMG:$CI_COMMIT_REF_SLUG" .
+    - docker push "$WEBCLIENT_IMG:$CI_COMMIT_REF_SLUG"
   except:
     - master
