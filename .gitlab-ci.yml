@@ -42,8 +42,8 @@ build:
   <<: *docker
   script:
     - cd core
-    - docker build --pull -t "CORE_IMG:$CI_COMMIT_REF_SLUG" .
-    - docker push "CORE_IMG:$CI_COMMIT_REF_SLUG"
+    - docker build --pull -t "$CORE_IMG:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CORE_IMG:$CI_COMMIT_REF_SLUG"
     - cd ..
   except:
     - master
