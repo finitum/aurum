@@ -31,7 +31,7 @@ core-test:
       - core/**/*
   cache:
     paths:
-      - $GOPATH/pkg/mod
+      - /go/pkg/mod
   coverage: /^total:.+\)\s+(\d+.?\d*)%$/
   before_script:
     - cd core
