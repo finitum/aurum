@@ -9,7 +9,6 @@
     "@types/jest": "^24.0.25",
     "@typescript-eslint/eslint-plugin": "^2.15.0",
     "@typescript-eslint/parser": "^2.15.0",
-    "andyz": "^1.0.7-PRERELEASE-SNEAKPREVIEW-COMINGSOONTOACOLLEGERAMANEARYOU",
     "eslint": "^6.8.0",
     "eslint-plugin-jest": "^23.4.0",
     "jest": "^24.9.0",

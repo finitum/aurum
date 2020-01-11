@@ -1,5 +1,4 @@
 stages:
-  - build
   - test
   - deploy
 
@@ -43,7 +42,7 @@ core-test:
 
 webclient-check:
   <<: *webclient
-  stage: build
+  stage: test
   script:
     - yarn check
 
