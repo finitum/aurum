@@ -1,15 +1,15 @@
-image: docker:latest
-
 stages:
   - build
   - test
   - deploy
 
-services:
-  - docker:dind
+.docker: &docker
+  image: docker:latest
+  services:
+    - docker:dind
 
-before_script:
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 variables:
   CORE_IMG: "$CI_REGISTRY_IMAGE/core"
@@ -29,6 +29,7 @@ core-test:
 
 build-master:
   stage: deploy
+  <<: *docker
   script:
     - cd core
     - docker build --pull -t "$CORE_IMG" .
@@ -39,6 +40,7 @@ build-master:
 
 build:
   stage: deploy
+  <<: *docker
   script:
     - cd core
     - docker build --pull -t "CORE_IMG:$CI_COMMIT_REF_SLUG" .
