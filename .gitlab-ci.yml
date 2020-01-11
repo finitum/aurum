@@ -10,21 +10,48 @@ stages:
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
+.webclient: &webclient
+  image: node
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - webclient/**/*
+  before_script:
+    - cd webclient
+    - yarn install
+
 variables:
   CORE_IMG: "$CI_REGISTRY_IMAGE/core"
 
 core-test:
   stage: test
   image: golang
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - core/**/*
   cache:
     paths:
       - $GOPATH/pkg/mod
   coverage: /^total:.+\)\s+(\d+.?\d*)%$/
-  script:
+  before_script:
     - cd core
     - go mod download
+  script:
     - go test -covermode=count -coverprofile cover.cov ./...
     - go tool cover -func=cover.cov
+
+webclient-check:
+  <<: *webclient
+  stage: build
+  script:
+    - yarn check
+
+webclient-test:
+  stage: test
+  <<: *webclient
+  script:
+    - yarn test
 
 build-master:
   stage: deploy
