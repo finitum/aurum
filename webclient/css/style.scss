@@ -1,0 +1,110 @@
+
+html {
+    background: white;
+}
+
+body {
+    margin: 0;
+
+    display: flex;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    height: 100vh;
+}
+
+.user_panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+%panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    padding: 5em;
+    background: #f2f2f2;
+    border: 1px solid #a0a0a0;
+    margin-bottom: 10px;
+
+
+    span {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        width: 100%;
+
+
+        button {
+            margin-top: 12px;
+        }
+    }
+
+    h2 {
+        font-size: 3rem;
+        margin-top: 0;
+    }
+}
+
+.login_form {
+    @extend %panel;
+}
+
+.user_panel {
+    @extend %panel;
+
+    h2 {
+        font-size: 2rem;
+    }
+
+    button {
+        margin-top: 2px;
+        width: 20em;
+    }
+}
+
+.admin_panel {
+    @extend %panel;
+
+    h2 {
+        font-size: 2rem;
+    }
+
+    table {
+        border-left: 1px solid #0a0a0a;
+        border-right: 1px solid #0a0a0a;
+        th {
+            border-bottom: 1px dashed #0a0a0a;
+        }
+    }
+}
+
+#message {
+    position: fixed;
+
+    right: 3vw;
+    bottom: 3vw;
+
+    width: 10vw;
+    height: 4vw;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+    border: solid 1px black;
+
+    background: lightblue;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity 1s;
+}
