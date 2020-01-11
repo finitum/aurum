@@ -10,4 +10,8 @@ module.exports = {
 
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
+
+  coverageReporters: ["lcov", "text", "text-summary"],
+
+  setupFiles: ["jest-localstorage-mock"]
 };

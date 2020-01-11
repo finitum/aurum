@@ -49,8 +49,9 @@ webclient-check:
 webclient-test:
   stage: test
   <<: *webclient
+  coverage: /^Lines\s*:\s(\d+.?\d*)%/
   script:
-    - yarn test
+    - yarn test --collect-coverage
 
 build-master:
   stage: deploy

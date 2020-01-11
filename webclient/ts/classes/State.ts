@@ -1,15 +1,16 @@
 import {TokenPair} from "./jwt";
 
+export class Storage {
 
-class Storage {
-    public tokenPair: TokenPair;
+    constructor(public tokenPair: TokenPair = null) {
+    }
 
     public json(): string {
         return JSON.stringify(this);
     }
 
     public static fromJSON(json: string): Storage {
-        return JSON.parse(json);
+        return new Storage(JSON.parse(json).tokenPair);
     }
 }
 

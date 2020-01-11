@@ -20,7 +20,7 @@ type Endpoints struct {
 func accessControlMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
 
 		if r.Method == http.MethodOptions {
@@ -41,10 +41,9 @@ func StartServer(config *config.Config, db db.Connection) {
 
 	// Router
 	router := mux.NewRouter()
+	router.Use(accessControlMiddleware)
 
 	api := router.PathPrefix(config.Path).Subrouter()
-
-	api.Use(accessControlMiddleware)
 
 	api.HandleFunc("/signup", endpoints.signup).Methods(http.MethodPost, http.MethodOptions)
 	api.HandleFunc("/login", endpoints.login).Methods(http.MethodPost, http.MethodOptions)
