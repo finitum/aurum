@@ -3,7 +3,8 @@
     "run": "parcel index.html",
     "check": "tsc --noEmit && eslint ts/**/*.ts ts/*.ts",
     "fix": "eslint --fix ts/**/*.ts ts/*.ts",
-    "test": "jest"
+    "test": "jest",
+    "coverage": "yarn test --collect-coverage"
   },
   "devDependencies": {
     "@types/jest": "^24.0.25",
