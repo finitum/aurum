@@ -2,11 +2,13 @@ import {TokenPair} from "./jwt";
 import User from "./User";
 import State from "./State";
 
+
 export enum ErrorState {
     Ok,
     InvalidCredentials,
     UserExists,
     ServerError,
+    InvalidPasswordError,
 
     Other,
 }
@@ -27,7 +29,7 @@ class API {
      * @param user for authentication, username and password need to be non-null
      * @returns [TokenPair] or [ErrorState] depending on if it went correctly
      */
-    async login(user: User): Promise<[TokenPair, ErrorState]> {
+    async login(user: User): Promise<[TokenPair | null, ErrorState]> {
         const res = await fetch(`${this.baseURL}/login`,{
             method: "POST",
             headers: {
@@ -71,6 +73,10 @@ class API {
             return ErrorState.UserExists;
         }
 
+        if (res.status == 406) {
+            return ErrorState.InvalidPasswordError;
+        }
+
         if (res.status.toString().startsWith("5")) {
             return ErrorState.ServerError;
         }
@@ -86,7 +92,7 @@ class API {
      * Gets the user object from the server of the currently logged in user
      * @param token the token to use for authentication
      */
-    async getMe(token: string): Promise<[User, ErrorState]> {
+    async getMe(token: string): Promise<[User | null, ErrorState]> {
         const res = await fetch(`${this.baseURL}/me`,{
             method: "GET",
             headers: {
@@ -106,7 +112,6 @@ class API {
             return [null, ErrorState.Other];
         }
 
-
         return [User.fromObject(await res.json()), ErrorState.Ok];
     }
 
@@ -115,7 +120,7 @@ class API {
      * @param tokenPair the tokenpair containg the refresh token used for getting the new login token
      * @returns A new tokenpair or an [ErrorState]
      */
-    async refresh(tokenPair: TokenPair): Promise<[TokenPair, ErrorState]> {
+    async refresh(tokenPair: TokenPair): Promise<[TokenPair | null, ErrorState]> {
         const res = await fetch(`${this.baseURL}/refresh`, {
             method: "POST",
             body: JSON.stringify(tokenPair)
@@ -130,7 +135,7 @@ class API {
         }
 
         if (!res.status.toString().startsWith("2")) {
-            return null;
+            return [null, ErrorState.InvalidCredentials];
         }
 
         return [TokenPair.fromJSON(await res.json()), ErrorState.Ok];
@@ -173,7 +178,7 @@ class API {
      * @param token authentication token.
      */
     async getUsers(start: number, end: number, token: string): Promise<[User[] ,ErrorState]> {
-        const res = await fetch(`${this.baseURL}/requestusers`, {
+        const res = await fetch(`${this.baseURL}/users`, {
             method: "POST",
             body: JSON.stringify({start: start, end: end}),
             headers: {
@@ -201,7 +206,7 @@ class API {
  * This class abstracts the [API] class to make interacting with the backend easier.
  */
 export default class Client {
-    public user: User;
+    public user: User | null = null;
     public api: API;
     public state: State;
 
@@ -214,15 +219,15 @@ export default class Client {
      * Checks localstorage for authentication tokesns and automatically
      * logs the user in if the tokens are still valid.
      */
-    async checkLogin(): Promise<[User, ErrorState]> {
+    async checkLogin(): Promise<[User | null, ErrorState]> {
         let tokenPair, err, newuser;
 
         if (this.state.tokenPair) {
-            if(this.state.tokenPair.isLoginValid()){
+            if(this.state.tokenPair.isLoginValid){
                 [newuser, err] = await this.api.getMe(this.state.tokenPair.loginToken);
                 this.user = newuser;
 
-                return [this.user, ErrorState.Ok];
+                return [this.user, err];
             } else if (this.state.tokenPair.isRefreshValid) {
                 // refresh
                 const tp = await this.api.refresh(this.state.tokenPair);
@@ -233,7 +238,7 @@ export default class Client {
                 }
 
                 [tokenPair, err]  = await this.api.refresh(this.state.tokenPair);
-                if (err != ErrorState.Ok) {
+                if (err != ErrorState.Ok || tokenPair == null) {
                     return [null, err];
                 }
 
@@ -248,9 +253,8 @@ export default class Client {
 
                 return [this.user, ErrorState.Ok];
             }
-        } else {
-            return [null, ErrorState.InvalidCredentials];
         }
+        return [null, ErrorState.InvalidCredentials];
     }
 
     /**
@@ -258,11 +262,11 @@ export default class Client {
      * @param username the user to log in
      * @param password the password for said user
      */
-    async login(username: string, password: string): Promise<[User, ErrorState]> {
+    async login(username: string, password: string): Promise<[User | null, ErrorState]> {
 
         const [tokenPair, err1] = await this.api.login(new User(username, password));
 
-        if(err1 !== ErrorState.Ok) {
+        if(err1 !== ErrorState.Ok || tokenPair == null) {
             return [null, err1];
         }
 
@@ -284,14 +288,14 @@ export default class Client {
      * @param email The email of the user
      * @returns A [User] object on success or an [ErrorState] on failure
      */
-    async signup(username: string, password: string, email: string): Promise<[User, ErrorState]> {
+    async signup(username: string, password: string, email: string): Promise<[User | null, ErrorState]> {
 
         const err = await this.api.signup(new User(username, password, email));
         if (err !== ErrorState.Ok) {
             return [null, err];
         }
 
-        return await this.login(username, password)
+        return await this.login(username, password);
     }
 
     /**
@@ -306,8 +310,8 @@ export default class Client {
      * @param password the new password
      * @returns the new [User] object or an [ErrorState]
      */
-    async changePassword(password: string): Promise<[User, ErrorState]> {
-        if (this.user === null) {
+    async changePassword(password: string): Promise<[User | null, ErrorState]> {
+        if (this.user === null || this.state.tokenPair == null) {
             return [null, ErrorState.InvalidCredentials];
         }
 
@@ -326,6 +330,10 @@ export default class Client {
      * @returns a [User] Array or an [ErrorState]
      */
     async getUsers(start: number, end: number): Promise<[User[], ErrorState]> {
+        if(this.state.tokenPair == null) {
+            return [[], ErrorState.InvalidCredentials];
+        }
+
         return this.api.getUsers(start, end, this.state.tokenPair.loginToken);
     }
 }

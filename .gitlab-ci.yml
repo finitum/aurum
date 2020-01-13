@@ -15,6 +15,7 @@ stages:
     changes:
       - .gitlab-ci.yml
       - webclient/**/*
+      - core/**/*
   before_script:
     - cd webclient
     - yarn install
@@ -30,6 +31,7 @@ core-test:
     changes:
       - .gitlab-ci.yml
       - core/**/*
+      - webclient/**/*
   cache:
     paths:
       - /go/pkg/mod

@@ -7,7 +7,33 @@ import (
 	"net/http"
 )
 
-// Returns the user info of the currently logged in user.
+/**
+@apiDefine admin Admin user
+Only available to admins, the first user of the server is by default admin.
+ */
+
+/**
+@api {get} /me Request user info
+@apiName GetUser
+@apiGroup User
+@apiHeader (Authorization) {String} Authorization Users JWT Token
+@apiHeaderExample {String} Authorization Example:
+                Authorization: "Bearer <token>"
+@apiSuccess {String} username The username of the user
+@apiSuccess {String} email The E-Mail of the user
+@apiSuccess {Number} role The role of the user (0 = User, 1 = Admin)
+@apiSuccess {Boolean} blocked If the user is blocked
+@apiSuccessExample {json} Success Response:
+	{
+		"username":"victor",
+		"email":"victor@example.com",
+		"role":0,
+		"blocked": false
+	}
+
+@apiError 404 If the user does not exist (anymore).
+@apiVersion 0.0.0
+ */
 func (e *Endpoints) getMe(w http.ResponseWriter, r *http.Request) {
 	claims, err := e.authenticateRequest(w, r)
 	if err != nil {
@@ -38,7 +64,17 @@ type Range struct {
 	End   int `json:"end"`
 }
 
-// Returns the user info of the currently logged in user.
+/**
+@api {get} /users Get all users
+@apiDescription Gets all users currently registered
+@apiName GetUsers
+@apiGroup User
+@apiPermission admin
+@apiHeader (Authorization) {String} Authorization Users JWT Token
+@apiHeaderExample {String} Authorization Example:
+                Authorization: "Bearer <token>"
+@apiVersion 0.0.0
+*/
 func (e *Endpoints) getUsers(w http.ResponseWriter, req *http.Request) {
 	claims, err := e.authenticateRequest(w, req)
 	if err != nil {

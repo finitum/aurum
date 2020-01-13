@@ -4,13 +4,34 @@ import (
 	"aurum/db"
 	"aurum/hash"
 	"aurum/jwt"
+	"aurum/passwords"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 )
 
-// Creates a user based on the user in the json body
+
+/**
+@api {post} /signup Register
+@apiDescription Creates a new account
+@apiName Signup
+@apiGroup Authentication
+@apiParam {String} username The username of the user
+@apiParam {String} password The password of the user
+@apiParam {String} email The E-Mail of the user
+@apiParamExample {json} Request Example:
+	{
+		"username": "victor",
+		"password": "hunter2",
+		"email": "victor@example.com"
+	}
+@apiSuccessExample {String} Success Response:
+	HTTP/1.1 201 Created
+
+@apiError 400 If an invalid body is provided
+@apiVersion 0.0.0
+*/
 func (e *Endpoints) signup(w http.ResponseWriter, r *http.Request) {
 
 	var u db.User
@@ -21,6 +42,11 @@ func (e *Endpoints) signup(w http.ResponseWriter, r *http.Request) {
 
 	if u.Username == "" || u.Password == "" || u.Email == "" || u.Role != db.UserRoleID {
 		http.Error(w, "Please yeet us a valid json body", http.StatusBadRequest)
+		return
+	}
+
+	if !passwords.VerifyPassword(u.Password, []string{u.Username, u.Email}) {
+		http.Error(w, "Password not acceptable", http.StatusNotAcceptable)
 		return
 	}
 
@@ -53,7 +79,26 @@ func (e *Endpoints) signup(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// uses the refresh token to return a new login token
+/**
+@api {post} /refresh Refresh Token
+@apiDescription Refreshes your login token by using your refresh token
+@apiName Refresh
+@apiGroup Authentication
+@apiParam {String} refresh_token The refresh token to use.
+@apiParamExample {json} Request Example:
+	{
+		"refresh_token": "<JWT Token here>"
+	}
+@apiSuccess {String} login_token A renewed login token
+@apiSuccessExample {json} Success Response:
+	{
+		"login_token": "<JWT Token here>"
+	}
+
+@apiError 400 If an invalid body or token is provided
+@apiError 404 If the user does not exist (anymore)
+@apiVersion 0.0.0
+*/
 func (e *Endpoints) refresh(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "Please specify a body", http.StatusBadRequest)
@@ -97,8 +142,29 @@ func (e *Endpoints) refresh(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// Expects a JSON body with the user object
-// returns the refresh and login token
+/**
+@api {post} /login Login
+@apiDescription Logs a user in returning a tokenpair
+@apiName Login
+@apiGroup Authentication
+@apiParam {String} username The user's username
+@apiParam {String} password The user's password
+@apiParamExample {json} Request Example:
+	{
+		"username": "victor",
+		"password": "hunter2"
+	}
+@apiSuccess {String} login_token The user's login token
+@apiSuccess {String} refresh_token The user's refresh token
+@apiSuccessExample {json} Success Response:
+	{
+		"login_token": "<JWT Token here>"
+		"refresh_token": "<JWT Token here>"
+	}
+@apiError 400 If an invalid body is provided.
+@apiError 401 If the user does not exist or the password is wrong
+@apiVersion 0.0.0
+*/
 func (e *Endpoints) login(w http.ResponseWriter, r *http.Request) {
 
 	// Decode user struct and check if anything is invalid.

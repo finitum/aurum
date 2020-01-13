@@ -14,7 +14,7 @@ describe("#Storage", () => {
 
        const res = Storage.fromJSON(json);
 
-       expect(res.tokenPair).toEqual(tp)
+       expect(res.tokenPair).toEqual(tp);
    });
    it("Should parse to JSON correctly", () => {
         const tp =new TokenPair("a", "b");

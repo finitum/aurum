@@ -50,7 +50,7 @@ func StartServer(config *config.Config, db db.Connection) {
 	api.HandleFunc("/refresh", endpoints.refresh).Methods(http.MethodPost, http.MethodOptions)
 	api.HandleFunc("/changepassword", endpoints.changePassword).Methods(http.MethodPost, http.MethodOptions)
 	api.HandleFunc("/me", endpoints.getMe).Methods(http.MethodGet, http.MethodOptions)
-	api.HandleFunc("/requestusers", endpoints.getUsers).Methods(http.MethodPost, http.MethodOptions)
+	api.HandleFunc("/users", endpoints.getUsers).Methods(http.MethodPost, http.MethodOptions)
 
 	// Create the server
 	srv := &http.Server{

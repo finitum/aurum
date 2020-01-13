@@ -2,7 +2,7 @@ import {TokenPair} from "./jwt";
 
 export class Storage {
 
-    constructor(public tokenPair: TokenPair = null) {
+    constructor(public tokenPair: TokenPair | null = null) {
     }
 
     public json(): string {
@@ -31,14 +31,14 @@ export default class State {
         localStorage.setItem(State.storage_key, JSON.stringify(this.stored));
     }
 
-    get tokenPair(): TokenPair {
-        if (this.stored.tokenPair === null) {
+    get tokenPair(): TokenPair | null {
+        if (this.stored.tokenPair == null) {
             return null;
         }
         return new TokenPair(this.stored.tokenPair.loginToken, this.stored.tokenPair.refreshToken);
     }
 
-    set tokenPair(tokenPair: TokenPair) {
+    set tokenPair(tokenPair: TokenPair | null) {
         this.stored.tokenPair = tokenPair;
         this.store();
     }

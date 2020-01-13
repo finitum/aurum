@@ -7,6 +7,7 @@ export enum DOMState {
     ChangePassword = "changepassword",
 }
 
+
 export default class DOMStateManager {
     private currentState: DOMState;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,7 +15,28 @@ export default class DOMStateManager {
 
     constructor(startstate: DOMState) {
         this.currentState = startstate;
+        this.registerHistoryHandler();
         this.change(startstate);
+    }
+
+    private popStateHandler(event: PopStateEvent): void {
+        // setTimeout of 0 to make sure DOM is loaded
+        setTimeout(() => {
+            if(Object.values(DOMState).includes(event.state)) {
+                this.change(event.state, false);
+            }
+        }, 0);
+    }
+
+    private registerHistoryHandler(): void {
+        // Wrap in a lambda to preserve `this`
+        window.addEventListener("popstate", (event: PopStateEvent) => {
+            this.popStateHandler(event);
+        });
+    }
+
+    private pushStateHandler(state: DOMState = this.currentState): void {
+        history.pushState(state, "");
     }
 
     private static hideAll(): void {
@@ -25,7 +47,7 @@ export default class DOMStateManager {
         });
     }
 
-    change(state: DOMState): void {
+    change(state: DOMState, setHistory= true): void {
         DOMStateManager.hideAll();
 
         // Show all matching
@@ -34,6 +56,14 @@ export default class DOMStateManager {
         }
 
         this.currentState = state;
+
+        if (setHistory) {
+            this.pushStateHandler(state);
+        }
+    }
+
+    back(): void {
+        history.back();
     }
 
     get state(): DOMState {

@@ -1,0 +1,97 @@
+@import "vars";
+
+#message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+
+  background: $info;
+  color: $dark-text-color;
+  opacity: 0;
+  visibility: hidden;
+
+  right: 3vw;
+  bottom: 3vw;
+
+  width: 10vw;
+  min-height: 5vh;
+  padding: 1em 2em;
+
+  transition: opacity 1s;
+
+  border-radius: 3px;
+
+  box-shadow: 2px 2px;
+
+}
+
+.input-wrapper {
+  position: relative;
+
+  #password-suggestion {
+    position: absolute;
+    right: -12.4em;
+    max-width: 10em;
+    background: $gold;
+    color: $dark-text-color;
+    padding: 10px;
+    border-radius: 3px;
+    visibility: hidden;
+    top: -2px;
+
+    &:before, &:after {
+      right: 100%;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    &:before {
+      border-right-color: $gold;
+      // size
+      border-width: 1.2em;
+
+      // Arrow offset
+      margin-top: -0.31em;
+      margin-right: -2px;
+
+    }
+
+    &:after {
+      border-width: 12px;
+      margin-top: -12px;
+    }
+  }
+
+  .password-input-meter {
+    position: absolute;
+    right: 2px;
+    padding-right: 0.1em;
+    height: 100%;
+
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &::before, &::after {
+      box-sizing: border-box;
+    }
+
+    .password-input-dot {
+      height: 0.35em;
+      width: 0.35em;
+      margin: 0.1em;
+      background-color: $grey;
+    }
+
+    .password-input-dot-selected {
+      background-color: $info;
+    }
+  }
+}
+
+

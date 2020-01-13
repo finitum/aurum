@@ -53,11 +53,11 @@ export class TokenPair {
         return TokenPair.fromObject(JSON.parse(json));
     }
 
-    public isLoginValid(): boolean {
+    get isLoginValid(): boolean {
         return isJWTValid(this.loginToken);
     }
 
-    public isRefreshValid(): boolean {
+    get isRefreshValid(): boolean {
         return isJWTValid(this.refreshToken);
     }
 }

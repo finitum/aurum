@@ -6,6 +6,7 @@ import (
 	"aurum/jwt"
 	"encoding/json"
 	"errors"
+	_ "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -42,6 +43,7 @@ func TestGetMe(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	ru := db.User{}
+
 	err = json.NewDecoder(resp.Body).Decode(&ru)
 	assert.NoError(t, err)
 	assert.Equal(t, u, ru)
@@ -67,7 +69,7 @@ func TestGetMeInvalidUser(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
-	r.Header.Set("Authorization", "Bearer "+tkn)
+	r.Header.Set("Authorization", "Bearer " + tkn)
 
 	endpoints.getMe(w, r)
 

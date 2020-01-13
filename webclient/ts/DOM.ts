@@ -11,18 +11,18 @@ export enum SeverityLevel {
  */
 export const showMessage = (message: string, level: SeverityLevel): void => {
     const messageElement = document.getElementById("message");
- 
+    if (messageElement ==  null) return;
     messageElement.innerText = message;
 
     switch (level) {
         case SeverityLevel.INFO:
-            messageElement.style.background = "lightblue";
+            messageElement.style.background = "#1e92f4";
             break;
         case SeverityLevel.WARNING:
-            messageElement.style.background = "orange";
+            messageElement.style.background = "#ffc107";
             break;
         case SeverityLevel.ERROR:
-            messageElement.style.background = "red";
+            messageElement.style.background = "#cc3300";
             break;
     }
 

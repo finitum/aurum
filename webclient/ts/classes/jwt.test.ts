@@ -1,28 +1,13 @@
 import {Claims, isJWTValid} from "./jwt";
+import {generateValidJWT} from "../test-helpers/helpers";
 
 describe("#isJWTValid()", () => {
     it("Should fail on invalid token", () => {
         expect(isJWTValid("a.e30=")).toBe(false);
     });
     it("Should succeed on a valid token", () => {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - 1);
-
-        const future = new Date();
-        future.setHours(future.getHours() + 1);
-
-        const fakeTokenClaims = {
-            username: "victor",
-            role: 0,
-            refresh: false,
-            exp: future.getTime() / 1000,
-            iat: now.getTime() / 1000,
-            nbf: now.getTime() / 1000
-        };
-
-        const base64 = btoa(JSON.stringify(fakeTokenClaims));
-
-        expect(isJWTValid(`a.${base64}`)).toBe(true);
+        const token = generateValidJWT();
+        expect(isJWTValid(token)).toBe(true);
     });
     it("Should fail on an expired token", () => {
         const iat = new Date();

@@ -49,7 +49,7 @@ func TestSignup(t *testing.T) {
 	conn := SQLConnectionMock{}
 	conn.On("CreateUser", db.User{
 		Username: "jonathan",
-		Password: "yeet",
+		Password: "yeetyeet",
 		Email:    "yeet@yeet.dev",
 	}).Return(nil)
 	conn.On("CountUsers", mock.Anything).Return(1, nil)
@@ -64,7 +64,7 @@ func TestSignup(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",
-    "password":"yeet",
+    "password":"yeetyeet",
     "email":"yeet@yeet.dev"
     }`))
 
@@ -229,7 +229,7 @@ func TestDbError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeet",
+    "password":"yeetyeet",
     "email":"yeet@yeet.dev"
 }`))
 
@@ -240,7 +240,7 @@ func TestDbError(t *testing.T) {
 
 func TestLogin(t *testing.T) {
 	conn := SQLConnectionMock{}
-	hash, err := hash2.HashPassword("yeet")
+	hash, err := hash2.HashPassword("yeetyeet")
 	assert.Nil(t, err)
 
 	conn.On("GetUserByName", mock.Anything).Run(func(args mock.Arguments) {
@@ -262,7 +262,7 @@ func TestLogin(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeet"
+    "password":"yeetyeet"
     }`))
 
 	endpoints.login(w, r)
@@ -382,14 +382,14 @@ func TestLoginInvalidUsername(t *testing.T) {
 	w1 := httptest.NewRecorder()
 	r1 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeet",
+    "password":"yeetyeet",
     "email":"test@test.test"
 }`))
 
 	w2 := httptest.NewRecorder()
 	r2 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathanx",    
-    "password":"yeet"
+    "password":"yeetyeet"
 }`))
 
 	endpoints.signup(w1, r1)
@@ -411,21 +411,21 @@ func TestLoginUsernameMismatch(t *testing.T) {
 	w1 := httptest.NewRecorder()
 	r1 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeet",
+    "password":"yeetyeet",
     "email":"test@test.test"
 }`))
 
 	w2 := httptest.NewRecorder()
 	r2 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathanx",    
-    "password":"yeet1",
+    "password":"yeetyeet1",
     "email":"test@test.test"
 }`))
 
 	w3 := httptest.NewRecorder()
 	r3 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathanx",    
-    "password":"yeet"
+    "password":"yeetyeet"
 }`))
 
 	endpoints.signup(w1, r1)
@@ -449,14 +449,14 @@ func TestSignupExists(t *testing.T) {
 	w1 := httptest.NewRecorder()
 	r1 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeet",
+    "password":"yeetyeet",
     "email":"test@test.test"
     }`))
 
 	w2 := httptest.NewRecorder()
 	r2 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeet",
+    "password":"yyeetyeet",
     "email":"test@test.test"
     }`))
 

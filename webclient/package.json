@@ -6,17 +6,27 @@
     "test": "jest",
     "coverage": "yarn test --collect-coverage"
   },
+  "dependencies": {
+    "zxcvbn": "^4.4.2"
+  },
   "devDependencies": {
     "@types/jest": "^24.0.25",
+    "@types/zxcvbn": "^4.4.0",
     "@typescript-eslint/eslint-plugin": "^2.15.0",
     "@typescript-eslint/parser": "^2.15.0",
     "eslint": "^6.8.0",
     "eslint-plugin-jest": "^23.4.0",
     "jest": "^24.9.0",
+    "jest-fetch-mock": "^3.0.1",
     "jest-localstorage-mock": "^2.4.0",
     "parcel": "^1.12.4",
     "sass": "^1.24.4",
     "ts-jest": "^24.3.0",
     "typescript": "^3.7.4"
-  }
+  },
+  "browserslist": [
+    "last 2 Firefox versions",
+    "last 2 Chrome versions",
+    "last 1 Safari versions"
+  ]
 }

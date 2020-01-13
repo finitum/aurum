@@ -2,53 +2,66 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
     <title>Aurum Web Interface</title>
     <link rel="stylesheet" type="text/css" href="css/style.scss">
+    <link rel="stylesheet" type="text/css" href="css/panel.scss">
+    <link rel="stylesheet" type="text/css" href="css/messages.scss">
     <script src="ts/index.ts"></script>
 </head>
 
 <body>
     <div id="message" title="Click to dismiss">Message!</div>
 
-    <div class="login signup changepassword">
-        <div class="login_form">
+    <div class="flex-item login signup changepassword">
+        <div class="login-form">
             <h2 class="login">Login</h2>
             <h2 class="signup">Register</h2>
 
             <label class="login signup" for="username">Username:</label>
-            <input class="login signup" id="username">
+            <input class="input-wrapper login signup" type="text" id="username">
 
             <label class="login signup changepassword" for="password">Password:</label>
-            <input class="login signup changepassword" type="password" id="password">
+
+            <div class="input-wrapper">
+                <div class="signup changepassword">
+                    <div class="password-input-meter">
+                        <div class="password-input-dot"></div>
+                        <div class="password-input-dot"></div>
+                        <div class="password-input-dot"></div>
+                        <div class="password-input-dot"></div>
+                    </div>
+                    <div class="" id="password-suggestion"></div>
+                </div>
+                <input class="login signup changepassword" type="password" id="password">
+            </div>
 
             <label class="signup" for="email">Email:</label>
-            <input class="signup" type="email" id="email">
+            <input class="input-wrapper signup" type="email" id="email">
 
             <span>
-                <button class="login signup" id="login_button">Login</button>
-                <button class="login signup" id="signup_button">Sign up</button>
-                <button class="changepassword" id="changepassword_button">Change password</button>
+                <button class="login signup" id="login-button">Login</button>
+                <button class="login signup" id="signup-button">Sign up</button>
+                <button class="changepassword" id="changepassword-button">Change password</button>
             </span>
         </div>
     </div>
 
+    <div class="flex-item admin user">
+        <div class="user-panel">
+            <h2 id="username-display"></h2>
 
-    <div class="admin user">
-        <div class="user_panel">
-            <h2 id="username_display"></h2>
-
-            <button id="logout_button">Log out</button>
-            <button id="changepassword_init_button">Change Password</button>
+            <button id="logout-button">Log out</button>
+            <button id="changepassword-init-button">Change Password</button>
         </div>
     </div>
 
-    <div class="admin">
-        <div class="admin_panel">
+    <div class="flex-item admin">
+        <div class="admin-panel">
             <h2>Admin options</h2>
-            <table id="admin_table">
+            <table id="admin-table">
             </table>
         </div>
     </div>
 </body>
-
 </html>

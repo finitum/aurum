@@ -1,9 +1,18 @@
 import DOMStateManager, {DOMState} from "./classes/DOMStateManager";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {domstate} from "./globals";
-import {changePassword, changePasswordInit, checkLogin, login, logout, signup} from "./handlers";
+import {changePassword, changePasswordInit, checkLogin, login, logout, onPasswordFieldChange, signup} from "./handlers";
 
+function setProperty(element: string, property: string, value: any): void {
+    const el = document.getElementById(element);
 
+    if (el === null || el === undefined) {
+        console.warn(`Couldn't assign ${value} to ${element}.${property}`);
+        return;
+    }
+    // @ts-ignore
+    el[property] = value;
+}
 
 window.onload = (): void => {
     // @ts-ignore this works :tm:
@@ -11,11 +20,13 @@ window.onload = (): void => {
 
     checkLogin().then();
 
-    document.getElementById("login_button").onclick = login;
-    document.getElementById("signup_button").onclick = signup;
-    document.getElementById("logout_button").onclick = logout;
-    document.getElementById("changepassword_button").onclick = changePassword;
-    document.getElementById("changepassword_init_button").onclick = changePasswordInit;
+    setProperty("login-button", "onclick", login);
+    setProperty("signup-button", "onclick",signup);
+    setProperty("logout-button", "onclick",logout);
+    setProperty("changepassword-button", "onclick",changePassword);
+    setProperty("changepassword-init-button", "onclick",changePasswordInit);
+    setProperty("password", "onkeyup",onPasswordFieldChange);
 };
+
 
 

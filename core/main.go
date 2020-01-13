@@ -17,3 +17,4 @@ func main() {
 	database := db.InitDB(db.INMEMORY)
 	web.StartServer(cfg, database)
 }
+

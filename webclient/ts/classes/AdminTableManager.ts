@@ -10,7 +10,7 @@ export class AdminTableManager {
         this.tableElement = document.getElementById(id) as HTMLTableElement;
     }
 
-    addHeader(): void {
+    private addHeader(): void {
         const head = this.tableElement.createTHead();
         const row = head.insertRow(0);
 
@@ -20,15 +20,7 @@ export class AdminTableManager {
         row.appendChild(document.createElement("th")).innerText = "Blocked";
     }
 
-    clear(): void {
-        while (this.tableElement.firstChild) {
-            this.tableElement.removeChild(this.tableElement.firstChild);
-        }
-
-        this.addHeader();
-    }
-
-    addRow(username: string, email: string, role: Role, blocked: boolean): void {
+    private addRow(username: string, email: string, role: Role, blocked: boolean): void {
         const body = this.tableElement.createTBody();
         const row = body.appendChild(document.createElement("tr")) as HTMLTableRowElement;
 
@@ -36,6 +28,15 @@ export class AdminTableManager {
         row.appendChild(document.createElement("td")).innerText = email;
         row.appendChild(document.createElement("td")).innerText = Role[role];
         row.appendChild(document.createElement("td")).innerText = String(blocked);
+    }
+
+
+    clear(): void {
+        while (this.tableElement.firstChild) {
+            this.tableElement.removeChild(this.tableElement.firstChild);
+        }
+
+        this.addHeader();
     }
 
     async fill(): Promise<ErrorState> {

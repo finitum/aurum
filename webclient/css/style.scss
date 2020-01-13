@@ -1,6 +1,31 @@
+@import "vars";
+
+@font-face {
+    font-family: "DejaVu Sans";
+
+    //// I'm impressed parcel can resolve this1
+    src: url("../assets/DejaVuSans.ttf");
+}
 
 html {
-    background: white;
+    background: $primary-color-light;
+    color: $light-text-color;
+
+    font-family: "DejaVu Sans", sans-serif;
+
+    // Desktop
+    //@media only screen and (min-device-width: 768px) {
+    //    font-size: 22px;
+    //}
+    //
+    //// Phones
+    //font-size: 32px;
+
+    // change a for the slope (aka skew towards desktop or mobile)
+    // change b for the starting point (aka in/decrease font size everywhere)
+    // y = ax + b
+    font-size: calc(-0.8vw + 38px);
+    // font-size: calc(-0.9vw + 42px);
 }
 
 body {
@@ -9,102 +34,46 @@ body {
     display: flex;
 
     flex-direction: column;
+
+    align-content: center;
     align-items: center;
     justify-content: center;
 
     height: 100vh;
-}
 
-.user_panel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-}
-
-%panel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-
-    padding: 5em;
-    background: #f2f2f2;
-    border: 1px solid #a0a0a0;
-    margin-bottom: 10px;
-
-
-    span {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
-        width: 100%;
-
-
-        button {
-            margin-top: 12px;
-        }
+    * {
+        //max-height: 90vh;
     }
 
-    h2 {
-        font-size: 3rem;
-        margin-top: 0;
-    }
+    font-size: $default;
+
 }
 
-.login_form {
-    @extend %panel;
+.flex-item {
+    height: fit-content;
+    width: fit-content;
 }
 
-.user_panel {
-    @extend %panel;
+button {
+    margin: 1em 0.2em 0;
+    background-color: $gold;
+    padding: 0.8em 2em;
 
-    h2 {
-        font-size: 2rem;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 2px 2px;
+    color: $dark-text-color;
+
+    font-size: $default;
+
+    transition: ease-in-out background-color 0.05s;
+
+    &:hover {
+        background-color: rgba($gold, 0.85);
+        cursor: pointer;
     }
 
-    button {
-        margin-top: 2px;
-        width: 20em;
+    &:active {
+        background-color: rgba($gold, 0.5);
     }
-}
-
-.admin_panel {
-    @extend %panel;
-
-    h2 {
-        font-size: 2rem;
-    }
-
-    table {
-        border-left: 1px solid #0a0a0a;
-        border-right: 1px solid #0a0a0a;
-        th {
-            border-bottom: 1px dashed #0a0a0a;
-        }
-    }
-}
-
-#message {
-    position: fixed;
-
-    right: 3vw;
-    bottom: 3vw;
-
-    width: 10vw;
-    height: 4vw;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 12px;
-    border: solid 1px black;
-
-    background: lightblue;
-
-    opacity: 0;
-    visibility: hidden;
-
-    transition: opacity 1s;
 }

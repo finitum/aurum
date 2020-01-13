@@ -1,6 +1,6 @@
 module.exports = {
   // Enabel typescript support
-  preset: 'ts-jest',
+  preset: "ts-jest",
 
   // testEnvironment: 'node',
   testEnvironment: "jest-environment-jsdom",
@@ -13,5 +13,14 @@ module.exports = {
 
   coverageReporters: ["text", "text-summary"],
 
-  setupFiles: ["jest-localstorage-mock"]
+  setupFiles: ["jest-localstorage-mock", "./jest.setup.js"],
+
+  globals: {
+    "ts-jest": {
+      diagnostics: {
+        // Disable strict null check for tests (tests would fail anyway if result is null)
+        ignoreCodes: [2531]
+      }
+    }
+  }
 };
