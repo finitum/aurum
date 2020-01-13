@@ -1,6 +1,6 @@
 import Client, {ErrorState} from "./Client";
 
-import {generateExpiredJWT, generateValidJWT, generateValidTokenPair} from "../test-helpers/helpers";
+import {generateExpiredJWT, generateValidJWT} from "../test-helpers/helpers";
 import User from "./User";
 
 import "jest-fetch-mock";
