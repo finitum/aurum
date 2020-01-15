@@ -3,7 +3,6 @@ import User from "./User";
 import State from "./State";
 import {domstate} from "../globals";
 import {DOMState} from "./DOMStateManager";
-import config from "../Config";
 
 export enum ErrorState {
     Ok,
@@ -363,7 +362,9 @@ export default class Client {
     logout(): void {
         this.state.tokenPair = null;
 
-        this.worker.postMessage(null);
+        if (this.worker !== null) {
+            this.worker.postMessage(null);
+        }
     }
 
     /**
