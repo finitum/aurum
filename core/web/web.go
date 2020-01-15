@@ -13,7 +13,7 @@ import (
 )
 
 type Endpoints struct {
-	conn   db.Connection
+	conn   db.UserRepository
 	config *config.Config
 }
 
@@ -32,7 +32,7 @@ func accessControlMiddleware(next http.Handler) http.Handler {
 }
 
 // Starts the REST web API
-func StartServer(config *config.Config, db db.Connection) {
+func StartServer(config *config.Config, db db.UserRepository) {
 
 	endpoints := Endpoints{
 		conn:   db,

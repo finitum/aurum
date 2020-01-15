@@ -1,1 +1,1 @@
-export default { API_URL: "http://145.94.207.206:8042"};
+export default { API_URL: "http://127.0.0.1:8042"};

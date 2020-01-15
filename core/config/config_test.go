@@ -27,11 +27,11 @@ func TestBuilder_SetFromEnvironment(t *testing.T) {
 
 	_ = os.Setenv("JWTKEY", "key")
 	_ = os.Setenv("WEBURL", "url")
-	_ = os.Setenv("PATH", "/asd")
+	_ = os.Setenv("PREFIX", "/asd")
 	b := bd.SetFromEnvironment().Build()
 	_ = os.Setenv("JWTKEY", "")
 	_ = os.Setenv("WEBURL", "")
-	_ = os.Setenv("PATH", "")
+	_ = os.Setenv("PREFIX", "")
 
 	assert.Equal(t, &Config{
 		JWTKey:  []byte("key"),

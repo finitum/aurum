@@ -3,7 +3,7 @@ import DOMStateManager, {DOMState} from "./classes/DOMStateManager";
 import {domstate} from "./globals";
 import {changePassword, changePasswordInit, checkLogin, login, logout, onPasswordFieldChange, signup} from "./handlers";
 
-function setProperty(element: string, property: string, value: any): void {
+export function setProperty(element: string, property: string, value: any): void {
     const el = document.getElementById(element);
 
     if (el === null || el === undefined) {

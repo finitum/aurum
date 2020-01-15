@@ -43,17 +43,13 @@ body {
 
     height: 100vh;
 
-    * {
-        //max-height: 90vh;
-    }
-
     font-size: $default;
 
 }
 
 .flex-item {
     height: fit-content;
-    width: fit-content;//here
+    width: fit-content;
 }
 
 button {

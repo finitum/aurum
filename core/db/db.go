@@ -7,7 +7,7 @@ import (
 )
 
 // An interface for database connections, abstracting underlying DB access
-type Connection interface {
+type UserRepository interface {
 	// should insert a user into the database and raise an error if it exists
 	CreateUser(u User) error
 
@@ -29,7 +29,7 @@ const (
 	INMEMORY = "inmemory"
 )
 
-func InitDB(connectiontype string) Connection {
+func InitDB(connectiontype string) UserRepository {
 	// Database connection
 	log.Info("Starting up database ...")
 

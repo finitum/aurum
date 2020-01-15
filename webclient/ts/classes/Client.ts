@@ -3,6 +3,7 @@ import User from "./User";
 import State from "./State";
 import {domstate} from "../globals";
 import {DOMState} from "./DOMStateManager";
+import Config from "../Config";
 
 export enum ErrorState {
     Ok,
@@ -236,7 +237,7 @@ export default class Client {
 
     public static getInstance(): Client {
         if(Client.instance == null){
-            Client.instance = new Client(config.API_URL);
+            Client.instance = new Client(Config.API_URL);
         }
 
         return Client.instance;

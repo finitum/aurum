@@ -1,3 +1,5 @@
+import {setProperty} from "./index";
+
 export enum SeverityLevel {
     INFO,
     WARNING,
@@ -5,9 +7,9 @@ export enum SeverityLevel {
 }
 
 /**
- *
- * @param message
- * @param level
+ * Shows a toast notification a message.
+ * @param message The message to display
+ * @param level The Severity of the message, this determines the background color of the message.
  */
 export const showMessage = (message: string, level: SeverityLevel): void => {
     const messageElement = document.getElementById("message");
@@ -38,7 +40,7 @@ export const showMessage = (message: string, level: SeverityLevel): void => {
 };
 
 export const clearFormFields = (): void => {
-    (document.getElementById("username") as HTMLInputElement).value = "";
-    (document.getElementById("password") as HTMLInputElement).value = "";
-    (document.getElementById("email") as HTMLInputElement).value = "";
+    setProperty("username", "value", "");
+    setProperty("password", "value", "");
+    setProperty("email", "value", "");
 };

@@ -95,4 +95,15 @@
   }
 }
 
+.visible {
+  opacity: 1;
+  visibility: visible;
+}
 
+.hiding {
+  opacity: 0;
+}
+
+.invisible {
+  visibility: hidden;
+}

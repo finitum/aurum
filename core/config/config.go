@@ -48,7 +48,7 @@ func (b *Builder) SetFromEnvironment() BuilderProcess {
 		b.WebAddr = web
 	}
 
-	if path := os.Getenv("PATH"); path != "" {
+	if path := os.Getenv("PREFIX"); path != "" {
 		b.Path = path
 	}
 
