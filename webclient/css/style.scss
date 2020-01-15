@@ -3,7 +3,7 @@
 @font-face {
     font-family: "DejaVu Sans";
 
-    //// I'm impressed parcel can resolve this1
+    //// I'm impressed parcel can resolve this!
     src: url("../assets/DejaVuSans.ttf");
 }
 
@@ -36,8 +36,10 @@ body {
     flex-direction: column;
 
     align-content: center;
-    align-items: center;
-    justify-content: center;
+    align-items: safe center;
+    justify-content: safe center;
+
+    overflow: auto;
 
     height: 100vh;
 
@@ -51,7 +53,7 @@ body {
 
 .flex-item {
     height: fit-content;
-    width: fit-content;
+    width: fit-content;//here
 }
 
 button {
@@ -77,3 +79,14 @@ button {
         background-color: rgba($gold, 0.5);
     }
 }
+
+.login, .signup {
+    transition: all 1s linear;
+    opacity: 1;
+}
+
+.hidden {
+    display: none;
+    opacity: 0;
+}
+

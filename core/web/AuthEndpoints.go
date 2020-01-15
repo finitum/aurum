@@ -46,7 +46,7 @@ func (e *Endpoints) signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !passwords.VerifyPassword(u.Password, []string{u.Username, u.Email}) {
-		http.Error(w, "Password not acceptable", http.StatusNotAcceptable)
+		http.Error(w, "Password not acceptable", http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -100,10 +100,6 @@ func (e *Endpoints) signup(w http.ResponseWriter, r *http.Request) {
 @apiVersion 0.0.0
 */
 func (e *Endpoints) refresh(w http.ResponseWriter, r *http.Request) {
-	if r.Body == nil {
-		http.Error(w, "Please specify a body", http.StatusBadRequest)
-		return
-	}
 
 	var t jwt.TokenPair
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {

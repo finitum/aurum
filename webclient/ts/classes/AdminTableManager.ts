@@ -1,6 +1,6 @@
-import {client, tablemanager} from "../globals";
-import {ErrorState} from "./Client";
-import {Role} from "./User";
+import {tablemanager} from "../globals";
+import Client, {ErrorState} from "./Client";
+import User, {Role} from "./User";
 
 
 export class AdminTableManager {
@@ -41,10 +41,11 @@ export class AdminTableManager {
 
     async fill(): Promise<ErrorState> {
         tablemanager.clear();
-        const [users, err] = await client.getUsers(0, 100);
+        const [users, err] = await Client.getInstance().getUsers(0, 100);
         if (err !== ErrorState.Ok) {
             return err;
         }
+
 
         for (const user of users) {
             this.addRow(user.username, user.email, user.role, user.blocked);

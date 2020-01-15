@@ -49,7 +49,7 @@ func TestSignup(t *testing.T) {
 	conn := SQLConnectionMock{}
 	conn.On("CreateUser", db.User{
 		Username: "jonathan",
-		Password: "yeetyeet",
+		Password: "7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f",
 		Email:    "yeet@yeet.dev",
 	}).Return(nil)
 	conn.On("CountUsers", mock.Anything).Return(1, nil)
@@ -64,13 +64,13 @@ func TestSignup(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",
-    "password":"yeetyeet",
+    "password":"7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f",
     "email":"yeet@yeet.dev"
     }`))
 
 	endpoints.signup(w, r)
 
-	assert.Equal(t, w.Result().StatusCode, http.StatusCreated)
+	assert.Equal(t, http.StatusCreated, w.Result().StatusCode)
 	conn.AssertExpectations(t)
 }
 
@@ -229,7 +229,7 @@ func TestDbError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeetyeet",
+    "password":"4b93310ed64ce510889be78f32203f9768c4054b9af08489ed90a59465616ef6",
     "email":"yeet@yeet.dev"
 }`))
 
@@ -382,21 +382,21 @@ func TestLoginInvalidUsername(t *testing.T) {
 	w1 := httptest.NewRecorder()
 	r1 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeetyeet",
+    "password":"7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f",
     "email":"test@test.test"
 }`))
 
 	w2 := httptest.NewRecorder()
 	r2 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathanx",    
-    "password":"yeetyeet"
+    "password":"7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f"
 }`))
 
 	endpoints.signup(w1, r1)
 	endpoints.login(w2, r2)
 
-	assert.Equal(t, w1.Result().StatusCode, http.StatusCreated)
-	assert.Equal(t, w2.Result().StatusCode, http.StatusUnauthorized)
+	assert.Equal(t, http.StatusCreated, w1.Result().StatusCode)
+	assert.Equal(t, http.StatusUnauthorized, w2.Result().StatusCode, )
 }
 
 func TestLoginUsernameMismatch(t *testing.T) {
@@ -411,30 +411,30 @@ func TestLoginUsernameMismatch(t *testing.T) {
 	w1 := httptest.NewRecorder()
 	r1 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeetyeet",
+    "password":"7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f",
     "email":"test@test.test"
 }`))
 
 	w2 := httptest.NewRecorder()
 	r2 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathanx",    
-    "password":"yeetyeet1",
+    "password":"4b93310ed64ce510889be78f32203f9768c4054b9af08489ed90a59465616ef6",
     "email":"test@test.test"
 }`))
 
 	w3 := httptest.NewRecorder()
 	r3 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathanx",    
-    "password":"yeetyeet"
+    "password":"7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f"
 }`))
 
 	endpoints.signup(w1, r1)
 	endpoints.signup(w2, r2)
 	endpoints.login(w3, r3)
 
-	assert.Equal(t, w1.Result().StatusCode, http.StatusCreated)
-	assert.Equal(t, w2.Result().StatusCode, http.StatusCreated)
-	assert.Equal(t, w3.Result().StatusCode, http.StatusUnauthorized)
+	assert.Equal(t, http.StatusCreated, w1.Result().StatusCode)
+	assert.Equal(t, http.StatusCreated, w2.Result().StatusCode)
+	assert.Equal(t, http.StatusUnauthorized, w3.Result().StatusCode)
 }
 
 func TestSignupExists(t *testing.T) {
@@ -449,14 +449,14 @@ func TestSignupExists(t *testing.T) {
 	w1 := httptest.NewRecorder()
 	r1 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yeetyeet",
+    "password":"7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f",
     "email":"test@test.test"
     }`))
 
 	w2 := httptest.NewRecorder()
 	r2 := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
     "username":"jonathan",    
-    "password":"yyeetyeet",
+    "password":"4b93310ed64ce510889be78f32203f9768c4054b9af08489ed90a59465616ef6",
     "email":"test@test.test"
     }`))
 

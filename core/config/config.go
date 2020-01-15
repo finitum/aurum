@@ -33,7 +33,7 @@ type Builder struct {
 func (b *Builder) SetDefault() BuilderProcess {
 	b.Config = Config{
 		JWTKey:  []byte("ChangeMe"),
-		WebAddr: "127.0.0.1:8042",
+		WebAddr: "0.0.0.0:8042",
 		Path:    "/",
 	}
 	return b

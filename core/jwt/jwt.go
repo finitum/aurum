@@ -22,7 +22,18 @@ type TokenPair struct {
 }
 
 func GenerateJWT(user *db.User, refresh bool, cfg *config.Config) (string, error) {
-	expirationTime := time.Now().Add(time.Hour)
+	// expirationTime := time.Now().Add(time.Hour)
+	var expirationTime time.Time
+
+	// TODO: Different exp time for refresh/login
+
+	if refresh {
+		expirationTime = time.Now().AddDate(0, 3, 0)
+	} else {
+		expirationTime = time.Now().Add(time.Minute * 15)
+	}
+
+
 	now := time.Now()
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &Claims{

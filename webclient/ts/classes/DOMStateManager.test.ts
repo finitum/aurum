@@ -11,9 +11,9 @@ describe("DOMStateManager", () => {
         // The actual call
         new DOMStateManager(DOMState.Login);
 
-        expect(document.getElementById("div1").style.display).toBe("inherit");
-        expect(document.getElementById("div2").style.display).toBe("none");
-        expect(document.getElementById("div3").style.display).toBe("none");
+        expect(document.getElementById("div1").classList.contains("hidden")).toBeFalsy();
+        expect(document.getElementById("div2").classList.contains("hidden")).toBeTruthy();
+        expect(document.getElementById("div3").classList.contains("hidden")).toBeTruthy();
     });
 
     it("Should be able to change to a new state", () => {
@@ -26,16 +26,16 @@ describe("DOMStateManager", () => {
         // The actual call
         const m = new DOMStateManager(DOMState.Login);
 
-        expect(document.getElementById("div1").style.display).toBe("inherit");
-        expect(document.getElementById("div2").style.display).toBe("none");
-        expect(document.getElementById("div3").style.display).toBe("none");
+        expect(document.getElementById("div1").classList.contains("hidden")).toBeFalsy();
+        expect(document.getElementById("div2").classList.contains("hidden")).toBeTruthy();
+        expect(document.getElementById("div3").classList.contains("hidden")).toBeTruthy();
 
         m.change(DOMState.User);
 
         expect(m.state).toBe(DOMState.User);
-        expect(document.getElementById("div1").style.display).toBe("none");
-        expect(document.getElementById("div2").style.display).toBe("none");
-        expect(document.getElementById("div3").style.display).toBe("inherit");
+        expect(document.getElementById("div1").classList.contains("hidden")).toBeTruthy();
+        expect(document.getElementById("div2").classList.contains("hidden")).toBeTruthy();
+        expect(document.getElementById("div3").classList.contains("hidden")).toBeFalsy();
     });
 
     it("Should be able to handle multi classed divs", () => {
@@ -48,20 +48,17 @@ describe("DOMStateManager", () => {
         // The actual call
         const m = new DOMStateManager(DOMState.Admin);
 
-        expect(document.getElementById("div1").style.display).toBe("inherit");
-        expect(document.getElementById("div2").style.display).toBe("inherit");
-        expect(document.getElementById("div3").style.display).toBe("none");
+        expect(document.getElementById("div1").classList.contains("hidden")).toBeFalsy();
+        expect(document.getElementById("div2").classList.contains("hidden")).toBeFalsy();
+        expect(document.getElementById("div3").classList.contains("hidden")).toBeTruthy();
 
         m.change(DOMState.Login);
 
-        expect(document.getElementById("div1").style.display).toBe("inherit");
-        expect(document.getElementById("div2").style.display).toBe("none");
-        expect(document.getElementById("div3").style.display).toBe("inherit");
+        expect(document.getElementById("div1").classList.contains("hidden")).toBeFalsy();
+        expect(document.getElementById("div2").classList.contains("hidden")).toBeTruthy();
+        expect(document.getElementById("div3").classList.contains("hidden")).toBeFalsy();
 
         m.change(DOMState.User);
 
-        expect(document.getElementById("div1").style.display).toBe("none");
-        expect(document.getElementById("div2").style.display).toBe("inherit");
-        expect(document.getElementById("div3").style.display).toBe("inherit");
     });
 });

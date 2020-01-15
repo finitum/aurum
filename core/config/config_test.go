@@ -12,7 +12,7 @@ func TestBuilder_SetDefault(t *testing.T) {
 
 	assert.Equal(t, &Config{
 		JWTKey:  []byte("ChangeMe"),
-		WebAddr: "127.0.0.1:8042",
+		WebAddr: "0.0.0.0:8042",
 		Path:    "/",
 	}, b)
 }
@@ -48,7 +48,7 @@ func TestBuilder_SetDefault_SetFromEnvironment(t *testing.T) {
 
 	assert.Equal(t, &Config{
 		JWTKey:  []byte("key"),
-		WebAddr: "127.0.0.1:8042",
+		WebAddr: "0.0.0.0:8042",
 		Path:    "/",
 	}, b)
 }

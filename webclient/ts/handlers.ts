@@ -1,8 +1,8 @@
 import {DOMState} from "./classes/DOMStateManager";
 import {clearFormFields, SeverityLevel, showMessage} from "./DOM";
-import {client, domstate, tablemanager} from "./globals";
+import {domstate, tablemanager} from "./globals";
 import User, {Role} from "./classes/User";
-import {ErrorState} from "./classes/Client";
+import Client, {ErrorState} from "./classes/Client";
 import {AdminTableManager} from "./classes/AdminTableManager";
 import {verifyPassword} from "./passwords";
 import zxcvbn from "zxcvbn";
@@ -35,7 +35,7 @@ const changeToUserOrAdmin = async (user: User): Promise<void> => {
 };
 
 export const checkLogin = async (): Promise<boolean> => {
-    const [user, err] = await client.checkLogin();
+    const [user, err] = await Client.getInstance().checkLogin();
 
     if (user != null && err === ErrorState.Ok) {
         await changeToUserOrAdmin(user);
@@ -57,7 +57,17 @@ export const login = async (): Promise<void> => {
     const username = (document.getElementById("username") as HTMLInputElement).value;
     const password = (document.getElementById("password") as HTMLInputElement).value;
 
-    const [res, err] = await client.login(username, password);
+    if (username.length == 0) {
+        showMessage("Please provide a Username", SeverityLevel.WARNING);
+        return;
+    }
+
+    if (username.length == 0) {
+        showMessage("Please provide a Password", SeverityLevel.WARNING);
+        return;
+    }
+
+    const [res, err] = await Client.getInstance().login(username, password);
     if(err == ErrorState.InvalidCredentials) {
         showMessage("Invalid Credentials", SeverityLevel.WARNING);
     } else if(err == ErrorState.ServerError){
@@ -101,24 +111,30 @@ export const onPasswordFieldChange = async (): Promise<void> => {
         const password = (document.getElementById("password") as HTMLInputElement);
         const email = (document.getElementById("email") as HTMLInputElement);
 
-        const passwordStatus = await verifyPassword(password.value, [username.value, email.value]);
-
-        setPasswordDots(passwordStatus.score);
-
         const el = document.getElementById("password-suggestion");
-        if(el == null) {
+        if (el == null) {
             console.warn("password-suggestion element could not be found");
             return;
         }
 
-        if (passwordStatus.score >= 2) {
-            el.style.visibility = "hidden";
-        } else {
+
+        const passwordStatus = await verifyPassword(password.value, [username.value, email.value]);
+        if (typeof passwordStatus == "string") {
+            setPasswordDots(0);
+            el.innerText = passwordStatus;
             el.style.visibility = "visible";
-            if (passwordStatus.feedback.warning == "") {
-                el.innerText = "Password strength too low.";
+        } else {
+            setPasswordDots(passwordStatus.score);
+
+            if (passwordStatus.score > 2) {
+                el.style.visibility = "hidden";
             } else {
-                el.innerText = passwordStatus.feedback.suggestions.join(" ");
+                el.style.visibility = "visible";
+                if (passwordStatus.feedback.warning == "") {
+                    el.innerText = "Password strength too low.";
+                } else {
+                    el.innerText = passwordStatus.feedback.suggestions.join(" ");
+                }
             }
         }
     }
@@ -127,6 +143,8 @@ export const onPasswordFieldChange = async (): Promise<void> => {
 export const signup = async (): Promise<void> => {
     if (domstate.state == DOMState.Login) {
         domstate.change(DOMState.Signup);
+        onPasswordFieldChange();
+
         const button = document.getElementById("login-button");
         if (button == null) return;
         button.innerText = "Back";
@@ -148,12 +166,14 @@ export const signup = async (): Promise<void> => {
     }
 
     const passwordStatus = await verifyPassword(password, [username, email]);
-    if (passwordStatus.score < 2) {
+    if(typeof passwordStatus === "string") {
+        showMessage(passwordStatus, SeverityLevel.WARNING);
+    } else if (passwordStatus.score < 2) {
         showMessage("Please enter a valid password", SeverityLevel.WARNING);
         return;
     }
 
-    const [res, err] = await client.signup(username, password, email);
+    const [res, err] = await Client.getInstance().signup(username, password, email);
     if(err === ErrorState.InvalidCredentials) {
         showMessage("Signup unsuccessful", SeverityLevel.WARNING);
     } else if(err === ErrorState.InvalidPasswordError) {
@@ -174,13 +194,13 @@ export const signup = async (): Promise<void> => {
 export const logout = (): void => {
     clearFormFields();
 
-    client.logout();
+    Client.getInstance().logout();
     domstate.change(DOMState.Login);
 };
 
 export const changePassword = async (): Promise<void> => {
     const password = (document.getElementById("password") as HTMLInputElement).value;
-    const [res, err] = await client.changePassword(password);
+    const [res, err] = await Client.getInstance().changePassword(password);
 
     if (err === ErrorState.InvalidCredentials) {
         showMessage("Please log in again", SeverityLevel.WARNING);

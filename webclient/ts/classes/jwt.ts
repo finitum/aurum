@@ -9,6 +9,11 @@ interface IClaimJSON {
     nbf: number; // Not Before
 }
 
+export interface ITokenPairJSON {
+    login_token?: string;
+    refresh_token?: string;
+}
+
 export class Claims {
     constructor(public username: string,
                 public role: number,
@@ -17,15 +22,24 @@ export class Claims {
                 public issuedAt: Date,
                 public notBefore: Date) { }
 
+    static cachedClaims: [Claims, string] | null = null;
+
     static fromObject({username, role, refresh, exp, iat, nbf}: IClaimJSON): Claims {
         return new Claims(username, role, refresh, new Date(exp * 1000), new Date(iat * 1000), new Date(nbf * 1000));
     }
 
     static parse(token: string): Claims {
+        if (this.cachedClaims != null && this.cachedClaims[1] == token) {
+            return this.cachedClaims[0];
+        }
+
         const part = token.split(".")[1];
         const string = atob(part);
 
-        return Claims.fromObject(JSON.parse(string));
+        const res = Claims.fromObject(JSON.parse(string));
+
+        this.cachedClaims = [res, token];
+        return res;
     }
 }
 
@@ -45,8 +59,11 @@ export class TokenPair {
     constructor(public loginToken: string, public refreshToken: string) { }
 
     // eslint-disable-next-line @typescript-eslint/camelcase
-    static fromObject({login_token = "", refresh_token = ""}): TokenPair {
-        return new TokenPair(login_token, refresh_token);
+    static fromObject(object: ITokenPairJSON): TokenPair {
+
+        return new TokenPair(
+              object.login_token ? object.login_token : "",
+            object.refresh_token ? object.refresh_token : "");
     }
 
     static fromJSON(json: string): TokenPair {
@@ -59,5 +76,9 @@ export class TokenPair {
 
     get isRefreshValid(): boolean {
         return isJWTValid(this.refreshToken);
+    }
+    
+    json(): string {
+        return JSON.stringify({"login_token": this.loginToken, "refresh_token": this.refreshToken});
     }
 }

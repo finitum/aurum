@@ -33,9 +33,10 @@
     position: absolute;
     right: -12.4em;
     max-width: 10em;
+    min-height: 2em;
     background: $gold;
     color: $dark-text-color;
-    padding: 10px;
+    padding: 3% 10px;
     border-radius: 3px;
     visibility: hidden;
     top: -2px;

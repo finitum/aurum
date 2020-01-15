@@ -1,7 +1,9 @@
-import {TokenPair} from "./jwt";
+import {ITokenPairJSON, TokenPair} from "./jwt";
 import User from "./User";
 import State from "./State";
-
+import {domstate} from "../globals";
+import {DOMState} from "./DOMStateManager";
+import config from "../Config";
 
 export enum ErrorState {
     Ok,
@@ -123,13 +125,12 @@ class API {
     async refresh(tokenPair: TokenPair): Promise<[TokenPair | null, ErrorState]> {
         const res = await fetch(`${this.baseURL}/refresh`, {
             method: "POST",
-            body: JSON.stringify(tokenPair)
+            body: tokenPair.json()
         });
 
         if (res.status.toString().startsWith("5")) {
             return [null, ErrorState.ServerError];
         }
-
         if (res.status == 401) {
             return [null, ErrorState.InvalidCredentials];
         }
@@ -138,7 +139,14 @@ class API {
             return [null, ErrorState.InvalidCredentials];
         }
 
-        return [TokenPair.fromJSON(await res.json()), ErrorState.Ok];
+        const resultObject: ITokenPairJSON = await res.json();
+        if (resultObject.login_token === undefined) {
+            return [null, ErrorState.ServerError];
+        }
+
+        const newTokenPair = new TokenPair(resultObject.login_token, tokenPair.refreshToken);
+
+        return [newTokenPair, ErrorState.Ok];
     }
 
     /**
@@ -209,10 +217,58 @@ export default class Client {
     public user: User | null = null;
     public api: API;
     public state: State;
+    
+    private worker: Worker | null;
+    
+    private static instance: Client | null = null;
 
     constructor(baseURL: string) {
         this.api = new API(baseURL);
         this.state = new State();
+
+        //check if webworkers are available
+        if(window.Worker){
+            this.worker = new Worker("../worker/worker.ts");
+            this.worker.onmessage = async (e: MessageEvent): Promise<void> => this.onWorkerChange(e);
+        } else {
+            this.worker = null;
+        }
+    }
+
+    public static getInstance(): Client {
+        if(Client.instance == null){
+            Client.instance = new Client(config.API_URL);
+        }
+
+        return Client.instance;
+    }
+
+    // Saves the tokenpair in the state and notifies the webworker
+    private set tokenPair(tp: TokenPair) {
+        this.state.tokenPair = tp;
+
+        if(this.worker != null){
+            this.worker.postMessage(this.state.tokenPair);
+        }
+    }
+
+    // When we receive a message from a worker,
+    // set the receieved tokenpair to be the localstorage stored one.
+    private async onWorkerChange(e: MessageEvent): Promise<void> {
+
+        if (this.state.tokenPair != null && this.state.tokenPair.isRefreshValid) {
+            const tp = await this.api.refresh(this.state.tokenPair);
+
+            if (tp === null) {
+                domstate.change(DOMState.Login);
+            } else if(tp[0] != null) {
+                this.tokenPair = tp[0];
+            } else {
+                domstate.change(DOMState.Login);
+            }
+        } else {
+            domstate.change(DOMState.Login);
+        }
     }
 
     /**
@@ -226,6 +282,8 @@ export default class Client {
             if(this.state.tokenPair.isLoginValid){
                 [newuser, err] = await this.api.getMe(this.state.tokenPair.loginToken);
                 this.user = newuser;
+
+                this.tokenPair = this.state.tokenPair;
 
                 return [this.user, err];
             } else if (this.state.tokenPair.isRefreshValid) {
@@ -248,8 +306,8 @@ export default class Client {
                 }
 
                 this.user = newuser;
-                this.state.tokenPair = tokenPair;
 
+                this.tokenPair = tokenPair;
 
                 return [this.user, ErrorState.Ok];
             }
@@ -276,8 +334,9 @@ export default class Client {
         }
 
         this.user = newuser;
-        this.state.tokenPair = tokenPair;
 
+        this.tokenPair = tokenPair;
+        
         return [this.user, ErrorState.Ok];
     }
 
@@ -303,6 +362,8 @@ export default class Client {
      */
     logout(): void {
         this.state.tokenPair = null;
+
+        this.worker.postMessage(null);
     }
 
     /**
@@ -319,7 +380,6 @@ export default class Client {
         if (err !== ErrorState.Ok) {
             return [null, err];
         }
-
         return [this.user, ErrorState.Ok];
     }
 

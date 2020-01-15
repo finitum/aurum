@@ -42,7 +42,7 @@ export default class DOMStateManager {
     private static hideAll(): void {
         DOMStateManager.stateStrings.forEach(key => {
             for (const i of Array.from(document.getElementsByClassName(key))) {
-                (i as HTMLElement).style.display = "none";
+                (i as HTMLElement).classList.add("hidden");
             }
         });
     }
@@ -52,7 +52,7 @@ export default class DOMStateManager {
 
         // Show all matching
         for (const i of Array.from(document.getElementsByClassName(state))) {
-            (i as HTMLElement).style.display = "inherit";
+            (i as HTMLElement).classList.remove("hidden");
         }
 
         this.currentState = state;
