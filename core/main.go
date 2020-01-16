@@ -14,9 +14,8 @@ func init() {
 
 func main() {
 	cfgbuilder := config.Builder{}
-	cfg := cfgbuilder.SetDefault().SetFromEnvironment().Build();
+	cfg := cfgbuilder.SetDefault().SetFromEnvironment().Build()
 
 	database := db.InitDB(db.INMEMORY)
 	web.StartServer(cfg, database)
 }
-

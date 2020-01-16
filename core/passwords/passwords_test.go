@@ -22,10 +22,10 @@ func TestVerifyPasswordSameAsCommonWords(t *testing.T) {
 }
 
 func TestVerifyPasswordSameAsUserInput(t *testing.T) {
-	assert.False(t, VerifyPassword("7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f", []string {
+	assert.False(t, VerifyPassword("7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f", []string{
 		"2aadf0c94065b1fa4d9d68e7c318f",
 		"7da033bd32005113f2208eb87bc94c126a4",
-	} ))
+	}))
 }
 
 func TestValidPassword(t *testing.T) {

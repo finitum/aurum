@@ -33,7 +33,6 @@ func GenerateJWT(user *db.User, refresh bool, cfg *config.Config) (string, error
 		expirationTime = time.Now().Add(time.Minute * 15)
 	}
 
-
 	now := time.Now()
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &Claims{
