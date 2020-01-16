@@ -4,7 +4,7 @@ import (
 	"aurum/config"
 	"aurum/db"
 	"aurum/jwt"
-	"errors"
+	"context"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -17,6 +17,18 @@ type Endpoints struct {
 	config *config.Config
 }
 
+type contextKey string
+
+func (c contextKey) String() string {
+	return "aurum web context key " + string(c)
+}
+
+var (
+	contextKeyUser   = contextKey("user")
+	contextKeyClaims = contextKey("claims")
+)
+
+// Set access control headers on all requests
 func accessControlMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -31,6 +43,51 @@ func accessControlMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// Authenticates a HTTP request by verifying the JWT Token
+func (e *Endpoints) authenticationMiddleware(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		if !strings.HasPrefix(token, "Bearer ") {
+			http.Error(w, "Invalid Authorization Header", http.StatusBadRequest)
+			return
+		}
+		token = strings.TrimPrefix(token, "Bearer ")
+
+		claims, err := jwt.VerifyJWT(token, e.config)
+		if err != nil {
+			http.Error(w, "Invalid JWT Token", http.StatusUnauthorized)
+			return
+		}
+
+		// Refresh tokens are not allowed to be used as authentication
+		if claims.Refresh {
+			http.Error(w, "Please provide Login Token", http.StatusBadRequest)
+			return
+		}
+
+		// Get user to check if blocked
+		u, err := e.conn.GetUserByName(claims.Username)
+		if err != nil {
+			http.Error(w, "Error retrieving user from database", http.StatusInternalServerError)
+			return
+		}
+
+		// If blocked deny
+		if u.Blocked {
+			http.Error(w, "User blocked", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, contextKeyClaims, claims)
+		ctx = context.WithValue(ctx, contextKeyUser, &u)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+
+}
+
 // Starts the REST web API
 func StartServer(config *config.Config, db db.UserRepository) {
 
@@ -43,14 +100,20 @@ func StartServer(config *config.Config, db db.UserRepository) {
 	router := mux.NewRouter()
 	router.Use(accessControlMiddleware)
 
-	api := router.PathPrefix(config.Path).Subrouter()
+	unauthenticatedRouter := router.PathPrefix(config.Path).Subrouter()
 
-	api.HandleFunc("/signup", endpoints.signup).Methods(http.MethodPost, http.MethodOptions)
-	api.HandleFunc("/login", endpoints.login).Methods(http.MethodPost, http.MethodOptions)
-	api.HandleFunc("/refresh", endpoints.refresh).Methods(http.MethodPost, http.MethodOptions)
-	api.HandleFunc("/changepassword", endpoints.changePassword).Methods(http.MethodPost, http.MethodOptions)
-	api.HandleFunc("/me", endpoints.getMe).Methods(http.MethodGet, http.MethodOptions)
-	api.HandleFunc("/users", endpoints.getUsers).Methods(http.MethodPost, http.MethodOptions)
+	// *WARNING* Unauthenticated routes
+	unauthenticatedRouter.HandleFunc("/signup", endpoints.signup).Methods(http.MethodPost, http.MethodOptions)
+	unauthenticatedRouter.HandleFunc("/login", endpoints.login).Methods(http.MethodPost, http.MethodOptions)
+	unauthenticatedRouter.HandleFunc("/refresh", endpoints.refresh).Methods(http.MethodPost, http.MethodOptions)
+
+	// Authenticated routes (Login/ Token required)
+	authenticatedRouter := router.PathPrefix(config.Path).Subrouter()
+	authenticatedRouter.Use(endpoints.authenticationMiddleware)
+
+	authenticatedRouter.HandleFunc("/changepassword", endpoints.changePassword).Methods(http.MethodPost, http.MethodOptions)
+	authenticatedRouter.HandleFunc("/me", endpoints.getMe).Methods(http.MethodGet, http.MethodOptions)
+	authenticatedRouter.HandleFunc("/users", endpoints.getUsers).Methods(http.MethodPost, http.MethodOptions)
 
 	// Create the server
 	srv := &http.Server{
@@ -63,29 +126,4 @@ func StartServer(config *config.Config, db db.UserRepository) {
 
 	log.Info("Starting up web server ...")
 	log.Fatal(srv.ListenAndServe())
-}
-
-// Authenticates a HTTP request by verifying the JWT Token
-func (e *Endpoints) authenticateRequest(w http.ResponseWriter, r *http.Request) (*jwt.Claims, error) {
-
-	token := r.Header.Get("Authorization")
-	if !strings.HasPrefix(token, "Bearer ") {
-		http.Error(w, "Invalid Authorization Header", http.StatusBadRequest)
-		return nil, errors.New("malformed Authorization header")
-	}
-	token = strings.TrimPrefix(token, "Bearer ")
-
-	claims, err := jwt.VerifyJWT(token, e.config)
-	if err != nil {
-		http.Error(w, "Invalid JWT Token", http.StatusUnauthorized)
-		return nil, err
-	}
-
-	// Refresh tokens are not allowed to be used as authentication
-	if claims.Refresh {
-		http.Error(w, "Please provide Login Token", http.StatusBadRequest)
-		return nil, errors.New("token wasn't a refresh token")
-	}
-
-	return claims, nil
 }

@@ -1,8 +1,8 @@
 import {ITokenPairJSON, TokenPair} from "./jwt";
 import User from "./User";
-import State from "./State";
+import State from "../State/State";
 import {domstate} from "../globals";
-import {DOMState} from "./DOMStateManager";
+import {DOMState} from "../DOM/DOMStateManager";
 import Config from "../Config";
 
 export enum ErrorState {
@@ -61,7 +61,6 @@ class API {
      * @returns An [ErrorState] to signify the result
      */
     async signup(user: User): Promise<ErrorState> {
-
         const res = await fetch(`${this.baseURL}/signup`, {
             method: "POST",
             headers: {
@@ -69,7 +68,6 @@ class API {
             },
             body: JSON.stringify(user),
         });
-
 
         if (res.status == 409) {
             return ErrorState.UserExists;
@@ -179,6 +177,38 @@ class API {
     }
 
     /**
+     * Set a user's blocked status.
+     * For this function the user needs to be Admin.
+     * @param token used to authenticate.
+     * @param value The blocked state to set the user to.
+     * @returns an ErrorState
+     */
+    async setBlocked(token: string, value: boolean): Promise<ErrorState> {
+        // TODO: changeuser
+        const res = await fetch(`${this.baseURL}/setblocked`, {
+            method: "POST",
+            body: JSON.stringify({blocked: value}),
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+        });
+
+        if (res.status.toString().startsWith("5")) {
+            return ErrorState.ServerError;
+        }
+
+        if (res.status == 401) {
+            return ErrorState.InvalidCredentials;
+        }
+
+        if (!res.status.toString().startsWith("2")) {
+            return ErrorState.Other;
+        }
+
+        return ErrorState.Ok;
+    }
+
+    /**
      * Gets all users (paginated)
      * For this function the user needs to be Admin.
      * @param start of the page
@@ -217,9 +247,9 @@ export default class Client {
     public user: User | null = null;
     public api: API;
     public state: State;
-    
+
     private worker: Worker | null;
-    
+
     private static instance: Client | null = null;
 
     constructor(baseURL: string) {
@@ -228,7 +258,7 @@ export default class Client {
 
         //check if webworkers are available
         if(window.Worker){
-            this.worker = new Worker("../worker/worker.ts");
+            this.worker = new Worker("../Worker/worker.ts");
             this.worker.onmessage = async (e: MessageEvent): Promise<void> => this.onWorkerChange(e);
         } else {
             this.worker = null;
@@ -336,7 +366,7 @@ export default class Client {
         this.user = newuser;
 
         this.tokenPair = tokenPair;
-        
+
         return [this.user, ErrorState.Ok];
     }
 
@@ -397,5 +427,19 @@ export default class Client {
         }
 
         return this.api.getUsers(start, end, this.state.tokenPair.loginToken);
+    }
+
+    /**
+     * Gets all users with pagination
+     *
+     * @param blocked The blocked state to set the user to
+     * @returns an ErrorState
+     */
+    async setBlocked(blocked: boolean): Promise<ErrorState> {
+        if(this.state.tokenPair == null) {
+            return ErrorState.InvalidCredentials;
+        }
+
+        return this.api.setBlocked(this.state.tokenPair.loginToken, blocked);
     }
 }

@@ -1,5 +1,5 @@
-import DOMStateManager from "./classes/DOMStateManager";
-import {AdminTableManager} from "./classes/AdminTableManager";
+import DOMStateManager from "./DOM/DOMStateManager";
+import {AdminTableManager} from "./DOM/AdminTableManager";
 
 export let domstate: DOMStateManager;
 export let tablemanager: AdminTableManager;

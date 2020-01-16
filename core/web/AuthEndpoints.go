@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-
 /**
 @api {post} /signup Register
 @apiDescription Creates a new account
@@ -207,12 +206,6 @@ func (e *Endpoints) login(w http.ResponseWriter, r *http.Request) {
 // Expects a JSON body with the user object with a new password
 // returns a 200 status on success
 func (e *Endpoints) changePassword(w http.ResponseWriter, r *http.Request) {
-
-	claims, err := e.authenticateRequest(w, r)
-	if err != nil {
-		return
-	}
-
 	// Decode user struct and check if anything is invalid.
 	var u db.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil || len(u.Password) == 0 {
@@ -222,11 +215,7 @@ func (e *Endpoints) changePassword(w http.ResponseWriter, r *http.Request) {
 
 	password := u.Password
 
-	user, err := e.conn.GetUserByName(claims.Username)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
-	}
+	user := r.Context().Value(contextKeyUser).(db.User)
 
 	passwordhash, err := hash.HashPassword(password)
 

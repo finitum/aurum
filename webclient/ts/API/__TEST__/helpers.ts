@@ -1,5 +1,3 @@
-import {TokenPair} from "../classes/jwt";
-
 export const generateValidJWT = (refresh = false): string => {
     const now = new Date();
     now.setMinutes(now.getMinutes() - 1);

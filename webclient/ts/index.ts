@@ -1,7 +1,7 @@
-import DOMStateManager, {DOMState} from "./classes/DOMStateManager";
+import DOMStateManager, {DOMState} from "./DOM/DOMStateManager";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {domstate} from "./globals";
-import {changePassword, changePasswordInit, checkLogin, login, logout, onPasswordFieldChange, signup} from "./handlers";
+import {changePassword, changePasswordInit, checkLogin, login, logout, onPasswordFieldChange, signup} from "./DOM/handlers";
 
 export function setProperty(element: string, property: string, value: any): void {
     const el = document.getElementById(element);

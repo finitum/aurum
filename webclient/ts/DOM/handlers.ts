@@ -1,10 +1,10 @@
-import {DOMState} from "./DOM/DOMStateManager";
-import {clearFormFields, SeverityLevel, showMessage} from "./DOM/DOMFunctions";
-import {domstate, tablemanager} from "./globals";
-import User, {Role} from "./API/User";
-import Client, {ErrorState} from "./API/Client";
-import {AdminTableManager} from "./DOM/AdminTableManager";
-import {verifyPassword} from "./passwords";
+import {DOMState} from "./DOMStateManager";
+import {clearFormFields, SeverityLevel, showMessage} from "./DOMFunctions";
+import {domstate, tablemanager} from "../globals";
+import User, {Role} from "../API/User";
+import Client, {ErrorState} from "../API/Client";
+import {AdminTableManager} from "./AdminTableManager";
+import {verifyPassword} from "../API/passwords";
 import zxcvbn from "zxcvbn";
 
 const changeToUserOrAdmin = async (user: User): Promise<void> => {
@@ -82,23 +82,24 @@ export const login = async (): Promise<void> => {
 
 const setPasswordDots = (score: zxcvbn.ZXCVBNScore): void => {
     const dots = document.getElementsByClassName("password-input-dot");
+    console.assert(dots.length == 4, "Assert that there are 4 password dots");
 
-    for(const dot of Array.from(dots)) {
-        dot.className = "password-input-dot";
-    }
+    Array.from(dots).forEach(dot => {
+        dot.classList.remove("password-input-dot-selected");
+    });
 
     switch (score) {
         case 4:
-            dots[0].className = "password-input-dot password-input-dot-selected";
+            dots[0].classList.add("password-input-dot-selected");
             /* fallthrough */
         case 3:
-            dots[1].className = "password-input-dot password-input-dot-selected";
+            dots[1].classList.add("password-input-dot-selected");
             /* fallthrough */
         case 2:
-            dots[2].className = "password-input-dot password-input-dot-selected";
+            dots[2].classList.add("password-input-dot-selected");
             /* fallthrough */
         case 1:
-            dots[3].className = "password-input-dot password-input-dot-selected";
+            dots[3].classList.add("password-input-dot-selected");
             /* fallthrough */
         case 0:
             break;
@@ -116,7 +117,6 @@ export const onPasswordFieldChange = async (): Promise<void> => {
             console.warn("password-suggestion element could not be found");
             return;
         }
-
 
         const passwordStatus = await verifyPassword(password.value, [username.value, email.value]);
         if (typeof passwordStatus == "string") {

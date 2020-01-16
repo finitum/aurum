@@ -39,7 +39,7 @@ func TestGenerateJWTSimple(t *testing.T) {
 	// Assert token contains what we expect it to
 	assert.Equal(claims.Username, testUser.Username)
 	assert.Equal(claims.Role, testUser.Role)
-	assert.WithinDuration(time.Now().Add(time.Minute * 15), time.Unix(claims.ExpiresAt, 0), time.Minute)
+	assert.WithinDuration(time.Now().Add(time.Minute*15), time.Unix(claims.ExpiresAt, 0), time.Minute)
 	assert.WithinDuration(time.Now(), time.Unix(claims.IssuedAt, 0), time.Minute)
 }
 
@@ -48,7 +48,7 @@ func TestVerifyTokenSimple(t *testing.T) {
 	cfg := config.GetDefault()
 
 	testUser := db.User{
-		Username: "User",
+		Username: "UserDAL",
 		Role:     db.UserRoleID,
 	}
 

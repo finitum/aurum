@@ -1,10 +1,12 @@
 import Client, {ErrorState} from "./Client";
 
-import {generateValidJWT} from "../test-helpers/helpers";
+import {generateValidJWT} from "./__TEST__/helpers";
 import User from "./User";
 
 import "jest-fetch-mock";
 import {TokenPair} from "./jwt";
+
+// TODO: Determine to continue testing API through Client or exporting API to make testing easier.
 
 describe("#Client", () => {
     it("Should create an API and State on construction", () => {

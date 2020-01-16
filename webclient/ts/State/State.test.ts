@@ -1,5 +1,5 @@
 import State, {Storage} from "./State";
-import {TokenPair} from "./jwt";
+import {TokenPair} from "../API/jwt";
 
 
 describe("#Storage", () => {

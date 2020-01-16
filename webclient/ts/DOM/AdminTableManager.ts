@@ -1,6 +1,6 @@
 import {tablemanager} from "../globals";
-import Client, {ErrorState} from "./Client";
-import User, {Role} from "./User";
+import {Role} from "../API/User";
+import Client, {ErrorState} from "../API/Client";
 
 
 export class AdminTableManager {
@@ -24,10 +24,21 @@ export class AdminTableManager {
         const body = this.tableElement.createTBody();
         const row = body.appendChild(document.createElement("tr")) as HTMLTableRowElement;
 
+        const blockedCheckbox = document.createElement("input");
+        blockedCheckbox.type = "checkbox";
+        blockedCheckbox.value = String(blocked);
+
+        blockedCheckbox.onchange = (event: Event): void => {
+            if (event.target) {
+                // @ts-ignore (Yes, checked does exist but there's no type mentioning it)
+                Client.getInstance().setBlocked(event.target.checked);
+            }
+        };
+
         row.appendChild(document.createElement("td")).innerText = username;
         row.appendChild(document.createElement("td")).innerText = email;
         row.appendChild(document.createElement("td")).innerText = Role[role];
-        row.appendChild(document.createElement("td")).innerText = String(blocked);
+        row.appendChild(document.createElement("td")).appendChild(blockedCheckbox);
     }
 
 

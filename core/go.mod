@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.2+incompatible // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.2.2
-	github.com/test-go/testify v1.1.4 // indirect
+	github.com/test-go/testify v1.1.4
 	github.com/trustelem/zxcvbn v1.0.1
 	golang.org/x/crypto v0.0.0-20200109152110-61a87790db17
 	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect

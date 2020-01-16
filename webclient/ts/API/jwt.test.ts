@@ -1,5 +1,5 @@
 import {Claims, isJWTValid} from "./jwt";
-import {generateValidJWT} from "../test-helpers/helpers";
+import {generateValidJWT} from "./__TEST__/helpers";
 
 describe("#isJWTValid()", () => {
     it("Should fail on invalid token", () => {

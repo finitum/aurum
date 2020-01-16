@@ -10,7 +10,7 @@ import (
 /**
 @apiDefine admin Admin user
 Only available to admins, the first user of the server is by default admin.
- */
+*/
 
 /**
 @api {get} /me Request user info
@@ -21,7 +21,7 @@ Only available to admins, the first user of the server is by default admin.
                 Authorization: "Bearer <token>"
 @apiSuccess {String} username The username of the user
 @apiSuccess {String} email The E-Mail of the user
-@apiSuccess {Number} role The role of the user (0 = User, 1 = Admin)
+@apiSuccess {Number} role The role of the user (0 = UserDAL, 1 = Admin)
 @apiSuccess {Boolean} blocked If the user is blocked
 @apiSuccessExample {json} Success Response:
 	{
@@ -33,18 +33,9 @@ Only available to admins, the first user of the server is by default admin.
 
 @apiError 404 If the user does not exist (anymore).
 @apiVersion 0.0.0
- */
+*/
 func (e *Endpoints) getMe(w http.ResponseWriter, r *http.Request) {
-	claims, err := e.authenticateRequest(w, r)
-	if err != nil {
-		return
-	}
-
-	user, err := e.conn.GetUserByName(claims.Username)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
-	}
+	user := r.Context().Value(contextKeyUser).(*db.User)
 
 	bytes, err := json.Marshal(db.User{
 		Username: user.Username,
@@ -76,22 +67,13 @@ type Range struct {
 @apiVersion 0.0.0
 */
 func (e *Endpoints) getUsers(w http.ResponseWriter, req *http.Request) {
-	claims, err := e.authenticateRequest(w, req)
-	if err != nil {
+	// TODO: Use query parameters
+
+	user := req.Context().Value(contextKeyUser).(*db.User)
+
+	if user.Role != db.AdminRoleID {
+		http.Error(w, "You're not an admin!", http.StatusUnauthorized)
 		return
-	}
-
-	if claims.Role != db.AdminRoleID {
-		user, err := e.conn.GetUserByName(claims.Username)
-		if err != nil {
-			http.Error(w, "User not found", http.StatusNotFound)
-			return
-		}
-
-		if user.Role != db.AdminRoleID {
-			http.Error(w, "You're not an admin!", http.StatusUnauthorized)
-			return
-		}
 	}
 
 	var r Range

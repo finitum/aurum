@@ -7,11 +7,11 @@ export enum DOMState {
     ChangePassword = "changepassword",
 }
 
-
+//TODO: also singleton?
+// export const DOMStateManagerInstance = new DOMStateManager(DOMState.Login);
+// All methods static?
 export default class DOMStateManager {
     private currentState: DOMState;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private static readonly stateStrings: Array<string> = Object.keys(DOMState).map(k => (DOMState as any)[k as any]);
 
     constructor(startstate: DOMState) {
         this.currentState = startstate;
@@ -40,7 +40,7 @@ export default class DOMStateManager {
     }
 
     private static hideAll(): void {
-        DOMStateManager.stateStrings.forEach(key => {
+        Object.values(DOMState).forEach(key => {
             for (const i of Array.from(document.getElementsByClassName(key))) {
                 (i as HTMLElement).classList.add("hidden");
             }
@@ -70,3 +70,4 @@ export default class DOMStateManager {
         return this.currentState;
     }
 }
+

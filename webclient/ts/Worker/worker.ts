@@ -1,4 +1,4 @@
-import {Claims, TokenPair} from "../classes/jwt";
+import {Claims, TokenPair} from "../API/jwt";
 
 // ServiceWorker's postMessage
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -46,7 +46,7 @@ func InitDB(connectiontype string) UserRepository {
 		}
 
 		// auto migrate schema
-		connection.db.AutoMigrate(&User{})
+		connection.db.AutoMigrate(&userDAL{})
 
 		return connection
 	}

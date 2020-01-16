@@ -1,8 +1,10 @@
-import {TokenPair} from "./jwt";
+import {TokenPair} from "../API/jwt";
 
 export class Storage {
+    public tokenPair: TokenPair | null;
 
-    constructor(public tokenPair: TokenPair | null = null) {
+    constructor(tokenPair: TokenPair | null = null) {
+        this.tokenPair = tokenPair;
     }
 
     public json(): string {

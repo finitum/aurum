@@ -76,10 +76,6 @@ func TestSignup(t *testing.T) {
 
 func TestSignupIncorrectJson(t *testing.T) {
 	conn := SQLConnectionMock{}
-	conn.On("CreateUser", mock.Anything).Run(func(args mock.Arguments) {
-		t.Fail()
-	}).Return(nil)
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
 
 	cfg := config.GetDefault()
 
@@ -93,15 +89,12 @@ func TestSignupIncorrectJson(t *testing.T) {
 
 	endpoints.signup(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
 }
 
 func TestSignupNoBody(t *testing.T) {
 	conn := SQLConnectionMock{}
-	conn.On("CreateUser", mock.Anything).Run(func(args mock.Arguments) {
-		t.Fail()
-	})
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
@@ -114,15 +107,12 @@ func TestSignupNoBody(t *testing.T) {
 
 	endpoints.signup(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
 }
 
 func TestSignupNoUsername(t *testing.T) {
 	conn := SQLConnectionMock{}
-	conn.On("CreateUser", mock.Anything).Run(func(args mock.Arguments) {
-		t.Fail()
-	})
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
@@ -138,15 +128,12 @@ func TestSignupNoUsername(t *testing.T) {
 
 	endpoints.signup(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
 }
 
 func TestSignupNoPassword(t *testing.T) {
 	conn := SQLConnectionMock{}
-	conn.On("CreateUser", mock.Anything).Run(func(args mock.Arguments) {
-		t.Fail()
-	})
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
@@ -162,15 +149,12 @@ func TestSignupNoPassword(t *testing.T) {
 
 	endpoints.signup(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
 }
 
 func TestSignupNoEmail(t *testing.T) {
 	conn := SQLConnectionMock{}
-	conn.On("CreateUser", mock.Anything).Run(func(args mock.Arguments) {
-		t.Fail()
-	})
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
@@ -186,15 +170,12 @@ func TestSignupNoEmail(t *testing.T) {
 
 	endpoints.signup(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
 }
 
 func TestSignupAdmin(t *testing.T) {
 	conn := SQLConnectionMock{}
-	conn.On("CreateUser", mock.Anything).Run(func(args mock.Arguments) {
-		t.Fail()
-	}).Return(nil)
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
@@ -212,6 +193,7 @@ func TestSignupAdmin(t *testing.T) {
 
 	endpoints.signup(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
 }
 
@@ -235,6 +217,7 @@ func TestDbError(t *testing.T) {
 
 	endpoints.signup(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusInternalServerError)
 }
 
@@ -243,15 +226,16 @@ func TestLogin(t *testing.T) {
 	hash, err := hash2.HashPassword("yeetyeet")
 	assert.Nil(t, err)
 
-	conn.On("GetUserByName", mock.Anything).Run(func(args mock.Arguments) {
-		assert.Equal(t, args.Get(0), "jonathan")
-	}).Return(db.User{
+	u := db.User{
 		Username: "jonathan",
 		Password: hash,
 		Email:    "yeet@yeet.dev",
 		Role:     db.UserRoleID,
-	}, nil)
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
+	}
+
+	conn.On("GetUserByName", mock.Anything).Run(func(args mock.Arguments) {
+		assert.Equal(t, args.Get(0), "jonathan")
+	}).Return(u, nil)
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
@@ -293,14 +277,12 @@ func TestLogin(t *testing.T) {
 		assert.Equal(t, 0, claims.Role)
 		assert.Equal(t, true, claims.Refresh)
 	}
+
+	conn.AssertExpectations(t)
 }
 
 func TestLoginNoBody(t *testing.T) {
 	conn := SQLConnectionMock{}
-
-	conn.On("GetUserByName", mock.Anything).Run(func(args mock.Arguments) {
-		t.Fail()
-	}).Return(nil)
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
@@ -313,17 +295,12 @@ func TestLoginNoBody(t *testing.T) {
 
 	endpoints.login(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
 }
 
 func TestLoginIncorrectJson(t *testing.T) {
 	conn := SQLConnectionMock{}
-
-	conn.On("GetUserByName", mock.Anything).Run(func(args mock.Arguments) {
-		t.Fail()
-	}).Return(nil)
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
-
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
 		conn:   conn,
@@ -335,6 +312,7 @@ func TestLoginIncorrectJson(t *testing.T) {
 
 	endpoints.login(w, r)
 
+	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
 }
 
@@ -396,7 +374,7 @@ func TestLoginInvalidUsername(t *testing.T) {
 	endpoints.login(w2, r2)
 
 	assert.Equal(t, http.StatusCreated, w1.Result().StatusCode)
-	assert.Equal(t, http.StatusUnauthorized, w2.Result().StatusCode, )
+	assert.Equal(t, http.StatusUnauthorized, w2.Result().StatusCode)
 }
 
 func TestLoginUsernameMismatch(t *testing.T) {
@@ -474,7 +452,6 @@ func TestRefresh(t *testing.T) {
 
 	conn := SQLConnectionMock{}
 	conn.On("GetUserByName", "victor").Return(u, nil)
-	conn.On("CountUsers", mock.Anything).Return(1, nil)
 
 	cfg := config.GetDefault()
 
@@ -512,4 +489,6 @@ func TestRefresh(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, c)
 	assert.Equal(t, u.Username, c.Username)
+
+	conn.AssertExpectations(t)
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// TODO: Add options to configure the database
 // A struct containing the various config options of Aurum
 type Config struct {
 	JWTKey  []byte
