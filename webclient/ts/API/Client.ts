@@ -18,8 +18,9 @@ export enum ErrorState {
 /**
  * The class which is used to communicate to the backend,
  * it wraps all HTTP methods into JS functions for ease of use.
+ * @deprecated please use the [Client] class whenever necessary.
  */
-class API {
+export class API {
     baseURL: string;
 
     constructor(baseURL: string) {
@@ -61,6 +62,7 @@ class API {
      * @returns An [ErrorState] to signify the result
      */
     async signup(user: User): Promise<ErrorState> {
+
         const res = await fetch(`${this.baseURL}/signup`, {
             method: "POST",
             headers: {
@@ -68,6 +70,7 @@ class API {
             },
             body: JSON.stringify(user),
         });
+
 
         if (res.status == 409) {
             return ErrorState.UserExists;
@@ -248,7 +251,7 @@ export default class Client {
     public api: API;
     public state: State;
 
-    private worker: Worker | null;
+    private readonly worker: Worker | null;
 
     private static instance: Client | null = null;
 
@@ -283,7 +286,7 @@ export default class Client {
     }
 
     // When we receive a message from a worker,
-    // set the receieved tokenpair to be the localstorage stored one.
+    // set the received tokenpair to be the localstorage stored one.
     private async onWorkerChange(e: MessageEvent): Promise<void> {
 
         if (this.state.tokenPair != null && this.state.tokenPair.isRefreshValid) {

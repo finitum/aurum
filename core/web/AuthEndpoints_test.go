@@ -68,7 +68,7 @@ func TestSignup(t *testing.T) {
     "email":"yeet@yeet.dev"
     }`))
 
-	endpoints.signup(w, r)
+	endpoints.Signup(w, r)
 
 	assert.Equal(t, http.StatusCreated, w.Result().StatusCode)
 	conn.AssertExpectations(t)
@@ -85,9 +85,9 @@ func TestSignupIncorrectJson(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{`))
+	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("{"))
 
-	endpoints.signup(w, r)
+	endpoints.Signup(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
@@ -105,7 +105,7 @@ func TestSignupNoBody(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", nil)
 
-	endpoints.signup(w, r)
+	endpoints.Signup(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
@@ -126,7 +126,7 @@ func TestSignupNoUsername(t *testing.T) {
     "email":"yeet@yeet.dev"
 }`))
 
-	endpoints.signup(w, r)
+	endpoints.Signup(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
@@ -147,7 +147,7 @@ func TestSignupNoPassword(t *testing.T) {
     "email":"yeet@yeet.dev"
 }`))
 
-	endpoints.signup(w, r)
+	endpoints.Signup(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
@@ -168,7 +168,7 @@ func TestSignupNoEmail(t *testing.T) {
     "password":"yeet"
 }`))
 
-	endpoints.signup(w, r)
+	endpoints.Signup(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
@@ -191,7 +191,7 @@ func TestSignupAdmin(t *testing.T) {
     "role": 1
     }`))
 
-	endpoints.signup(w, r)
+	endpoints.Signup(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
@@ -215,7 +215,7 @@ func TestDbError(t *testing.T) {
     "email":"yeet@yeet.dev"
 }`))
 
-	endpoints.signup(w, r)
+	endpoints.Signup(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusInternalServerError)
@@ -370,7 +370,7 @@ func TestLoginInvalidUsername(t *testing.T) {
     "password":"7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f"
 }`))
 
-	endpoints.signup(w1, r1)
+	endpoints.Signup(w1, r1)
 	endpoints.login(w2, r2)
 
 	assert.Equal(t, http.StatusCreated, w1.Result().StatusCode)
@@ -406,8 +406,8 @@ func TestLoginUsernameMismatch(t *testing.T) {
     "password":"7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f"
 }`))
 
-	endpoints.signup(w1, r1)
-	endpoints.signup(w2, r2)
+	endpoints.Signup(w1, r1)
+	endpoints.Signup(w2, r2)
 	endpoints.login(w3, r3)
 
 	assert.Equal(t, http.StatusCreated, w1.Result().StatusCode)
@@ -438,8 +438,8 @@ func TestSignupExists(t *testing.T) {
     "email":"test@test.test"
     }`))
 
-	endpoints.signup(w1, r1)
-	endpoints.signup(w2, r2)
+	endpoints.Signup(w1, r1)
+	endpoints.Signup(w2, r2)
 
 	assert.Equal(t, w1.Result().StatusCode, http.StatusCreated)
 	assert.Equal(t, w2.Result().StatusCode, http.StatusConflict)
@@ -469,7 +469,7 @@ func TestRefresh(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/refresh", bytes.NewReader(b))
 
 	// Call the refresh endpoint
-	ep.refresh(w, r)
+	ep.Refresh(w, r)
 
 	// Collect the http result
 	res := w.Result()

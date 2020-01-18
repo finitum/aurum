@@ -29,9 +29,9 @@ import (
 	HTTP/1.1 201 Created
 
 @apiError 400 If an invalid body is provided
-@apiVersion 0.0.0
+@apiError 422 If an insufficiently secure password is provided
 */
-func (e *Endpoints) signup(w http.ResponseWriter, r *http.Request) {
+func (e *Endpoints) Signup(w http.ResponseWriter, r *http.Request) {
 
 	var u db.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
@@ -96,9 +96,8 @@ func (e *Endpoints) signup(w http.ResponseWriter, r *http.Request) {
 
 @apiError 400 If an invalid body or token is provided
 @apiError 404 If the user does not exist (anymore)
-@apiVersion 0.0.0
 */
-func (e *Endpoints) refresh(w http.ResponseWriter, r *http.Request) {
+func (e *Endpoints) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	var t jwt.TokenPair
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
@@ -158,7 +157,6 @@ func (e *Endpoints) refresh(w http.ResponseWriter, r *http.Request) {
 	}
 @apiError 400 If an invalid body is provided.
 @apiError 401 If the user does not exist or the password is wrong
-@apiVersion 0.0.0
 */
 func (e *Endpoints) login(w http.ResponseWriter, r *http.Request) {
 
@@ -198,37 +196,6 @@ func (e *Endpoints) login(w http.ResponseWriter, r *http.Request) {
 	// push them to the client
 	if _, err = w.Write(bytes); err != nil {
 		log.Error("Error writing response to client")
-	}
-
-	return
-}
-
-// Expects a JSON body with the user object with a new password
-// returns a 200 status on success
-func (e *Endpoints) changePassword(w http.ResponseWriter, r *http.Request) {
-	// Decode user struct and check if anything is invalid.
-	var u db.User
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil || len(u.Password) == 0 {
-		http.Error(w, "Please yeet us a valid body", http.StatusBadRequest)
-		return
-	}
-
-	password := u.Password
-
-	user := r.Context().Value(contextKeyUser).(db.User)
-
-	passwordhash, err := hash.HashPassword(password)
-
-	user.Password = passwordhash
-	if err != nil {
-		http.Error(w, "Server error", http.StatusInternalServerError)
-		return
-	}
-
-	err = e.conn.UpdateUser(user)
-	if err != nil {
-		http.Error(w, "Server error", http.StatusInternalServerError)
-		return
 	}
 
 	return

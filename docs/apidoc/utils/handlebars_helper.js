@@ -7,7 +7,7 @@ define([
     /**
      * Return a text as markdown.
      * Currently only a little helper to replace apidoc-inline Links (#Group:Name).
-     * Should be replaced with a full markdown assets.
+     * Should be replaced with a full markdown lib.
      * @param string text
      */
     Handlebars.registerHelper('markdown', function(text) {

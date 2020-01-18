@@ -40,7 +40,8 @@ core-test:
     - cd core
     - go mod download
   script:
-    - go test -covermode=count -coverprofile cover.cov ./...
+    - go test
+    - go test -race -covermode=atomic -coverprofile cover.cov ./...
     - go tool cover -func=cover.cov
 
 webclient-check:

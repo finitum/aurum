@@ -103,9 +103,9 @@ func StartServer(config *config.Config, db db.UserRepository) {
 	unauthenticatedRouter := router.PathPrefix(config.Path).Subrouter()
 
 	// *WARNING* Unauthenticated routes
-	unauthenticatedRouter.HandleFunc("/signup", endpoints.signup).Methods(http.MethodPost, http.MethodOptions)
+	unauthenticatedRouter.HandleFunc("/signup", endpoints.Signup).Methods(http.MethodPost, http.MethodOptions)
 	unauthenticatedRouter.HandleFunc("/login", endpoints.login).Methods(http.MethodPost, http.MethodOptions)
-	unauthenticatedRouter.HandleFunc("/refresh", endpoints.refresh).Methods(http.MethodPost, http.MethodOptions)
+	unauthenticatedRouter.HandleFunc("/refresh", endpoints.Refresh).Methods(http.MethodPost, http.MethodOptions)
 
 	// Authenticated routes (Login/ Token required)
 	authenticatedRouter := router.PathPrefix(config.Path).Subrouter()
@@ -113,7 +113,27 @@ func StartServer(config *config.Config, db db.UserRepository) {
 
 	authenticatedRouter.HandleFunc("/changepassword", endpoints.changePassword).Methods(http.MethodPost, http.MethodOptions)
 	authenticatedRouter.HandleFunc("/me", endpoints.getMe).Methods(http.MethodGet, http.MethodOptions)
+	authenticatedRouter.HandleFunc("/me", endpoints.updateUser).Methods(http.MethodPut, http.MethodOptions)
 	authenticatedRouter.HandleFunc("/users", endpoints.getUsers).Methods(http.MethodPost, http.MethodOptions)
+
+	/**
+	TODO: Discuss:
+	Proposal for new routes
+	/user - GET - getMe
+	/user - PUT - updateUser
+	/user - POST - Signup
+	/users - GET - getUsers
+
+	maybe:
+	/user/:username - GET - getMe (admin)
+	/user/:username - PUT - updateUser admin or name change
+
+	deprecate:
+	/changepassword
+	/me
+
+	idk, I'm not 100% with the current but don't know the best routes either
+	 */
 
 	// Create the server
 	srv := &http.Server{
