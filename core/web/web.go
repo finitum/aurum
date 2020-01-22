@@ -13,14 +13,12 @@ import (
 )
 
 type Endpoints struct {
-	conn   db.UserRepository
-	config *config.Config
+	Repos  db.RepositoryCollection
+	Config *config.Config
 }
 
-type contextKey string
-
-func (c contextKey) String() string {
-	return "aurum web context key " + string(c)
+func contextKey(c string) string {
+	return "aurum web context key " + c
 }
 
 var (
@@ -54,7 +52,7 @@ func (e *Endpoints) authenticationMiddleware(next http.Handler) http.Handler {
 		}
 		token = strings.TrimPrefix(token, "Bearer ")
 
-		claims, err := jwt.VerifyJWT(token, e.config)
+		claims, err := jwt.VerifyJWT(token, e.Config)
 		if err != nil {
 			http.Error(w, "Invalid JWT Token", http.StatusUnauthorized)
 			return
@@ -67,7 +65,7 @@ func (e *Endpoints) authenticationMiddleware(next http.Handler) http.Handler {
 		}
 
 		// Get user to check if blocked
-		u, err := e.conn.GetUserByName(claims.Username)
+		u, err := e.Repos.GetUserByName(claims.Username)
 		if err != nil {
 			http.Error(w, "Error retrieving user from database", http.StatusInternalServerError)
 			return
@@ -92,8 +90,8 @@ func (e *Endpoints) authenticationMiddleware(next http.Handler) http.Handler {
 func StartServer(config *config.Config, db db.UserRepository) {
 
 	endpoints := Endpoints{
-		conn:   db,
-		config: config,
+		Repos:  db,
+		Config: config,
 	}
 
 	// Router
@@ -104,36 +102,16 @@ func StartServer(config *config.Config, db db.UserRepository) {
 
 	// *WARNING* Unauthenticated routes
 	unauthenticatedRouter.HandleFunc("/signup", endpoints.Signup).Methods(http.MethodPost, http.MethodOptions)
-	unauthenticatedRouter.HandleFunc("/login", endpoints.login).Methods(http.MethodPost, http.MethodOptions)
+	unauthenticatedRouter.HandleFunc("/login", endpoints.Login).Methods(http.MethodPost, http.MethodOptions)
 	unauthenticatedRouter.HandleFunc("/refresh", endpoints.Refresh).Methods(http.MethodPost, http.MethodOptions)
 
 	// Authenticated routes (Login/ Token required)
 	authenticatedRouter := router.PathPrefix(config.Path).Subrouter()
 	authenticatedRouter.Use(endpoints.authenticationMiddleware)
 
-	authenticatedRouter.HandleFunc("/changepassword", endpoints.changePassword).Methods(http.MethodPost, http.MethodOptions)
-	authenticatedRouter.HandleFunc("/me", endpoints.getMe).Methods(http.MethodGet, http.MethodOptions)
-	authenticatedRouter.HandleFunc("/me", endpoints.updateUser).Methods(http.MethodPut, http.MethodOptions)
-	authenticatedRouter.HandleFunc("/users", endpoints.getUsers).Methods(http.MethodPost, http.MethodOptions)
-
-	/**
-	TODO: Discuss:
-	Proposal for new routes
-	/user - GET - getMe
-	/user - PUT - updateUser
-	/user - POST - Signup
-	/users - GET - getUsers
-
-	maybe:
-	/user/:username - GET - getMe (admin)
-	/user/:username - PUT - updateUser admin or name change
-
-	deprecate:
-	/changepassword
-	/me
-
-	idk, I'm not 100% with the current but don't know the best routes either
-	 */
+	authenticatedRouter.HandleFunc("/user", endpoints.GetMe).Methods(http.MethodGet, http.MethodOptions)
+	authenticatedRouter.HandleFunc("/user", endpoints.UpdateUser).Methods(http.MethodPut, http.MethodOptions)
+	authenticatedRouter.HandleFunc("/users", endpoints.GetUsers).Methods(http.MethodGet, http.MethodOptions)
 
 	// Create the server
 	srv := &http.Server{

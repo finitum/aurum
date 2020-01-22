@@ -57,8 +57,8 @@ func TestSignup(t *testing.T) {
 	cfg := config.GetDefault()
 
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -80,8 +80,8 @@ func TestSignupIncorrectJson(t *testing.T) {
 	cfg := config.GetDefault()
 
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -98,8 +98,8 @@ func TestSignupNoBody(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -116,8 +116,8 @@ func TestSignupNoUsername(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -137,8 +137,8 @@ func TestSignupNoPassword(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -158,8 +158,8 @@ func TestSignupNoEmail(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -179,8 +179,8 @@ func TestSignupAdmin(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -204,8 +204,8 @@ func TestDbError(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -239,8 +239,8 @@ func TestLogin(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -249,7 +249,7 @@ func TestLogin(t *testing.T) {
     "password":"yeetyeet"
     }`))
 
-	endpoints.login(w, r)
+	endpoints.Login(w, r)
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 
 	resp := w.Result()
@@ -286,14 +286,14 @@ func TestLoginNoBody(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", nil)
 
-	endpoints.login(w, r)
+	endpoints.Login(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
@@ -303,14 +303,14 @@ func TestLoginIncorrectJson(t *testing.T) {
 	conn := SQLConnectionMock{}
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("{"))
 
-	endpoints.login(w, r)
+	endpoints.Login(w, r)
 
 	conn.AssertExpectations(t)
 	assert.Equal(t, w.Result().StatusCode, http.StatusBadRequest)
@@ -332,8 +332,8 @@ func TestLoginInvalidPassword(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w := httptest.NewRecorder()
@@ -342,7 +342,7 @@ func TestLoginInvalidPassword(t *testing.T) {
     "password":"yeet"
 }`))
 
-	endpoints.login(w, r)
+	endpoints.Login(w, r)
 
 	assert.Equal(t, w.Result().StatusCode, http.StatusUnauthorized)
 	conn.AssertExpectations(t)
@@ -353,8 +353,8 @@ func TestLoginInvalidUsername(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w1 := httptest.NewRecorder()
@@ -371,7 +371,7 @@ func TestLoginInvalidUsername(t *testing.T) {
 }`))
 
 	endpoints.Signup(w1, r1)
-	endpoints.login(w2, r2)
+	endpoints.Login(w2, r2)
 
 	assert.Equal(t, http.StatusCreated, w1.Result().StatusCode)
 	assert.Equal(t, http.StatusUnauthorized, w2.Result().StatusCode)
@@ -382,8 +382,8 @@ func TestLoginUsernameMismatch(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w1 := httptest.NewRecorder()
@@ -408,7 +408,7 @@ func TestLoginUsernameMismatch(t *testing.T) {
 
 	endpoints.Signup(w1, r1)
 	endpoints.Signup(w2, r2)
-	endpoints.login(w3, r3)
+	endpoints.Login(w3, r3)
 
 	assert.Equal(t, http.StatusCreated, w1.Result().StatusCode)
 	assert.Equal(t, http.StatusCreated, w2.Result().StatusCode)
@@ -420,8 +420,8 @@ func TestSignupExists(t *testing.T) {
 
 	cfg := config.GetDefault()
 	endpoints := Endpoints{
-		conn:   conn,
-		config: cfg,
+		Repos:  conn,
+		Config: cfg,
 	}
 
 	w1 := httptest.NewRecorder()

@@ -16,9 +16,10 @@ export enum ErrorState {
 }
 
 /**
+ * @private
  * The class which is used to communicate to the backend,
  * it wraps all HTTP methods into JS functions for ease of use.
- * @deprecated please use the [Client] class whenever necessary.
+ * please use the [Client] class whenever necessary.
  */
 export class API {
     baseURL: string;
@@ -76,7 +77,7 @@ export class API {
             return ErrorState.UserExists;
         }
 
-        if (res.status == 406) {
+        if (res.status == 422) {
             return ErrorState.InvalidPasswordError;
         }
 
@@ -96,7 +97,7 @@ export class API {
      * @param token the token to use for authentication
      */
     async getMe(token: string): Promise<[User | null, ErrorState]> {
-        const res = await fetch(`${this.baseURL}/me`,{
+        const res = await fetch(`${this.baseURL}/user`,{
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -155,42 +156,10 @@ export class API {
      * @param user The user with a new password set
      * @param token the token used for authentication
      */
-    async changePassword(user: User, token: string): Promise<ErrorState> {
-        const res = await fetch(`${this.baseURL}/changepassword`, {
-            method: "POST",
+    async updateUser(token: string, user: User): Promise<ErrorState> {
+        const res = await fetch(`${this.baseURL}/user`, {
+            method: "PUT",
             body: JSON.stringify(user),
-            headers: {
-                "Authorization": `Bearer ${token}`
-            },
-        });
-
-        if (res.status.toString().startsWith("5")) {
-            return ErrorState.ServerError;
-        }
-
-        if (res.status == 401) {
-            return ErrorState.InvalidCredentials;
-        }
-
-        if (!res.status.toString().startsWith("2")) {
-            return ErrorState.Other;
-        }
-
-        return ErrorState.Ok;
-    }
-
-    /**
-     * Set a user's blocked status.
-     * For this function the user needs to be Admin.
-     * @param token used to authenticate.
-     * @param value The blocked state to set the user to.
-     * @returns an ErrorState
-     */
-    async setBlocked(token: string, value: boolean): Promise<ErrorState> {
-        // TODO: changeuser
-        const res = await fetch(`${this.baseURL}/setblocked`, {
-            method: "POST",
-            body: JSON.stringify({blocked: value}),
             headers: {
                 "Authorization": `Bearer ${token}`
             },
@@ -218,7 +187,7 @@ export class API {
      * @param end end of the page
      * @param token authentication token.
      */
-    async getUsers(start: number, end: number, token: string): Promise<[User[] ,ErrorState]> {
+    async getUsers(token: string, start: number, end: number): Promise<[User[] ,ErrorState]> {
         const res = await fetch(`${this.baseURL}/users`, {
             method: "POST",
             body: JSON.stringify({start: start, end: end}),
@@ -411,10 +380,21 @@ export default class Client {
             return [null, ErrorState.InvalidCredentials];
         }
 
-        const err = await this.api.changePassword(new User("", password), this.state.tokenPair.loginToken);
+        const newUser = this.user;
+        newUser.password = password;
+
+        const err = await this.api.updateUser(this.state.tokenPair.loginToken, newUser);
         if (err !== ErrorState.Ok) {
             return [null, err];
         }
+
+        const [getNewUser, err2] = await this.api.getMe(this.state.tokenPair.loginToken);
+        if(err2 != ErrorState.Ok || getNewUser == null) {
+            return [null, err2];
+        }
+
+        this.user = getNewUser;
+
         return [this.user, ErrorState.Ok];
     }
 
@@ -429,20 +409,25 @@ export default class Client {
             return [[], ErrorState.InvalidCredentials];
         }
 
-        return this.api.getUsers(start, end, this.state.tokenPair.loginToken);
+        return this.api.getUsers(this.state.tokenPair.loginToken, start, end);
     }
 
     /**
-     * Gets all users with pagination
+     * Blocks a user
      *
-     * @param blocked The blocked state to set the user to
+     * @param user The user to be blocked, with the blocker set according
      * @returns an ErrorState
      */
-    async setBlocked(blocked: boolean): Promise<ErrorState> {
+    async setBlocked(user: User): Promise<ErrorState> {
         if(this.state.tokenPair == null) {
             return ErrorState.InvalidCredentials;
         }
 
-        return this.api.setBlocked(this.state.tokenPair.loginToken, blocked);
+        // `==` to also check for undef
+        if(user.blocked == null || user.username == null) {
+            return ErrorState.Other;
+        }
+
+        return this.api.updateUser(this.state.tokenPair.loginToken, user);
     }
 }

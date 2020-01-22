@@ -1,5 +1,5 @@
 import {tablemanager} from "../globals";
-import {Role} from "../API/User";
+import User, {Role} from "../API/User";
 import Client, {ErrorState} from "../API/Client";
 
 
@@ -31,7 +31,11 @@ export class AdminTableManager {
         blockedCheckbox.onchange = (event: Event): void => {
             if (event.target) {
                 // @ts-ignore (Yes, checked does exist but there's no type mentioning it)
-                Client.getInstance().setBlocked(event.target.checked);
+                Client.getInstance().setBlocked(new User(username, blocked=event.target.checked)).then(err => {
+                    if (err != ErrorState.Ok) {
+                        console.warn("Setting blocked failed! ");
+                    }
+                });
             }
         };
 

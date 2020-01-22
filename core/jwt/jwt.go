@@ -3,7 +3,6 @@ package jwt
 import (
 	"aurum/config"
 	"aurum/db"
-	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
@@ -24,8 +23,6 @@ type TokenPair struct {
 func GenerateJWT(user *db.User, refresh bool, cfg *config.Config) (string, error) {
 	// expirationTime := time.Now().Add(time.Hour)
 	var expirationTime time.Time
-
-	// TODO: Different exp time for refresh/login
 
 	if refresh {
 		expirationTime = time.Now().AddDate(0, 3, 0)
@@ -53,33 +50,25 @@ func GenerateJWT(user *db.User, refresh bool, cfg *config.Config) (string, error
 }
 
 func GenerateJWTPair(user *db.User, cfg *config.Config) (TokenPair, error) {
-	login, err := GenerateJWT(user, false, cfg)
-	if err != nil {
-		return TokenPair{}, err
+	login, erra := GenerateJWT(user, false, cfg)
+	refresh, errb := GenerateJWT(user, true, cfg)
+
+	if erra != nil {
+		errb = erra
 	}
 
-	refresh, err := GenerateJWT(user, true, cfg)
-	if err != nil {
-		return TokenPair{}, err
-	}
-
-	return TokenPair{login, refresh}, nil
+	return TokenPair{login, refresh}, errb
 }
 
 func VerifyJWT(token string, cfg *config.Config) (*Claims, error) {
 	claims := &Claims{}
 
-	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-
 		return cfg.JWTKey, nil
 	})
-
-	if tkn != nil && err == nil && !tkn.Valid {
-		return nil, errors.New("invalid token")
-	}
 
 	return claims, err
 }

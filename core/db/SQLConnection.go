@@ -53,8 +53,16 @@ func (conn SQLConnection) CountUsers() (int, error) {
 }
 
 func (conn SQLConnection) UpdateUser(user User) error {
-	// Will error if user already exists
-	d := conn.db.Save(&userDAL{User: user})
+	var dbuser = &userDAL{}
+	dbuser.Username = user.Username
+
+	if d := conn.db.Where(dbuser).First(&dbuser); d.Error != nil {
+		return d.Error
+	}
+
+	dbuser.User = user
+
+	d := conn.db.Save(&dbuser)
 	if d.Error != nil {
 		return d.Error
 	}

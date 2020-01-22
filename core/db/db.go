@@ -6,6 +6,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type RepositoryCollection interface {
+	UserRepository
+}
+
 // An interface for database connections, abstracting underlying DB access
 type UserRepository interface {
 	// should insert a user into the database and raise an error if it exists
@@ -29,7 +33,7 @@ const (
 	INMEMORY = "inmemory"
 )
 
-func InitDB(connectiontype string) UserRepository {
+func InitDB(connectiontype string) RepositoryCollection {
 	// Database connection
 	log.Info("Starting up database ...")
 

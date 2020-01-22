@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 /**
@@ -27,7 +29,7 @@ Only available to admins, the first user of the server is by default admin.
 		"role":0,
 		"blocked": false
 	}
- */
+*/
 
 /**
 @apiDefine UserObjectParam
@@ -60,7 +62,7 @@ Only available to admins, the first user of the server is by default admin.
 @apiUse AuthHeader
 @apiUse UserObjectSuccess
 */
-func (e *Endpoints) getMe(w http.ResponseWriter, r *http.Request) {
+func (e *Endpoints) GetMe(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(contextKeyUser).(*db.User)
 
 	bytes, err := json.Marshal(db.User{
@@ -77,8 +79,32 @@ func (e *Endpoints) getMe(w http.ResponseWriter, r *http.Request) {
 }
 
 type Range struct {
-	Start int `json:"start"`
-	End   int `json:"end"`
+	Start int
+	End   int
+}
+
+func rangeFromQueryParameters(params url.Values) Range {
+	si, _ := strconv.Atoi(params.Get("start"))
+	ei, err := strconv.Atoi(params.Get("end"))
+	if ei == 0 || err != nil {
+		ei = 1
+	}
+
+	return Range{
+		Start: si,
+		End:   ei,
+	}
+}
+
+func (r *Range) toQueryParameters() string {
+	s := strconv.Itoa(r.Start)
+	e := strconv.Itoa(r.End)
+
+	params := url.Values{}
+	params.Add("start", s)
+	params.Add("end", e)
+
+	return params.Encode()
 }
 
 /**
@@ -89,9 +115,8 @@ type Range struct {
 @apiPermission admin
 @apiUse AuthHeader
 */
-func (e *Endpoints) getUsers(w http.ResponseWriter, req *http.Request) {
-	// TODO: Write docs and tests
-	// TODO: Use query parameters
+func (e *Endpoints) GetUsers(w http.ResponseWriter, req *http.Request) {
+	// TODO: Write docs
 
 	user := req.Context().Value(contextKeyUser).(*db.User)
 
@@ -100,11 +125,7 @@ func (e *Endpoints) getUsers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var r Range
-	if err := json.NewDecoder(req.Body).Decode(&r); err != nil {
-		http.Error(w, "Please yeet us a valid body", http.StatusBadRequest)
-		return
-	}
+	r := rangeFromQueryParameters(req.URL.Query())
 
 	// check if there's at least one entry in the range
 	if r.End <= r.Start {
@@ -112,7 +133,7 @@ func (e *Endpoints) getUsers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	users, err := e.conn.GetUsers(r.Start, r.End)
+	users, err := e.Repos.GetUsers(r.Start, r.End)
 	if err != nil {
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
@@ -136,39 +157,6 @@ func (e *Endpoints) getUsers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// Expects a JSON body with the user object with a new password
-// returns a 200 status on success
-// Deprecated: use UpdateUser instead.
-func (e *Endpoints) changePassword(w http.ResponseWriter, r *http.Request) {
-	// Decode user struct and check if anything is invalid.
-	var u db.User
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil || len(u.Password) == 0 {
-		http.Error(w, "Please yeet us a valid body", http.StatusBadRequest)
-		return
-	}
-
-	password := u.Password
-
-	user := r.Context().Value(contextKeyUser).(db.User)
-
-	passwordhash, err := hash.HashPassword(password)
-
-	user.Password = passwordhash
-	if err != nil {
-		http.Error(w, "Server error", http.StatusInternalServerError)
-		return
-	}
-
-	err = e.conn.UpdateUser(user)
-	if err != nil {
-		http.Error(w, "Server error", http.StatusInternalServerError)
-		return
-	}
-
-	return
-}
-
-
 /**
 @api {put} /me Update user info
 @apiName UpdateUser
@@ -180,15 +168,16 @@ func (e *Endpoints) changePassword(w http.ResponseWriter, r *http.Request) {
 @apiError 401 If a non-admin changes another user or tries to make themselves admin or blocked
 @apiError 422 If the provided password is deemed to weak
 */
-func (e *Endpoints) updateUser(w http.ResponseWriter, r *http.Request) {
+func (e *Endpoints) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// PUT /me (but maybe we need to change it to an actual parameterized route as to make changing username possible
 	// and make it a bit more logical for admins as /me doesn't necessarily refer to yourself for them
 
-	u := r.Context().Value(contextKeyUser).(*db.User)
-	if u == nil {
+	utmp := r.Context().Value(contextKeyUser)
+	if utmp == nil {
 		http.Error(w, "This shouldn't happen :tm:", http.StatusInternalServerError)
 		return
 	}
+	u := utmp.(*db.User)
 
 	var body db.User
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -235,8 +224,7 @@ func (e *Endpoints) updateUser(w http.ResponseWriter, r *http.Request) {
 		// TODO: Send new confirmation email
 	}
 
-
-	err := e.conn.UpdateUser(body)
+	err := e.Repos.UpdateUser(body)
 	if err != nil {
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
@@ -251,5 +239,3 @@ func (e *Endpoints) updateUser(w http.ResponseWriter, r *http.Request) {
 		log.Error("Couldn't write to client")
 	}
 }
-
-
