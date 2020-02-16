@@ -3,6 +3,7 @@ package jwt
 import (
 	"aurum/config"
 	"aurum/db"
+	"aurum/jwt/algorithms"
 	"github.com/dgrijalva/jwt-go"
 	tassert "github.com/stretchr/testify/assert"
 	"testing"
@@ -25,10 +26,10 @@ func TestGenerateJWTSimple(t *testing.T) {
 	claims := &Claims{}
 
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		_, err := token.Method.(*jwt.SigningMethodHMAC)
+		_, err := token.Method.(*algorithms.SigningMethodEdDSA)
 		assert.NotNil(err)
 
-		return cfg.JWTKey, nil
+		return cfg.PublicKey, nil
 	})
 
 	// Assert token is valid
@@ -103,8 +104,8 @@ func TestExpiredToken(t *testing.T) {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-	tokenString, err := token.SignedString(cfg.JWTKey)
+	token := jwt.NewWithClaims(&algorithms.SigningMethodEdDSA{}, claims)
+	tokenString, err := token.SignedString(cfg.SecretKey)
 	assert.Nil(err)
 	assert.NotNil(tokenString)
 

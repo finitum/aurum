@@ -16,4 +16,5 @@ require (
 	github.com/trustelem/zxcvbn v1.0.1
 	golang.org/x/crypto v0.0.0-20200109152110-61a87790db17
 	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
+	golang.org/x/tools v0.0.0-20200124021010-5c352bb417e0 // indirect
 )

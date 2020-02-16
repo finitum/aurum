@@ -98,7 +98,7 @@ func StartServer(config *config.Config, db db.UserRepository) {
 	router := mux.NewRouter()
 	router.Use(accessControlMiddleware)
 
-	unauthenticatedRouter := router.PathPrefix(config.Path).Subrouter()
+	unauthenticatedRouter := router.PathPrefix(config.BasePath).Subrouter()
 
 	// *WARNING* Unauthenticated routes
 	unauthenticatedRouter.HandleFunc("/signup", endpoints.Signup).Methods(http.MethodPost, http.MethodOptions)
@@ -106,7 +106,7 @@ func StartServer(config *config.Config, db db.UserRepository) {
 	unauthenticatedRouter.HandleFunc("/refresh", endpoints.Refresh).Methods(http.MethodPost, http.MethodOptions)
 
 	// Authenticated routes (Login/ Token required)
-	authenticatedRouter := router.PathPrefix(config.Path).Subrouter()
+	authenticatedRouter := router.PathPrefix(config.BasePath).Subrouter()
 	authenticatedRouter.Use(endpoints.authenticationMiddleware)
 
 	authenticatedRouter.HandleFunc("/user", endpoints.GetMe).Methods(http.MethodGet, http.MethodOptions)

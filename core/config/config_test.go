@@ -11,44 +11,51 @@ func TestBuilder_SetDefault(t *testing.T) {
 	b := bd.SetDefault().Build()
 
 	assert.Equal(t, &Config{
-		JWTKey:  []byte("ChangeMe"),
-		WebAddr: "0.0.0.0:8042",
-		Path:    "/",
+		WebAddr:  "0.0.0.0:8042",
+		BasePath: "/",
+		KeyPath: "/tmp/aurum-keys",
+		NoKeyGen: false,
+		SecretKey: nil,
+		PublicKey: nil,
 	}, b)
 }
 
 func TestGetDefault(t *testing.T) {
 	bd := new(Builder).SetDefault().Build()
-	assert.Equal(t, bd, GetDefault())
+	gd := GetDefault()
+	// We don't want to test equality of literally randomly generated numbers.
+	gd.SecretKey = nil
+	gd.PublicKey = nil
+	assert.Equal(t, bd, gd)
 }
 
 func TestBuilder_SetFromEnvironment(t *testing.T) {
 	bd := new(Builder)
 
-	_ = os.Setenv("JWTKEY", "key")
-	_ = os.Setenv("WEBURL", "url")
-	_ = os.Setenv("PREFIX", "/asd")
+	_ = os.Setenv("WEBADDR", "url")
+	_ = os.Setenv("BASEPATH", "/asd")
 	b := bd.SetFromEnvironment().Build()
-	_ = os.Setenv("JWTKEY", "")
-	_ = os.Setenv("WEBURL", "")
-	_ = os.Setenv("PREFIX", "")
+	_ = os.Setenv("WEBADDR", "")
+	_ = os.Setenv("BASEPATH", "")
 
 	assert.Equal(t, &Config{
-		JWTKey:  []byte("key"),
-		WebAddr: "url",
-		Path:    "/asd",
+		WebAddr:  "url",
+		BasePath: "/asd",
 	}, b)
 }
 
 func TestBuilder_SetDefault_SetFromEnvironment(t *testing.T) {
 	bd := new(Builder)
-	_ = os.Setenv("JWTKEY", "key")
+	_ = os.Setenv("KEYPATH", "/yeet")
 	b := bd.SetDefault().SetFromEnvironment().Build()
-	_ = os.Setenv("JWTKEY", "")
+	_ = os.Setenv("KEYPATH", "")
 
 	assert.Equal(t, &Config{
-		JWTKey:  []byte("key"),
-		WebAddr: "0.0.0.0:8042",
-		Path:    "/",
+		WebAddr:  "0.0.0.0:8042",
+		BasePath: "/",
+		NoKeyGen: false,
+		KeyPath: "/yeet",
+		PublicKey: nil,
+		SecretKey: nil,
 	}, b)
 }

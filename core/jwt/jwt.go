@@ -3,6 +3,7 @@ package jwt
 import (
 	"aurum/config"
 	"aurum/db"
+	"aurum/jwt/algorithms"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
@@ -44,9 +45,9 @@ func GenerateJWT(user *db.User, refresh bool, cfg *config.Config) (string, error
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	token := jwt.NewWithClaims(&algorithms.SigningMethodEdDSA{}, claims)
 
-	return token.SignedString(cfg.JWTKey)
+	return token.SignedString(cfg.SecretKey)
 }
 
 func GenerateJWTPair(user *db.User, cfg *config.Config) (TokenPair, error) {
@@ -64,10 +65,10 @@ func VerifyJWT(token string, cfg *config.Config) (*Claims, error) {
 	claims := &Claims{}
 
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := token.Method.(*algorithms.SigningMethodEdDSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return cfg.JWTKey, nil
+		return cfg.PublicKey, nil
 	})
 
 	return claims, err

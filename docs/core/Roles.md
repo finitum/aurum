@@ -7,4 +7,4 @@ Currently in Aurum, there are two user roles. All roles have an ID associated wi
 | Admin |  1  |
 
 
-Only administrators can use the [Admin endpoints](Endpoints.md#Admin)
+Only administrators can use the Admin endpoints.

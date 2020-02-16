@@ -290,6 +290,7 @@ func TestSystemIntegration(t *testing.T) {
 	assert := assert.New(t)
 
 	cfgbuilder := config.Builder{}
+	cfgbuilder.SetDefault().FindKeys(true)
 	cfgbuilder.WebAddr = "0.0.0.0:40152"
 	cfg := cfgbuilder.Build()
 
