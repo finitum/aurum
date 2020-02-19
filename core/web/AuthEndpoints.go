@@ -200,3 +200,43 @@ func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
+
+type publicKeyResponse struct {
+	PublicKey string `json:"public_key"`
+}
+
+/**
+@api {get} /pk PublicKey
+@apiDescription Returns the server's publickey
+@apiName PublicKey
+@apiSuccess {String} public_key the PEM encoded public key
+@apiSuccessExample {json} Success Response:
+	{
+		"public_key": "<Public key here>"
+	}
+*/
+func (e *Endpoints) PublicKey(w http.ResponseWriter, r *http.Request) {
+	pem, err := e.Config.PublicKey.ToPem()
+	if err != nil {
+		http.Error(w, "Error in getting PEM", http.StatusInternalServerError)
+		return
+	}
+
+	pk := publicKeyResponse{
+		PublicKey: pem,
+	}
+
+	bytes, err := json.Marshal(pk)
+
+	if err != nil {
+		http.Error(w, "Error in serializing PK", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	if _, err = w.Write(bytes); err != nil {
+		log.Error("Error writing response to client")
+	}
+
+	return
+}

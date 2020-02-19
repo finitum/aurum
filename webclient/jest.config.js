@@ -19,7 +19,7 @@ module.exports = {
     "ts-jest": {
       diagnostics: {
         // Disable strict null check for tests (tests would fail anyway if result is null)
-        ignoreCodes: [2531]
+        ignoreCodes: [2531],
       }
     }
   }

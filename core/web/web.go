@@ -104,6 +104,7 @@ func StartServer(config *config.Config, db db.UserRepository) {
 	unauthenticatedRouter.HandleFunc("/signup", endpoints.Signup).Methods(http.MethodPost, http.MethodOptions)
 	unauthenticatedRouter.HandleFunc("/login", endpoints.Login).Methods(http.MethodPost, http.MethodOptions)
 	unauthenticatedRouter.HandleFunc("/refresh", endpoints.Refresh).Methods(http.MethodPost, http.MethodOptions)
+	unauthenticatedRouter.HandleFunc("/pk", endpoints.PublicKey).Methods(http.MethodGet, http.MethodOptions)
 
 	// Authenticated routes (Login/ Token required)
 	authenticatedRouter := router.PathPrefix(config.BasePath).Subrouter()

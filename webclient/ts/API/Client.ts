@@ -121,7 +121,7 @@ export class API {
 
     /**
      * Uses the refresh token to get a new login token
-     * @param tokenPair the tokenpair containg the refresh token used for getting the new login token
+     * @param tokenPair the tokenpair containing the refresh token used for getting the new login token
      * @returns A new tokenpair or an [ErrorState]
      */
     async refresh(tokenPair: TokenPair): Promise<[TokenPair | null, ErrorState]> {
@@ -133,6 +133,7 @@ export class API {
         if (res.status.toString().startsWith("5")) {
             return [null, ErrorState.ServerError];
         }
+
         if (res.status == 401) {
             return [null, ErrorState.InvalidCredentials];
         }
@@ -188,9 +189,8 @@ export class API {
      * @param token authentication token.
      */
     async getUsers(token: string, start: number, end: number): Promise<[User[] ,ErrorState]> {
-        const res = await fetch(`${this.baseURL}/users`, {
-            method: "POST",
-            body: JSON.stringify({start: start, end: end}),
+        const res = await fetch(`${this.baseURL}/users?start=${start}&end=${end}`, {
+            method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`
             },
@@ -290,13 +290,6 @@ export default class Client {
                 return [this.user, err];
             } else if (this.state.tokenPair.isRefreshValid) {
                 // refresh
-                const tp = await this.api.refresh(this.state.tokenPair);
-
-                // if the refresh failed, just log in again.
-                if(tp === null) {
-                    return [null, ErrorState.InvalidCredentials];
-                }
-
                 [tokenPair, err]  = await this.api.refresh(this.state.tokenPair);
                 if (err != ErrorState.Ok || tokenPair == null) {
                     return [null, err];

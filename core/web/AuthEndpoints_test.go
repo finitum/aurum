@@ -492,3 +492,34 @@ func TestRefresh(t *testing.T) {
 
 	conn.AssertExpectations(t)
 }
+
+func TestEndpoints_PublicKey(t *testing.T) {
+	conn := SQLConnectionMock{}
+
+	cfg := config.GetDefault()
+	endpoints := Endpoints{
+		Repos:  conn,
+		Config: cfg,
+	}
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/pk", nil)
+
+	endpoints.PublicKey(w, r)
+
+	conn.AssertExpectations(t)
+
+	res := w.Result()
+	assert.Equal(t, res.StatusCode, http.StatusOK)
+
+	pk := publicKeyResponse{}
+	err := json.NewDecoder(res.Body).Decode(&pk)
+	assert.NoError(t, err)
+
+	pem, err := cfg.PublicKey.ToPem()
+	assert.NoError(t, err)
+	assert.Contains(t, pem, "PUBLIC KEY")
+	epk := publicKeyResponse{pem}
+
+	assert.Equal(t, epk, pk)
+}

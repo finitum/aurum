@@ -1,6 +1,6 @@
 import Client, {API, ErrorState} from "./Client";
 
-import {generateValidJWT} from "./__TEST__/helpers";
+import {generateExpiredJWT, generateValidJWT} from "./__TEST__/helpers";
 import User from "./User";
 
 import "jest-fetch-mock";
@@ -228,6 +228,219 @@ describe("#API", () => {
         });
 
     });
+
+    describe("refresh", () => {
+        it("should refresh correctly", () => {
+            const a = new API("");
+
+            const tp = new TokenPair("", generateValidJWT());
+            const responseTP = new TokenPair(generateValidJWT(), "");
+
+            fetchMock.mockResponseOnce(responseTP.json());
+
+            return a.refresh(tp).then( ([ntp, err]) => {
+                expect(err).toStrictEqual(ErrorState.Ok);
+
+                const resultTP = new TokenPair(responseTP.loginToken, tp.refreshToken);
+                expect(ntp).toEqual(resultTP);
+
+                expect(fetchMock.mock.calls.length).toEqual(1);
+                expect(fetchMock.mock.calls[0][0]).toEqual("/refresh");
+
+                expect(fetchMock.mock.calls[0][1]).toEqual({
+                   method: "POST",
+                   body: tp.json(),
+                });
+            });
+        });
+
+        it("should catch server error", () => {
+            const a = new API("");
+
+            const tp = new TokenPair("", generateValidJWT());
+            const responseTP = new TokenPair(generateValidJWT(), "");
+
+            fetchMock.mockResponseOnce("wooloo", {status: 500});
+
+            return a.refresh(tp).then( ([ntp, err]) => {
+                expect(err).toStrictEqual(ErrorState.ServerError);
+                expect(ntp).toBeNull();
+            });
+        });
+
+        it("should handle invalid creds", () => {
+            const a = new API("");
+
+            const tp = new TokenPair("", "");
+
+            fetchMock.mockResponseOnce("wooloo", {status: 401});
+
+            return a.refresh(tp).then( ([ntp, err]) => {
+                expect(err).toStrictEqual(ErrorState.InvalidCredentials);
+                expect(ntp).toBeNull();
+            });
+        });
+
+        it("should handle other errors", () => {
+            const a = new API("");
+
+            const tp = new TokenPair("", "");
+
+            fetchMock.mockResponseOnce("wooloo", {status: 444});
+
+            return a.refresh(tp).then( ([ntp, err]) => {
+                expect(err).toStrictEqual(ErrorState.InvalidCredentials);
+                expect(ntp).toBeNull();
+            });
+        });
+
+        it("should handle invalid response", () => {
+            const a = new API("");
+
+            const tp = new TokenPair("", "");
+
+            fetchMock.mockResponseOnce("{}");
+
+            return a.refresh(tp).then( ([ntp, err]) => {
+                expect(err).toStrictEqual(ErrorState.ServerError);
+                expect(ntp).toBeNull();
+            });
+        });
+    });
+
+    describe("updateUser", () => {
+        it("should update correctly", () => {
+            const a = new API("");
+            const u = new User("victor", "");
+
+            const token = generateValidJWT();
+
+            fetchMock.mockResponseOnce("", {status: 200});
+
+
+            return a.updateUser(token, u).then( (err) => {
+                expect(err).toStrictEqual(ErrorState.Ok);
+
+                expect(fetchMock.mock.calls.length).toEqual(1);
+                expect(fetchMock.mock.calls[0][0]).toEqual("/user");
+
+                expect(fetchMock.mock.calls[0][1]).toEqual({
+                    method: "PUT",
+                    body: JSON.stringify(u),
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    },
+                });
+            });
+        });
+
+        it("should catch server error", () => {
+            const a = new API("");
+            const u = new User("victor", "");
+
+            const token = generateValidJWT();
+
+            fetchMock.mockResponseOnce("", {status: 500});
+
+            return a.updateUser(token, u).then( (err) => {
+                expect(err).toStrictEqual(ErrorState.ServerError);
+            });
+        });
+
+        it("should handle invalid creds", () => {
+            const a = new API("");
+            const u = new User("victor", "");
+            const token = generateValidJWT();
+
+
+            fetchMock.mockResponseOnce("wooloo", {status: 401});
+
+            return a.updateUser(token, u).then( (err) => {
+                expect(err).toStrictEqual(ErrorState.InvalidCredentials);
+            });
+        });
+
+        it("should handle other errors", () => {
+            const a = new API("");
+            const u = new User("victor", "");
+            const token = generateValidJWT();
+
+
+            fetchMock.mockResponseOnce("wooloo", {status: 444});
+
+            return a.updateUser(token, u).then( (err) => {
+                expect(err).toStrictEqual(ErrorState.Other);
+            });
+        });
+    });
+
+    describe("getUsers", () => {
+        it("should get correctly", () => {
+            const a = new API("");
+
+            const u1 = new User("v", "");
+            const u2 = new User("j", "");
+            const u = [u1, u2];
+
+            const token = generateValidJWT();
+
+            fetchMock.mockResponseOnce(JSON.stringify(u));
+
+
+            return a.getUsers(token, 0, 1).then( ([users, err]) => {
+                expect(err).toStrictEqual(ErrorState.Ok);
+                expect(users).toEqual(u);
+
+                expect(fetchMock.mock.calls.length).toEqual(1);
+                expect(fetchMock.mock.calls[0][0]).toEqual("/users?start=0&end=1");
+
+                expect(fetchMock.mock.calls[0][1]).toEqual({
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    },
+                });
+            });
+        });
+
+        it("should catch server error", () => {
+            const a = new API("");
+
+            const token = generateValidJWT();
+
+            fetchMock.mockResponseOnce("", {status: 500});
+
+            return a.getUsers(token, 0, 1).then( ([u,err]) => {
+                expect(u).toStrictEqual([]);
+                expect(err).toStrictEqual(ErrorState.ServerError);
+            });
+        });
+
+        it("should handle invalid creds", () => {
+            const a = new API("");
+            const token = generateValidJWT();
+
+
+            fetchMock.mockResponseOnce("wooloo", {status: 401});
+
+            return a.getUsers(token, 0, 1).then( ([u,err]) => {
+                expect(u).toStrictEqual([]);
+                expect(err).toStrictEqual(ErrorState.InvalidCredentials);
+            });
+        });
+
+        it("should handle other errors", () => {
+            const a = new API("");
+            const token = generateValidJWT();
+
+            fetchMock.mockResponseOnce("wooloo", {status: 444});
+
+            return a.getUsers(token, 0, 1).then( ([u,err]) => {
+                expect(u).toStrictEqual([]);
+                expect(err).toStrictEqual(ErrorState.Other);
+            });
+        });
+    });
 });
 
 
@@ -308,5 +521,63 @@ describe("#Client", () => {
                 expect(err).toStrictEqual(ErrorState.Other);
             });
         });
+
+        it("Should refresh the login token if refresh is valid but login isn't", () => {
+            const c = new Client("");
+            const tp = new TokenPair(generateExpiredJWT(), generateValidJWT(true));
+            const newtp = new TokenPair(generateValidJWT(), generateValidJWT(true));
+            const u = new User("a", "");
+            jest.spyOn(c.state, "tokenPair", "get").mockReturnValue(tp);
+            // @ts-ignore we actually use a higher js version than intellij thinks
+            jest.spyOn(c.api, "refresh").mockReturnValue(new Promise(resolve => {
+                resolve([newtp, ErrorState.Ok]);
+            }));
+            // @ts-ignore we actually use a higher js version than intellij thinks
+            jest.spyOn(c.api, "getMe").mockReturnValue(new Promise(resolve => {
+                resolve([u, ErrorState.Ok]);
+            }));
+
+            return c.checkLogin().then(([ru,err]) => {
+                expect(err).toStrictEqual(ErrorState.Ok);
+                expect(ru).toBe(u);
+            });
+        });
+
+        it("Should handle invalid tp response on refresh", () => {
+            const c = new Client("");
+            const tp = new TokenPair(generateExpiredJWT(), generateValidJWT(true));
+            jest.spyOn(c.state, "tokenPair", "get").mockReturnValue(tp);
+            // @ts-ignore we actually use a higher js version than intellij thinks
+            jest.spyOn(c.api, "refresh").mockReturnValue(new Promise(resolve => {
+                resolve([null, ErrorState.InvalidCredentials]);
+            }));
+
+            return c.checkLogin().then(([ru,err]) => {
+                expect(err).toStrictEqual(ErrorState.InvalidCredentials);
+                expect(ru).toBeNull();
+            });
+        });
+
+        it("Should handle invalid getMe response while refresh", () => {
+            const c = new Client("");
+            const tp = new TokenPair(generateExpiredJWT(), generateValidJWT(true));
+            const newtp = new TokenPair(generateValidJWT(), generateValidJWT(true));
+            jest.spyOn(c.state, "tokenPair", "get").mockReturnValue(tp);
+            // @ts-ignore we actually use a higher js version than intellij thinks
+            jest.spyOn(c.api, "refresh").mockReturnValue(new Promise(resolve => {
+                resolve([newtp, ErrorState.Ok]);
+            }));
+            // @ts-ignore we actually use a higher js version than intellij thinks
+            jest.spyOn(c.api, "getMe").mockReturnValue(new Promise(resolve => {
+                resolve([null, ErrorState.Other]);
+            }));
+
+            return c.checkLogin().then(([ru,err]) => {
+                expect(err).toStrictEqual(ErrorState.Other);
+                expect(ru).toBeNull();
+            });
+        });
     });
+
+
 });

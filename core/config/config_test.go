@@ -13,7 +13,8 @@ func TestBuilder_SetDefault(t *testing.T) {
 	assert.Equal(t, &Config{
 		WebAddr:  "0.0.0.0:8042",
 		BasePath: "/",
-		KeyPath: "/tmp/aurum-keys",
+		PubKeyPath: "./id_25519.pub",
+		SecretKeyPath: "./id_25519",
 		NoKeyGen: false,
 		SecretKey: nil,
 		PublicKey: nil,
@@ -46,15 +47,16 @@ func TestBuilder_SetFromEnvironment(t *testing.T) {
 
 func TestBuilder_SetDefault_SetFromEnvironment(t *testing.T) {
 	bd := new(Builder)
-	_ = os.Setenv("KEYPATH", "/yeet")
+	_ = os.Setenv("PUBLIC_KEY_PATH", "/yeet")
 	b := bd.SetDefault().SetFromEnvironment().Build()
-	_ = os.Setenv("KEYPATH", "")
+	_ = os.Setenv("PUBLIC_KEY_PATH", "")
 
 	assert.Equal(t, &Config{
 		WebAddr:  "0.0.0.0:8042",
 		BasePath: "/",
 		NoKeyGen: false,
-		KeyPath: "/yeet",
+		PubKeyPath: "/yeet",
+		SecretKeyPath: "./id_25519",
 		PublicKey: nil,
 		SecretKey: nil,
 	}, b)
