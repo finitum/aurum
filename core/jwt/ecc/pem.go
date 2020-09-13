@@ -66,8 +66,8 @@ func toPem(key []byte, public bool) (string, error) {
 	}
 
 	block := pem.Block{
-		Type:   Type,
-		Bytes:  pkey[:],
+		Type:  Type,
+		Bytes: pkey[:],
 	}
 
 	bytes := pem.EncodeToMemory(&block)

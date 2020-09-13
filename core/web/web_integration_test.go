@@ -261,7 +261,7 @@ func VerifyOptionsHeaders(assert *assert.Assertions, client *http.Client) {
 }
 
 func VerifyGetUsers(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, users []db.User) {
-	req, err := http.NewRequest("GET", "http://localhost:40152/users",nil)
+	req, err := http.NewRequest("GET", "http://localhost:40152/users", nil)
 	assert.NoError(err)
 
 	rg := Range{0, 100}

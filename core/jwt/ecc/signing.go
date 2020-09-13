@@ -30,12 +30,12 @@ type OBjectIdentifier struct {
 type Ed25519PrivKey struct {
 	Version          int
 	OBjectIdentifier OBjectIdentifier
-	PrivateKey []byte
+	PrivateKey       []byte
 }
 
 type Ed25519PubKey struct {
 	OBjectIdentifier OBjectIdentifier
-	PublicKey asn1.BitString
+	PublicKey        asn1.BitString
 }
 
 func (m *SigningMethodEdDSA) Alg() string {

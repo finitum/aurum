@@ -10,8 +10,8 @@ import (
 
 const (
 	generateKeysSTDOUT = "stdout"
-	generateKeysFile = "file"
-	generateKeysBoth = "both"
+	generateKeysFile   = "file"
+	generateKeysBoth   = "both"
 )
 
 // Generates a pair of ed25519 keys and wraps them into the ecc types

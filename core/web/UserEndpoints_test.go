@@ -350,7 +350,6 @@ func TestChangeUserBadWriter(t *testing.T) {
 	assert.Equal(t, hook.Entries[0].Level, log.ErrorLevel)
 	conn.AssertExpectations(t)
 
-
 }
 
 func TestGetUsersNotAdmin(t *testing.T) {
@@ -370,7 +369,7 @@ func TestGetUsersNotAdmin(t *testing.T) {
 	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
-	r.Header.Set("Authorization", "Bearer " + tkn)
+	r.Header.Set("Authorization", "Bearer "+tkn)
 
 	ctx := r.Context()
 	ctx = context.WithValue(ctx, contextKeyUser, &u)
@@ -447,7 +446,6 @@ func TestGetUsersDbError(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	r.Header.Set("Authorization", "Bearer "+tkn)
 	r.URL.RawQuery = rg.toQueryParameters()
-
 
 	ctx := r.Context()
 	ctx = context.WithValue(ctx, contextKeyUser, &u)
@@ -528,7 +526,6 @@ func TestGetUsersBadWriter(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	r.Header.Set("Authorization", "Bearer "+tkn)
 	r.URL.RawQuery = rg.toQueryParameters()
-
 
 	ctx := r.Context()
 	ctx = context.WithValue(ctx, contextKeyUser, &u)

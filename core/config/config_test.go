@@ -11,13 +11,13 @@ func TestBuilder_SetDefault(t *testing.T) {
 	b := bd.SetDefault().Build()
 
 	assert.Equal(t, &Config{
-		WebAddr:  "0.0.0.0:8042",
-		BasePath: "/",
-		PubKeyPath: "./id_25519.pub",
+		WebAddr:       "0.0.0.0:8042",
+		BasePath:      "/",
+		PubKeyPath:    "./id_25519.pub",
 		SecretKeyPath: "./id_25519",
-		NoKeyGen: false,
-		SecretKey: nil,
-		PublicKey: nil,
+		NoKeyGen:      false,
+		SecretKey:     nil,
+		PublicKey:     nil,
 	}, b)
 }
 
@@ -52,12 +52,12 @@ func TestBuilder_SetDefault_SetFromEnvironment(t *testing.T) {
 	_ = os.Setenv("PUBLIC_KEY_PATH", "")
 
 	assert.Equal(t, &Config{
-		WebAddr:  "0.0.0.0:8042",
-		BasePath: "/",
-		NoKeyGen: false,
-		PubKeyPath: "/yeet",
+		WebAddr:       "0.0.0.0:8042",
+		BasePath:      "/",
+		NoKeyGen:      false,
+		PubKeyPath:    "/yeet",
 		SecretKeyPath: "./id_25519",
-		PublicKey: nil,
-		SecretKey: nil,
+		PublicKey:     nil,
+		SecretKey:     nil,
 	}, b)
 }
