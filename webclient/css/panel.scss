@@ -1,0 +1,134 @@
+@import "vars";
+
+%panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: $primary-color;
+  //border: 1px solid $prim;
+
+  max-height: 10000px;
+
+  padding: 5em;
+  margin-bottom: 1em;
+  margin-top: 1em;
+
+  // Fill the remaining horzontal space
+  flex: 1 1 auto;
+
+
+  //width: fit-content;
+
+  border-radius: 5px;
+  box-shadow: $primary-color-dark 4px 4px;
+
+  label {
+    padding-top: 1em;
+    padding-bottom: 0.3em;
+  }
+
+  span {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 100%;
+    padding: 10px;
+  }
+
+  .input-wrapper {
+    margin-left: 10%;
+    margin-right: 10%;
+  }
+
+  input {
+    background: $light-text-color;
+    color: $dark-text-color;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: $big;
+    margin-top: 0;
+  }
+
+  transition: max-height ease-in-out 1s;
+}
+
+.login-form {
+  @extend %panel;
+
+  input[type="text"], input[type="password"], input[type="email"] {
+    border: 1px solid $divider-color;
+    padding: 0.4em 0.5em;
+    //margin: 2px 0 5px;
+    min-height: 2em;
+    border-radius: 3px;
+    -webkit-appearance: none;
+    font-size: inherit;
+  }
+}
+
+.user-panel {
+  @extend %panel;
+
+  button {
+    margin-top: 20px;
+  }
+}
+
+.admin-panel {
+  @extend %panel;
+
+  //TODO
+  table {
+
+    color: $dark-text-color;
+    border-collapse: collapse;
+    background: none;
+    width: 100%;
+
+    thead {
+      color: $dark-text-color;
+
+      border-style: solid;
+      border-width: 0 0 2px 0 ;
+      border-color: $dark-divider-color;
+    }
+
+    tbody {
+
+      tr, tr.odd, tr.even {
+        background: none;
+
+        &:hover {
+          background: $primary-color-dark;
+        }
+      }
+    }
+
+    th {
+      color: $dark-text-color;
+      background: none;
+      text-transform: uppercase;
+      padding: 1em 4px;
+      font-weight: normal;
+
+
+      a, a.active {
+        color: $dark-text-color;
+      }
+    }
+
+    td {
+      padding: 1.5em 4px;
+      border-style: solid;
+      border-width: 0 2px;
+      border-color: $dark-divider-color;
+
+      text-align: center;
+    }
+  }
+}
+

@@ -1,23 +1,98 @@
-image: docker:latest
+stages:
+  - test
+  - deploy
 
-services:
-  - docker:dind
+.docker: &docker
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
-before_script:
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+.webclient: &webclient
+  image: node
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - webclient/**/*
+      - core/**/*
+  before_script:
+    - cd webclient
+    - yarn install
 
-build-master:
-  stage: build
+variables:
+  CORE_IMG: "$CI_REGISTRY_IMAGE/core"
+  WEBCLIENT_IMG: "$CI_REGISTRY_IMAGE/webclient"
+
+core-test:
+  stage: test
+  image: golang
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - core/**/*
+      - webclient/**/*
+  cache:
+    paths:
+      - /go/pkg/mod
+  coverage: /^total:.+\)\s+(\d+.?\d*)%$/
+  before_script:
+    - cd core
+    - go mod download
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
-    - docker push "$CI_REGISTRY_IMAGE"
+    - go test -race -short ./...
+    - go test -covermode=count -coverprofile cover.cov ./...
+    - go tool cover -func=cover.cov
+
+webclient-check:
+  <<: *webclient
+  stage: test
+  script:
+    - yarn check
+
+webclient-test:
+  stage: test
+  <<: *webclient
+  coverage: /^Lines\s*:\s(\d+.?\d*)%/
+  script:
+    - yarn test --collect-coverage
+
+build-master-core:
+  stage: deploy
+  <<: *docker
+  script:
+    - cd core
+    - docker build --pull -t "$CORE_IMG" .
+    - docker push "$CORE_IMG"
   only:
     - master
 
-build:
-  stage: build
+build-core:
+  stage: deploy
+  <<: *docker
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - cd core
+    - docker build --pull -t "$CORE_IMG:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CORE_IMG:$CI_COMMIT_REF_SLUG"
+  except:
+    - master
+
+build-master-webclient:
+  stage: deploy
+  <<: *docker
+  script:
+    - cd webclient
+    - docker build --pull -t "$WEBCLIENT_IMG" .
+    - docker push "$WEBCLIENT_IMG"
+  only:
+    - master
+
+build-webclient:
+  stage: deploy
+  <<: *docker
+  script:
+    - cd webclient
+    - docker build --pull -t "$WEBCLIENT_IMG:$CI_COMMIT_REF_SLUG" .
+    - docker push "$WEBCLIENT_IMG:$CI_COMMIT_REF_SLUG"
   except:
     - master

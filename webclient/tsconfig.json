@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es6",
+    "skipLibCheck": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ]
+  },
+  "exclude": [
+    "ts/**/*.test.ts",
+    "ts/*.test.ts",
+    "node_modules"
+  ]
+}

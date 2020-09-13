@@ -1,0 +1,88 @@
+@import "vars";
+
+@font-face {
+    font-family: "DejaVu Sans";
+
+    //// I'm impressed parcel can resolve this!
+    src: url("../assets/DejaVuSans.ttf");
+}
+
+html {
+    background: $primary-color-light;
+    color: $light-text-color;
+
+    font-family: "DejaVu Sans", sans-serif;
+
+    // Desktop
+    //@media only screen and (min-device-width: 768px) {
+    //    font-size: 22px;
+    //}
+    //
+    //// Phones
+    //font-size: 32px;
+
+    // change a for the slope (aka skew towards desktop or mobile)
+    // change b for the starting point (aka in/decrease font size everywhere)
+    // y = ax + b
+    font-size: calc(-0.8vw + 38px);
+    // font-size: calc(-0.9vw + 42px);
+}
+
+body {
+    margin: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-content: center;
+    align-items: safe center;
+    justify-content: safe center;
+
+    overflow: auto;
+
+    height: 100vh;
+
+    font-size: $default;
+
+}
+
+.flex-item {
+    height: fit-content;
+    width: fit-content;
+}
+
+button {
+    margin: 1em 0.2em 0;
+    background-color: $gold;
+    padding: 0.8em 2em;
+
+    border: none;
+    border-radius: 3px;
+    box-shadow: 2px 2px;
+    color: $dark-text-color;
+
+    font-size: $default;
+
+    transition: ease-in-out background-color 0.05s;
+
+    &:hover {
+        background-color: rgba($gold, 0.85);
+        cursor: pointer;
+    }
+
+    &:active {
+        background-color: rgba($gold, 0.5);
+    }
+}
+
+.login, .signup {
+    transition: all 1s linear;
+    opacity: 1;
+}
+
+.hidden {
+    display: none;
+    opacity: 0;
+}
+

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Aurum Web Interface</title>
+    <link rel="stylesheet" type="text/css" href="css/style.scss">
+    <link rel="stylesheet" type="text/css" href="css/panel.scss">
+    <link rel="stylesheet" type="text/css" href="css/messages.scss">
+    <script src="ts/index.ts"></script>
+</head>
+
+<body>
+    <div id="message" title="Click to dismiss">Message!</div>
+
+    <div class="flex-item login signup changepassword">
+        <div class="login-form">
+            <h2 class="login">Login</h2>
+            <h2 class="signup">Register</h2>
+
+            <label class="login signup" for="username">Username:</label>
+            <input class="input-wrapper login signup" type="text" autocomplete="username" id="username">
+
+            <label class="login signup changepassword" for="password">Password:</label>
+
+            <div class="input-wrapper">
+                <div class="signup changepassword">
+                    <div class="password-input-meter">
+                        <div class="password-input-dot"></div>
+                        <div class="password-input-dot"></div>
+                        <div class="password-input-dot"></div>
+                        <div class="password-input-dot"></div>
+                    </div>
+                    <div class="" id="password-suggestion"></div>
+                </div>
+                <input class="login signup changepassword" type="password" id="password">
+            </div>
+
+            <label class="signup" for="email" >Email:</label>
+            <input class="input-wrapper signup" type="email" id="email" autocomplete="email">
+
+            <span>
+                <button class="login signup" id="login-button">Login</button>
+                <button class="login signup" id="signup-button">Sign up</button>
+                <button class="changepassword" id="changepassword-button">Change password</button>
+            </span>
+        </div>
+    </div>
+
+    <div class="flex-item admin user">
+        <div class="user-panel">
+            <h2 id="username-display"></h2>
+
+            <button id="logout-button">Log out</button>
+            <button id="changepassword-init-button">Change Password</button>
+        </div>
+    </div>
+
+    <div class="flex-item admin">
+        <div class="admin-panel">
+            <h2>Admin options</h2>
+            <table id="admin-table">
+            </table>
+        </div>
+    </div>
+</body>
+</html>
