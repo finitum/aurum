@@ -56,13 +56,28 @@ jobs:
 
 
       - name: Build and push core
-        id: docker_build
+        id: docker_build_core
         uses: docker/build-push-action@v2
         with:
           context: core/
           push: true
           file: core/Dockerfile
           tags: ghcr.io/finitum/aurum-core:${{ steps.prep.outputs.version }}
+          labels: |
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.prep.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=${{ github.event.repository.license.name }}
+
+      - name: Build and push webclient
+        id: docker_build_webclient
+        uses: docker/build-push-action@v2
+        with:
+          context: webclient/
+          push: true
+          file: webclient/Dockerfile
+          tags: ghcr.io/finitum/aurum-webclient:${{ steps.prep.outputs.version }}
           labels: |
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
