@@ -64,7 +64,7 @@ jobs:
           push: true
           file: core/Dockerfile
           platforms: linux/amd64
-          tags: finitum/aurum/core:${{ steps.prep.outputs.version }}
+          tags: docker.pkg.github.com/finitum/aurum/core:${{ steps.prep.outputs.version }}
           labels: |
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.source=${{ github.repositoryUrl }}
