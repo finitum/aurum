@@ -61,6 +61,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: core/
+          push: true
           file: core/Dockerfile
           platforms: linux/amd64
           tags: finitum/aurum/core:${{ steps.prep.outputs.version }}
