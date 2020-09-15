@@ -22,15 +22,13 @@ func main() {
 	if *generateKeys == "none" {
 		startServer()
 	} else {
-		cfgbuilder := config.Builder{}
-		cfg := cfgbuilder.SetDefault().SetFromEnvironment().Build()
-		ecc.KeyGenerationUtil(*generateKeys, cfg.PubKeyPath, cfg.SecretKeyPath)
+		ecfg := config.GetEnvConfig()
+		ecc.KeyGenerationUtil(*generateKeys, ecfg.PublicKey, ecfg.SecretKeyPath)
 	}
 }
 
 func startServer() {
-	cfgbuilder := config.Builder{}
-	cfg := cfgbuilder.SetDefault().SetFromEnvironment().FindKeys(true).Build()
+	cfg := config.GetConfig()
 
 	database := db.InitDB(db.INMEMORY)
 	web.StartServer(cfg, database)

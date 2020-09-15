@@ -23,6 +23,10 @@ type Key interface {
 	WriteToFile(path string) error
 }
 
+func (k SecretKey) GetPublicKey() PublicKey {
+	return PublicKey(ed25519.PrivateKey(k).Public().(ed25519.PublicKey))
+}
+
 func (k PublicKey) ToPem() (string, error) {
 	return toPem(k, true)
 }
@@ -37,6 +41,11 @@ func (k PublicKey) WriteToFile(path string) error {
 
 func (k SecretKey) WriteToFile(path string) error {
 	return writeToFile(k, path)
+}
+
+// Matches finds whether or not a public key belongs to this private key
+func (k SecretKey) Matches(key PublicKey) bool {
+	return ed25519.PublicKey(k.GetPublicKey()).Equal(ed25519.PublicKey(key))
 }
 
 func writeToFile(k Key, path string) error {
@@ -78,6 +87,9 @@ func toPem(key []byte, public bool) (string, error) {
 // returns either a secret or public key based on the pem
 func FromPem(data []byte) (k Key, err error) {
 	dec, _ := pem.Decode(data)
+	if dec == nil {
+		return nil, errors.New("couldn't decode pem key")
+	}
 
 	switch dec.Type {
 	case publicKeyPemHeader:
