@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// TODO: This apidoc isn't right anymore (/me doesn't exist anymore)
 /**
 @apiDefine admin Admin user
 Only available to admins, the first user of the server is by default admin.

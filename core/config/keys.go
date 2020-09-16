@@ -83,7 +83,7 @@ func findKeys(config *EnvConfig) (ecc.PublicKey, ecc.SecretKey, error) {
 		return nil, nil, errors.New("Secret key is nil and not allowed to generate")
 	} else if sk == nil && pk != nil {
 		// if we don't have a secret key, but do have a valid public key, error
-		
+
 		return nil, nil, errors.New("Passed a public key but couldn't parse or find secret key. " +
 			"A new keypair will only be generated when no public *and* secret key are passed")
 	} else if sk == nil {
@@ -99,7 +99,7 @@ func findKeys(config *EnvConfig) (ecc.PublicKey, ecc.SecretKey, error) {
 			if err := writeKey(publicKey, config.PublicKeyPath); err != nil {
 				return nil, nil, errors.Wrap(err, "failed to write public key")
 			}
-			if err := writeKey(publicKey, config.SecretKeyPath); err != nil {
+			if err := writeKey(secretKey, config.SecretKeyPath); err != nil {
 				return nil, nil, errors.Wrap(err, "failed to write secret key")
 			}
 		}
@@ -119,7 +119,7 @@ func findKeys(config *EnvConfig) (ecc.PublicKey, ecc.SecretKey, error) {
 			if err := writeKey(publicKey, config.PublicKeyPath); err != nil {
 				return nil, nil, errors.Wrap(err, "failed to write public key")
 			}
-			if err := writeKey(publicKey, config.SecretKeyPath); err != nil {
+			if err := writeKey(secretKey, config.SecretKeyPath); err != nil {
 				return nil, nil, errors.Wrap(err, "failed to write secret key")
 			}
 		}

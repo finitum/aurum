@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use serde_repr::*;
 use crate::token::TokenPair;
 use crate::Aurum;
 use crate::requests;
@@ -6,8 +7,9 @@ use crate::error::AurumError;
 use crate::requests::{RefreshRequest, RefreshResponse};
 use crate::error::Code;
 
+
 #[repr(u8)]
-#[derive(Serialize, Deserialize, Debug, PartialOrd, PartialEq)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialOrd, PartialEq)]
 pub enum Role {
     User = 0,
     Admin = 1,
@@ -45,28 +47,34 @@ impl AuthenticatedUser {
         }
     }
 
+    /// TODO: docs
     pub fn username(&self) -> &String {
         &self.user.username
     }
 
+    /// TODO: docs
     pub fn email(&self) -> &String {
         &self.user.email
     }
 
+    /// TODO: docs
     pub fn role(&self) -> &Role {
         &self.user.role
     }
 
+    /// TODO: docs
     pub fn blocked(&self) -> bool {
         self.user.blocked
     }
 
+    /// TODO: docs
     pub fn token(&self) -> &str {
         &self.token_pair.login_token
     }
 
     //---
 
+    /// TODO: docs
     pub fn refresh_tokens(&mut self, aurum: &Aurum) -> Result<&str, AurumError> {
         let req = RefreshRequest {
             refresh_token: &self.token_pair.refresh_token,
@@ -82,6 +90,7 @@ impl AuthenticatedUser {
         }
     }
 
+    /// TODO: docs
     pub fn check_token(&mut self, aurum: &Aurum) -> Result<&str, AurumError> {
         if !self.token_pair.verify_tokens(&aurum.server_public_key) {
             self.refresh_tokens(aurum)

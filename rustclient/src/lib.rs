@@ -5,17 +5,22 @@ mod requests;
 
 use reqwest::blocking::{ClientBuilder, Client};
 use std::time::Duration;
-use user::User;
+use user::User as InternalUser;
 use error::AurumError;
 use reqwest::header::HeaderMap;
 use jwt_simple::algorithms::Ed25519PublicKey;
 use serde::{Serialize, Deserialize};
-use crate::error::Code;
 use crate::user::AuthenticatedUser;
+use reqwest::Url;
+
+
+pub use crate::user::AuthenticatedUser as User;
+pub use crate::user::Role;
+use crate::requests::join;
 
 #[derive(Debug)]
 pub struct Aurum {
-    base_url: String,
+    base_url: Url,
     client: Client,
 
     // JWT Public key
@@ -31,6 +36,9 @@ impl Aurum {
     pub fn new(base_url: String) -> Result<Self, AurumError> {
         let mut headers = HeaderMap::new();
         headers.insert("Content-Type", "application/json".parse().map_err(AurumError::new)?);
+
+        let base_url = base_url.parse()
+            .map_err(|e| AurumError::new(format!("failed to parse url: {:?}", e)))?;
 
         let client = ClientBuilder::new()
             .timeout(Duration::from_secs(5))
@@ -49,8 +57,12 @@ impl Aurum {
     }
 
     /// Retrieves the server's public key and parses it into an [Ed25519PublicKey]
-    fn get_pk(client: &Client, base_url: &str) -> Result<Ed25519PublicKey, AurumError>  {
-        let res = client.get(&format!("{}/pk", base_url))
+    /// TODO: move to requests
+    fn get_pk(client: &Client, base_url: &Url) -> Result<Ed25519PublicKey, AurumError>  {
+        log::info!("creating Aurum client at base url {}", base_url);
+        log::info!("requesting public key from Aurum server");
+
+        let res = client.get(join(base_url, "pk")?)
             .send()
             .map_err(|_| AurumError::new("requesting aurum public key failed"))?;
 
@@ -64,10 +76,12 @@ impl Aurum {
         token::pem_to_key(json.public_key.as_str())
     }
 
-    
+
     /// Logs in the user with Aurum. TODO: more comments
     pub fn login(&mut self, username: String, password: String) -> Result<AuthenticatedUser, AurumError> {
-        let user = User {
+        log::info!("logging in as {}", username);
+
+        let user = InternalUser {
             username,
             password,
             ..Default::default()
@@ -78,11 +92,17 @@ impl Aurum {
         Ok(AuthenticatedUser::new(user, tp))
     }
 
-    pub fn signup(&mut self, username: String, password: String, email: String) -> Result<AuthenticatedUser, AurumError> {
-        let user = User{username, password, email, ..Default::default()};
+    /// TODO: docs
+    pub fn signup(&mut self, username: String, email: String, password: String) -> Result<AuthenticatedUser, AurumError> {
+        let user = InternalUser{username, password, email, ..Default::default()};
         requests::signup(&self.base_url, &self.client, &user)?;
-        self.login(user.username.clone(), user.password)
+        self.login(user.username.clone(), user.password.clone())
     }
+
+    // pub fn user(&mut self, username: String) {
+    //     requests::user(&self.base_url, &self.client, &user)?;
+    //
+    // }
 }
 
 #[cfg(test)]

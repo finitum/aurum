@@ -2,12 +2,8 @@ use super::user;
 use serde::{Serialize, Deserialize, Deserializer};
 use crate::error::AurumError;
 use crate::error::Code;
-use crate::user::Role;
 use jwt_simple::prelude::*;
 use crate::error::Code::InvalidPEM;
-use reqwest::blocking::Client;
-use std::fmt;
-use crate::Aurum;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub(crate) struct Claims {
@@ -62,10 +58,6 @@ impl TokenPair {
         let login_claims = key.verify_token::<Claims>(&self.login_token, None);
         let refresh_claims = key.verify_token::<Claims>(&self.login_token, None);
 
-        // match (login_claims, refresh_claims) {
-        //     (Ok(_), Ok(_)) => true,
-        //     _ => false
-        // }
         matches!((login_claims, refresh_claims), (Ok(_), Ok(_)))
     }
 }

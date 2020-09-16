@@ -1,0 +1,15 @@
+
+string = @{ (!(" " | "\t") ~ ANY)+  }
+
+login = {"login" ~ string}
+connect = {"connect" ~ string}
+help = {"help" | "?"}
+logout = {"logout"}
+signup = {"signup" ~ string ~ string}
+user = {"user" ~ string?}
+
+rule = _{connect | login | help | signup | logout | user}
+
+line = _{SOI ~ rule ~ ";"? ~ EOI}
+
+WHITESPACE = _{ WHITE_SPACE }
