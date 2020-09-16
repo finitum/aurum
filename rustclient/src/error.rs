@@ -1,17 +1,22 @@
 use reqwest::StatusCode;
+use der_parser::error::BerError;
 
 #[repr(u8)]
+#[derive(Debug, PartialOrd, PartialEq)]
 pub enum Code {
     Unknown,
     InvalidCredentials,
     ServerError,
     InvalidJWTToken,
     ReqwestError,
+    InvalidPEM,
+    ConnectionError,
 }
 
+#[derive(Debug)]
 pub struct AurumError {
-    message: String,
-    code: Code,
+    pub message: String,
+    pub code: Code,
 }
 
 impl AurumError {
@@ -52,5 +57,17 @@ impl From<StatusCode> for AurumError {
 impl From<reqwest::Error> for AurumError {
     fn from(e: reqwest::Error) -> Self {
         AurumError::code(e.to_string(),Code::ReqwestError)
+    }
+}
+
+impl From<BerError> for AurumError {
+    fn from(e: BerError) -> Self {
+        AurumError::code(e.to_string(), Code::InvalidPEM)
+    }
+}
+
+impl From<der_parser::nom::Err<der_parser::error::BerError>> for AurumError {
+    fn from(e: der_parser::nom::Err<BerError>) -> Self {
+        AurumError::code(e.to_string(), Code::InvalidPEM)
     }
 }
