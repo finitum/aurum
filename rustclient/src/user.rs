@@ -72,7 +72,7 @@ impl AuthenticatedUser {
 
     /// Refreshes the login token unconditionally
     /// See [check_token] for checking and refreshing
-    pub fn refresh_tokens(&mut self, aurum: &Aurum) -> Result<&str, AurumError> {
+    pub(crate) fn refresh_tokens(&mut self, aurum: &Aurum) -> Result<&str, AurumError> {
         let req = RefreshRequest {
             refresh_token: &self.token_pair.refresh_token,
         };
@@ -92,12 +92,23 @@ impl AuthenticatedUser {
     }
 
     /// Checks if the login token needs to be refreshed and refreshes it if necessary.
-    /// See [refresh_token] for unconditional refresh
     pub fn check_token(&mut self, aurum: &Aurum) -> Result<&str, AurumError> {
         if !self.token_pair.verify_tokens(&aurum.server_public_key) {
             self.refresh_tokens(aurum)
         } else {
             Ok(&self.token_pair.login_token)
+        }
+    }
+
+    /// Grabs the latest user info and saves this into self.
+    pub fn get_user(&mut self, aurum: &Aurum) -> Result<(), AurumError> {
+        let updated_user = requests::get_user(&aurum.base_url, &aurum.client, &self.token_pair)?;
+
+        if self.user.username == updated_user.username {
+            self.user = updated_user;
+            Ok(())
+        } else {
+            Err(AurumError::code("Received user does not match expectations", Code::InvalidResponse))
         }
     }
 }
@@ -106,6 +117,8 @@ impl AuthenticatedUser {
 mod tests {
     use super::*;
     use crate::token::generate_valid_tokenpair;
+    use httpmock::{Mock, Method, MockServer};
+    use crate::test_constants::{PUBLIC_TEST_KEY, PUBLIC_TEST_KEY_B64};
 
     #[test]
     fn test_getters() {
@@ -128,5 +141,157 @@ mod tests {
         assert_eq!(au.user.password, String::new());
 
         assert_eq!(au.token(), tp.login_token)
+    }
+
+    #[test]
+    fn test_refresh() {
+        let mock_server = MockServer::start();
+
+        let pk = requests::PublicKeyResponse {
+            public_key: PUBLIC_TEST_KEY.to_owned(),
+        };
+
+        let (_, newtp) = generate_valid_tokenpair("yeet");
+
+        let resp = RefreshResponse{
+            login_token: newtp.login_token.clone()
+        };
+
+        let pk_mock = Mock::new()
+            .expect_method(Method::GET)
+            .expect_path("/pk")
+            .return_status(200)
+            .return_json_body(&pk)
+            .create_on(&mock_server);
+
+        let refresh_mock = Mock::new()
+            .expect_method(Method::POST)
+            .expect_path("/refresh")
+            .return_status(200)
+            .return_json_body(&resp)
+            .create_on(&mock_server);
+
+        let url = format!("http://{}", mock_server.address());
+
+
+        let (_, tp) = generate_valid_tokenpair("yeet");
+
+        let au = Aurum::new(url).unwrap();
+        let mut user = AuthenticatedUser{
+            user: User{
+                username: "yeet".to_string(),
+                ..Default::default()
+            },
+            token_pair: tp
+        };
+
+        let res = user.refresh_tokens(&au).unwrap();
+        assert_eq!(res, &newtp.login_token);
+        assert_eq!(user.token_pair.login_token, newtp.login_token);
+
+        assert_eq!(pk_mock.times_called(), 1);
+        assert_eq!(refresh_mock.times_called(), 1);
+    }
+
+    #[test]
+    fn test_get_user() {
+        let mock_server = MockServer::start();
+
+        let pk = requests::PublicKeyResponse {
+            public_key: PUBLIC_TEST_KEY.to_owned(),
+        };
+
+        let orig = User{
+            username: "user".to_string(),
+            password: "pass".to_string(),
+            email: "old-email".to_string(),
+            ..Default::default()
+        };
+
+        let mut new = orig.clone();
+        new.email = "new mail".to_string();
+
+        let (_, tp) = generate_valid_tokenpair("yeet");
+
+        let pk_mock = Mock::new()
+            .expect_method(Method::GET)
+            .expect_path("/pk")
+            .return_status(200)
+            .return_json_body(&pk)
+            .create_on(&mock_server);
+
+        let get_user_mock = Mock::new()
+            .expect_method(Method::GET)
+            .expect_path("/user")
+            .expect_header("Authorization", &format!("Bearer {}", &tp.login_token))
+            .return_status(200)
+            .return_json_body(&new)
+            .create_on(&mock_server);
+
+        let url = format!("http://{}", mock_server.address());
+
+        let au = Aurum::new(url).unwrap();
+        let mut auth_user = AuthenticatedUser{
+            user: orig,
+            token_pair: tp
+        };
+
+        auth_user.get_user(&au).unwrap();
+        assert_eq!(auth_user.user, new);
+
+        assert_eq!(pk_mock.times_called(), 1);
+        assert_eq!(get_user_mock.times_called(), 1);
+    }
+
+    #[test]
+    fn test_get_user_failure() {
+        let mock_server = MockServer::start();
+
+        let pk = requests::PublicKeyResponse {
+            public_key: PUBLIC_TEST_KEY.to_owned(),
+        };
+
+        let orig = User{
+            username: "user".to_string(),
+            password: "pass".to_string(),
+            email: "old-email".to_string(),
+            ..Default::default()
+        };
+
+        let mut new = orig.clone();
+        new.username = "otheruser".to_string();
+
+        let (_, tp) = generate_valid_tokenpair("yeet");
+
+        let pk_mock = Mock::new()
+            .expect_method(Method::GET)
+            .expect_path("/pk")
+            .return_status(200)
+            .return_json_body(&pk)
+            .create_on(&mock_server);
+
+        let get_user_mock = Mock::new()
+            .expect_method(Method::GET)
+            .expect_path("/user")
+            .expect_header("Authorization", &format!("Bearer {}", &tp.login_token))
+            .return_status(200)
+            .return_json_body(&new)
+            .create_on(&mock_server);
+
+        let url = format!("http://{}", mock_server.address());
+
+        let au = Aurum::new(url).unwrap();
+        let mut auth_user = AuthenticatedUser{
+            user: orig.clone(),
+            token_pair: tp
+        };
+
+        let err = auth_user.get_user(&au).unwrap_err();
+        assert_eq!(err.code, Code::InvalidResponse);
+        assert_eq!(auth_user.user, orig);
+
+
+        assert_eq!(pk_mock.times_called(), 1);
+        assert_eq!(get_user_mock.times_called(), 1);
     }
 }

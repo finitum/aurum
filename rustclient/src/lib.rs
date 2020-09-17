@@ -35,9 +35,7 @@ impl Aurum {
             "application/json".parse().map_err(AurumError::new)?,
         );
 
-        let base_url = base_url
-            .parse()
-            .map_err(|e| AurumError::new(format!("failed to parse url: {:?}", e)))?;
+        let base_url = base_url.parse()?;
 
         let client = ClientBuilder::new()
             .timeout(Duration::from_secs(5))
@@ -46,6 +44,7 @@ impl Aurum {
             .build()
             .map_err(|e| AurumError::new(format!("failed to create http client: {:?}", e)))?;
 
+        // Retrieve public key
         let server_public_key = Self::get_pk(&client, &base_url)?;
 
         Ok(Self {
@@ -58,6 +57,9 @@ impl Aurum {
     /// Retrieves the server's public key and parses it into an [Ed25519PublicKey]
     fn get_pk(client: &Client, base_url: &Url) -> Result<Ed25519PublicKey, AurumError> {
         log::info!("requesting public key from Aurum server");
+        if base_url.scheme() != "https" {
+            log::warn!("Requesting public key insecurely, please use https for host verification!")
+        }
 
         let pk = requests::pk(base_url, client)?;
 
@@ -90,6 +92,8 @@ impl Aurum {
         email: String,
         password: String,
     ) -> Result<AuthenticatedUser, AurumError> {
+        log::info!("creating an account for {}", username);
+
         let user = InternalUser {
             username,
             password,

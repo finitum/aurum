@@ -15,7 +15,7 @@ pub enum Code {
     InvalidPEM,
     ConnectionError,
     UrlParseError,
-
+    InvalidResponse
 }
 
 #[derive(Debug)]

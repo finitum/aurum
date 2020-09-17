@@ -33,7 +33,7 @@ pub(crate) struct RefreshRequest<'a> {
     pub(crate) refresh_token: &'a str,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize,Deserialize)]
 pub(crate) struct RefreshResponse {
     pub(crate) login_token: String,
 }
@@ -51,6 +51,28 @@ pub(crate) fn refresh<'a>(
 
     if resp.status().is_success() {
         Ok(resp.json()?)
+    } else {
+        Err(resp.status().into())
+    }
+}
+
+pub(crate) fn refresh_tp(
+    base_url: &Url,
+    client: &Client,
+    mut token_pair: TokenPair,
+) -> Result<TokenPair, AurumError> {
+    token_pair.login_token = String::new();
+
+    let resp = client
+        .post(base_url.join("refresh")?)
+        .json(&token_pair)
+        .send()?;
+
+    if resp.status().is_success() {
+        let new: TokenPair = resp.json()?;
+        token_pair.login_token = new.login_token;
+
+        Ok(token_pair)
     } else {
         Err(resp.status().into())
     }
@@ -75,7 +97,7 @@ pub(crate) fn pk(base_url: &Url, client: &Client) -> Result<PublicKeyResponse, A
 // -- Authenticated Routes --
 
 /// Gets the user struct of the current user
-pub(crate) fn me(base_url: &Url, client: &Client, tokens: TokenPair) -> Result<User, AurumError> {
+pub(crate) fn get_user(base_url: &Url, client: &Client, tokens: &TokenPair) -> Result<User, AurumError> {
     let bearer = format!("Bearer {}", tokens.login_token);
 
     let resp = client

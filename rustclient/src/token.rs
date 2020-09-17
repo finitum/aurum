@@ -3,7 +3,7 @@ use crate::error::AurumError;
 use crate::error::Code;
 use crate::error::Code::InvalidPEM;
 use jwt_simple::prelude::*;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub(crate) struct Claims {
@@ -26,14 +26,17 @@ impl Claims {
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub(crate) struct TokenPair {
+
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub(crate) login_token: String,
-    #[serde(deserialize_with = "none_is_empty_string")]
+
+    #[serde(default,skip_serializing_if = "String::is_empty")]
     pub(crate) refresh_token: String,
 }
 
-fn none_is_empty_string<'de, D: Deserializer<'de>>(d: D) -> Result<String, D::Error> {
-    Option::deserialize(d).map(Option::unwrap_or_default)
-}
+// fn none_is_empty_string<'de, D: Deserializer<'de>>(d: D) -> Result<String, D::Error> {
+//     Option::deserialize(d).map(Option::unwrap_or_default)
+// }
 
 impl TokenPair {
     /// Verifies the signatures on the two tokens inside. Sets the two claims fields. Returns false
