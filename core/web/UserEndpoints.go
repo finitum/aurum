@@ -57,7 +57,7 @@ Only available to admins, the first user of the server is by default admin.
 */
 
 /**
-@api {get} /me Request user info
+@api {get} /user Request user info
 @apiName GetUser
 @apiGroup User
 @apiUse AuthHeader
@@ -159,7 +159,7 @@ func (e *Endpoints) GetUsers(w http.ResponseWriter, req *http.Request) {
 }
 
 /**
-@api {put} /me Update user info
+@api {put} /user Update user info
 @apiName UpdateUser
 @apiGroup User
 @apiUse AuthHeader
@@ -170,7 +170,7 @@ func (e *Endpoints) GetUsers(w http.ResponseWriter, req *http.Request) {
 @apiError 422 If the provided password is deemed to weak
 */
 func (e *Endpoints) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	// PUT /me (but maybe we need to change it to an actual parameterized route as to make changing username possible
+	// PUT /user (but maybe we need to change it to an actual parameterized route as to make changing username possible
 	// and make it a bit more logical for admins as /me doesn't necessarily refer to yourself for them
 
 	utmp := r.Context().Value(contextKeyUser)

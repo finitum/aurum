@@ -148,7 +148,8 @@ commands:
 - login     <username>            Login as this user on aurum. Prompts for a password.
 - signup    <username> <email>    Register a new user. Prompts for a password.
 - logout                          Logs you out. Alternatively you can log in as another user.
-- user [name]                     Prints information about a user (without name uses yourself).
+- user      [name]                Prints information about a user (without name uses yourself).
+
 ")
         }
     }

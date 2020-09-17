@@ -21,7 +21,7 @@ pub(crate) struct Claims {
 
 impl Claims {
     #[cfg(test)]
-    pub(crate) fn new(username: String, role: Role, refresh: bool) -> Self{
+    pub(crate) fn new(username: String, role: crate::Role, refresh: bool) -> Self{
         Self {
             username,
             role,

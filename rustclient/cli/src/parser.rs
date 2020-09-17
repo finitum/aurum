@@ -8,7 +8,6 @@ use pest::Parser;
 #[grammar = "language.pest"]
 struct CommandParser;
 
-
 fn parse_connect<'a>(mut pairs: impl Iterator<Item = Pair<'a, Rule>>) -> Result<Command, CliError>  {
     let string = pairs.next().ok_or(CliError::Custom("failed to parse command".to_string()))?.as_str();
 

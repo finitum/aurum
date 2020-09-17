@@ -16,7 +16,6 @@ use reqwest::Url;
 
 pub use crate::user::AuthenticatedUser as User;
 pub use crate::user::Role;
-use crate::requests::join;
 
 #[derive(Debug)]
 pub struct Aurum {
@@ -27,13 +26,9 @@ pub struct Aurum {
     server_public_key: Ed25519PublicKey,
 }
 
-#[derive(Serialize,Deserialize)]
-struct PublicKey {
-    public_key: String
-}
-
 impl Aurum {
     pub fn new(base_url: String) -> Result<Self, AurumError> {
+        log::info!("creating Aurum client at base url {}", base_url);
         let mut headers = HeaderMap::new();
         headers.insert("Content-Type", "application/json".parse().map_err(AurumError::new)?);
 
@@ -59,21 +54,11 @@ impl Aurum {
     /// Retrieves the server's public key and parses it into an [Ed25519PublicKey]
     /// TODO: move to requests
     fn get_pk(client: &Client, base_url: &Url) -> Result<Ed25519PublicKey, AurumError>  {
-        log::info!("creating Aurum client at base url {}", base_url);
         log::info!("requesting public key from Aurum server");
 
-        let res = client.get(join(base_url, "pk")?)
-            .send()
-            .map_err(|_| AurumError::new("requesting aurum public key failed"))?;
+        let pk = requests::pk(base_url, client)?;
 
-        if !res.status().is_success() {
-            return Err(res.status().into())
-        }
-
-        let json: PublicKey = res.json()
-            .map_err(|e| AurumError::new(format!("failed to decode json while requesting aurum public key: {:?}", e)))?;
-
-        token::pem_to_key(json.public_key.as_str())
+        token::pem_to_key(pk.public_key.as_str())
     }
 
 
@@ -115,6 +100,7 @@ mod tests {
     use jwt_simple::prelude::*;
     use super::*;
     use jwt_simple::coarsetime::Duration;
+    use crate::error::Code;
 
     const PUBLIC_TEST_KEY: &str = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAcYZfIh84oxMzA4bFmVFPNsSBCDn6D4nJiTTXsM46WGg=\n-----END PUBLIC KEY-----";
     const PUBLIC_TEST_KEY_B64: &str = "cYZfIh84oxMzA4bFmVFPNsSBCDn6D4nJiTTXsM46WGg=";
@@ -140,13 +126,13 @@ mod tests {
     fn test_login() {
         let mock_server = MockServer::start();
 
-        let (key, tp) = generate_valid_tokenpair("yeet");
+        let (_, tp) = generate_valid_tokenpair("yeet");
 
-        let pk = PublicKey{
+        let pk = requests::PublicKeyResponse{
             public_key: PUBLIC_TEST_KEY.to_owned()
         };
 
-        let user = User{
+        let user = InternalUser{
             username: "user".to_string(),
             password: "pass".to_string(),
             ..Default::default()
@@ -191,13 +177,13 @@ mod tests {
     fn test_login_failure_helper(code: reqwest::StatusCode, expected_error_code: Code) {
         let mock_server = MockServer::start();
 
-        let (key, tp) = generate_valid_tokenpair("yeet");
+        let (_, tp) = generate_valid_tokenpair("yeet");
 
-        let pk = PublicKey{
+        let pk = requests::PublicKeyResponse{
             public_key: PUBLIC_TEST_KEY.to_owned()
         };
 
-        let user = User{
+        let user = InternalUser{
             username: "user".to_string(),
             password: "pass".to_string(),
             ..Default::default()

@@ -1,5 +1,6 @@
 use reqwest::StatusCode;
 use der_parser::error::BerError;
+use url::ParseError;
 
 #[repr(u8)]
 #[derive(Debug, PartialOrd, PartialEq)]
@@ -11,6 +12,7 @@ pub enum Code {
     ReqwestError,
     InvalidPEM,
     ConnectionError,
+    UrlParseError
 }
 
 #[derive(Debug)]
@@ -69,5 +71,12 @@ impl From<BerError> for AurumError {
 impl From<der_parser::nom::Err<der_parser::error::BerError>> for AurumError {
     fn from(e: der_parser::nom::Err<BerError>) -> Self {
         AurumError::code(e.to_string(), Code::InvalidPEM)
+    }
+}
+
+
+impl From<url::ParseError> for AurumError {
+    fn from(e: ParseError) -> Self {
+        AurumError::code(e.to_string(), Code::UrlParseError)
     }
 }

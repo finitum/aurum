@@ -3,20 +3,14 @@ use crate::token::TokenPair;
 use crate::error::{AurumError, Code};
 use reqwest::blocking::Client;
 use serde::{Serialize, Deserialize};
-use reqwest::Url;
-
-pub(crate) fn join(url: &Url, path: &str) -> Result<Url, AurumError>{
-    url.join(path).map_err(|e| AurumError::new(format!("failed to parse url: {:?}", e)))
-}
+use url::Url;
+use std::ops::Range;
 
 pub(crate) fn login(base_url: &Url, client: &Client, user: &User) -> Result<TokenPair, AurumError> {
     let resp = client
-        .post(join(base_url, "login")?)
+        .post(base_url.join("login")?)
         .json(user)
-        .send()
-        .map_err(|e| {
-            AurumError::code(format!("A connection error occurred while logging in: {:?}", e), Code::ConnectionError)
-        })?;
+        .send()?;
 
     if resp.status().is_success() {
         Ok(resp.json()?)
@@ -27,12 +21,9 @@ pub(crate) fn login(base_url: &Url, client: &Client, user: &User) -> Result<Toke
 
 pub(crate) fn signup(base_url: &Url, client: &Client, user: &User) -> Result<(), AurumError> {
     let resp = client
-        .post(join(base_url, "signup")?)
+        .post(base_url.join("signup")?)
         .json(user)
-        .send()
-        .map_err(|e| {
-            AurumError::code(format!("A connection error occurred while signing up: {:?}", e), Code::ConnectionError)
-        })?;
+        .send()?;
 
     if resp.status().is_success() {
         Ok(())
@@ -43,12 +34,9 @@ pub(crate) fn signup(base_url: &Url, client: &Client, user: &User) -> Result<(),
 
 pub(crate) fn get_user(base_url: &Url, client: &Client, user: &User) -> Result<(), AurumError> {
     let resp = client
-        .post(join(base_url, "signup")?)
+        .post(base_url.join( "user")?)
         .json(user)
-        .send()
-        .map_err(|e| {
-            AurumError::code(format!("A connection error occurred while signing up: {:?}", e), Code::ConnectionError)
-        })?;
+        .send()?;
 
     if resp.status().is_success() {
         Ok(())
@@ -69,16 +57,87 @@ pub(crate) struct RefreshResponse {
 
 pub(crate) fn refresh<'a>(base_url: &Url, client: &Client, refresh_token: &RefreshRequest<'a>) -> Result<RefreshResponse, AurumError> {
     let resp = client
-        .post(join(base_url, "refresh")?)
+        .post(base_url.join("refresh")?)
         .json(refresh_token)
-        .send()
-        .map_err(|e| {
-            AurumError::code(format!("A connection error occurred while refreshing the tokens: {:?}", e), Code::ConnectionError)
-        })?;
+        .send()?;
 
     if resp.status().is_success() {
         Ok(resp.json()?)
     } else {
         Err(resp.status().into())
+    }
+}
+
+#[derive(Serialize,Deserialize)]
+pub(crate) struct PublicKeyResponse {
+    pub(crate) public_key: String
+}
+
+pub(crate) fn pk(base_url: &Url, client: &Client) -> Result<PublicKeyResponse, AurumError> {
+    let resp = client
+        .get(base_url.join("pk")?)
+        .send()?;
+
+    if !resp.status().is_success() {
+        Err(resp.status().into())
+    } else {
+        Ok(resp.json()?)
+    }
+}
+
+// -- Authenticated Routes --
+
+pub(crate) fn me(base_url: &Url, client: &Client, tokens: TokenPair) -> Result<User, AurumError> {
+    let bearer = format!("Bearer {}", tokens.login_token);
+
+    let resp = client
+        .get(base_url.join("user")?)
+        .header("Authorization", bearer)
+        .send()?;
+
+    if !resp.status().is_success() {
+        Err(resp.status().into())
+    } else {
+        Ok(resp.json()?)
+    }
+}
+
+/// Update the user by providing a new user object, admins can change other users.
+pub(crate) fn update_user(base_url: &Url, client: &Client, tokens: TokenPair, user: &User) -> Result<User, AurumError> {
+    let bearer = format!("Bearer {}", tokens.login_token);
+
+    let resp = client
+        .put(base_url.join("me")?)
+        .header("Authorization", bearer)
+        .json(user)
+        .send()?;
+
+    if !resp.status().is_success() {
+        Err(resp.status().into())
+    } else {
+        Ok(resp.json()?)
+    }
+}
+
+// -- Admin Routes --
+
+pub(crate) fn users(base_url: &Url, client: &Client, tokens: TokenPair, range: Range<usize>) -> Result<Vec<User>, AurumError> {
+    let bearer = format!("Bearer {}", tokens.login_token);
+
+    let mut url = base_url.join("user")?;
+    url.query_pairs_mut()
+        .append_pair("start", range.start.to_string().as_str())
+        .append_pair("end", range.end.to_string().as_str());
+
+
+    let resp = client
+        .get(url)
+        .header("Authorization", bearer)
+        .send()?;
+
+    if !resp.status().is_success() {
+        Err(resp.status().into())
+    } else {
+        Ok(resp.json()?)
     }
 }
