@@ -36,13 +36,6 @@ fn none_is_empty_string<'de, D: Deserializer<'de>>(d: D) -> Result<String, D::Er
 }
 
 impl TokenPair {
-    // pub(crate) fn from_tokens(login_token: String, refresh_token: String) -> Self {
-    //     TokenPair {
-    //         refresh_token,
-    //         login_token,
-    //     }
-    // }
-
     /// Verifies the signatures on the two tokens inside. Sets the two claims fields. Returns false
     /// if the verification failed, but if true it makes sure the two claims fields are *NOT* None.
     ///
@@ -126,7 +119,7 @@ pub(crate) fn generate_valid_tokenpair(username: &str) -> (Ed25519KeyPair, Token
         .verify_token::<Claims>(&refresh_token, None)
         .is_ok());
 
-    (key, TokenPair::from_tokens(login_token, refresh_token))
+    (key, TokenPair{login_token, refresh_token})
 }
 
 #[cfg(test)]
