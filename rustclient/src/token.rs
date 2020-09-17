@@ -1,4 +1,4 @@
-use super::user;
+use super::user::Role;
 use crate::error::AurumError;
 use crate::error::Code;
 use crate::error::Code::InvalidPEM;
@@ -8,20 +8,14 @@ use serde::{Deserialize, Deserializer, Serialize};
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub(crate) struct Claims {
     username: String,
-    role: user::Role,
+    role: Role,
 
     refresh: bool,
-    // // Issued at
-    // iat: i64,
-    // // Expiry
-    // exp: i64,
-    // // Not Before
-    // nbf: i64,
 }
 
 impl Claims {
     #[cfg(test)]
-    pub(crate) fn new(username: String, role: crate::Role, refresh: bool) -> Self {
+    pub(crate) fn new(username: String, role: Role, refresh: bool) -> Self {
         Self {
             username,
             role,
@@ -30,7 +24,7 @@ impl Claims {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub(crate) struct TokenPair {
     pub(crate) login_token: String,
     #[serde(deserialize_with = "none_is_empty_string")]
@@ -42,12 +36,12 @@ fn none_is_empty_string<'de, D: Deserializer<'de>>(d: D) -> Result<String, D::Er
 }
 
 impl TokenPair {
-    pub(crate) fn from_tokens(login_token: String, refresh_token: String) -> Self {
-        TokenPair {
-            refresh_token,
-            login_token,
-        }
-    }
+    // pub(crate) fn from_tokens(login_token: String, refresh_token: String) -> Self {
+    //     TokenPair {
+    //         refresh_token,
+    //         login_token,
+    //     }
+    // }
 
     /// Verifies the signatures on the two tokens inside. Sets the two claims fields. Returns false
     /// if the verification failed, but if true it makes sure the two claims fields are *NOT* None.
@@ -105,6 +99,34 @@ pub(crate) fn pem_to_key(pem: &str) -> Result<Ed25519PublicKey, AurumError> {
         .data;
 
     Ed25519PublicKey::from_bytes(key).map_err(|e| AurumError::code(e.to_string(), Code::InvalidPEM))
+}
+
+#[cfg(test)]
+pub(crate) fn generate_valid_tokenpair(username: &str) -> (Ed25519KeyPair, TokenPair) {
+    use jwt_simple::claims::Claims as jwtClaims;
+    use crate::test_constants::SECRET_TEST_KEY_B64;
+    use crate::Role;
+
+    let key = Ed25519KeyPair::from_bytes(base64::decode(SECRET_TEST_KEY_B64).unwrap().as_ref())
+        .unwrap();
+    let lc = Claims::new(username.to_owned(), Role::default(), false);
+    let rc = Claims::new(username.to_owned(), Role::default(), true);
+    let lclaims = jwtClaims::with_custom_claims(lc, Duration::from_hours(2));
+    let rclaims = jwtClaims::with_custom_claims(rc, Duration::from_hours(2));
+    let login_token = key.sign(lclaims).unwrap();
+    let refresh_token = key.sign(rclaims).unwrap();
+
+    // Sanity check verify
+    assert!(key
+        .public_key()
+        .verify_token::<Claims>(&login_token, None)
+        .is_ok());
+    assert!(key
+        .public_key()
+        .verify_token::<Claims>(&refresh_token, None)
+        .is_ok());
+
+    (key, TokenPair::from_tokens(login_token, refresh_token))
 }
 
 #[cfg(test)]

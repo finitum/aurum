@@ -1,4 +1,4 @@
-use crate::error::{AurumError, Code};
+use crate::error::AurumError;
 use crate::token::TokenPair;
 use crate::user::User;
 use reqwest::blocking::Client;
@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::ops::Range;
 use url::Url;
 
+/// Logs in the specified user using username and password
 pub(crate) fn login(base_url: &Url, client: &Client, user: &User) -> Result<TokenPair, AurumError> {
     let resp = client.post(base_url.join("login")?).json(user).send()?;
 
@@ -16,18 +17,9 @@ pub(crate) fn login(base_url: &Url, client: &Client, user: &User) -> Result<Toke
     }
 }
 
+/// Creates a new user using specified username and password
 pub(crate) fn signup(base_url: &Url, client: &Client, user: &User) -> Result<(), AurumError> {
     let resp = client.post(base_url.join("signup")?).json(user).send()?;
-
-    if resp.status().is_success() {
-        Ok(())
-    } else {
-        Err(resp.status().into())
-    }
-}
-
-pub(crate) fn get_user(base_url: &Url, client: &Client, user: &User) -> Result<(), AurumError> {
-    let resp = client.post(base_url.join("user")?).json(user).send()?;
 
     if resp.status().is_success() {
         Ok(())
@@ -46,6 +38,7 @@ pub(crate) struct RefreshResponse {
     pub(crate) login_token: String,
 }
 
+/// Refreshes the login token with the given refresh token
 pub(crate) fn refresh<'a>(
     base_url: &Url,
     client: &Client,
@@ -68,6 +61,7 @@ pub(crate) struct PublicKeyResponse {
     pub(crate) public_key: String,
 }
 
+/// Gets the public key from the specified server
 pub(crate) fn pk(base_url: &Url, client: &Client) -> Result<PublicKeyResponse, AurumError> {
     let resp = client.get(base_url.join("pk")?).send()?;
 
@@ -80,6 +74,7 @@ pub(crate) fn pk(base_url: &Url, client: &Client) -> Result<PublicKeyResponse, A
 
 // -- Authenticated Routes --
 
+/// Gets the user struct of the current user
 pub(crate) fn me(base_url: &Url, client: &Client, tokens: TokenPair) -> Result<User, AurumError> {
     let bearer = format!("Bearer {}", tokens.login_token);
 
@@ -119,6 +114,7 @@ pub(crate) fn update_user(
 
 // -- Admin Routes --
 
+/// Gets a list of users limited by the specified range
 pub(crate) fn users(
     base_url: &Url,
     client: &Client,

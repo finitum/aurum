@@ -6,13 +6,16 @@ use url::ParseError;
 #[derive(Debug, PartialOrd, PartialEq)]
 pub enum Code {
     Unknown,
-    InvalidCredentials,
+    Unauthorized,
     ServerError,
+    Conflict,
+    InsufficientPassword,
     InvalidJWTToken,
     ReqwestError,
     InvalidPEM,
     ConnectionError,
     UrlParseError,
+
 }
 
 #[derive(Debug)]
@@ -42,11 +45,19 @@ impl From<StatusCode> for AurumError {
         match status {
             StatusCode::UNAUTHORIZED => AurumError {
                 message: status.to_string(),
-                code: Code::InvalidCredentials,
+                code: Code::Unauthorized,
             },
             StatusCode::INTERNAL_SERVER_ERROR => AurumError {
                 message: status.to_string(),
                 code: Code::ServerError,
+            },
+            StatusCode::CONFLICT => AurumError {
+                message: status.to_string(),
+                code: Code::Conflict,
+            },
+            StatusCode::UNPROCESSABLE_ENTITY => AurumError {
+                message: status.to_string(),
+                code: Code::InsufficientPassword,
             },
             _ => AurumError {
                 message: status.to_string(),
