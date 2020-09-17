@@ -1,5 +1,5 @@
-use reqwest::StatusCode;
 use der_parser::error::BerError;
+use reqwest::StatusCode;
 use url::ParseError;
 
 #[repr(u8)]
@@ -12,7 +12,7 @@ pub enum Code {
     ReqwestError,
     InvalidPEM,
     ConnectionError,
-    UrlParseError
+    UrlParseError,
 }
 
 #[derive(Debug)]
@@ -25,7 +25,7 @@ impl AurumError {
     pub fn new<T: ToString>(s: T) -> Self {
         AurumError {
             message: s.to_string(),
-            code: Code::Unknown
+            code: Code::Unknown,
         }
     }
 
@@ -42,23 +42,23 @@ impl From<StatusCode> for AurumError {
         match status {
             StatusCode::UNAUTHORIZED => AurumError {
                 message: status.to_string(),
-                code: Code::InvalidCredentials
+                code: Code::InvalidCredentials,
             },
             StatusCode::INTERNAL_SERVER_ERROR => AurumError {
                 message: status.to_string(),
-                code: Code::ServerError
+                code: Code::ServerError,
             },
             _ => AurumError {
                 message: status.to_string(),
-                code: Code::Unknown
-            }
+                code: Code::Unknown,
+            },
         }
     }
 }
 
 impl From<reqwest::Error> for AurumError {
     fn from(e: reqwest::Error) -> Self {
-        AurumError::code(e.to_string(),Code::ReqwestError)
+        AurumError::code(e.to_string(), Code::ReqwestError)
     }
 }
 
@@ -73,7 +73,6 @@ impl From<der_parser::nom::Err<der_parser::error::BerError>> for AurumError {
         AurumError::code(e.to_string(), Code::InvalidPEM)
     }
 }
-
 
 impl From<url::ParseError> for AurumError {
     fn from(e: ParseError) -> Self {

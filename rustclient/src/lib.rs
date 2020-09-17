@@ -1,18 +1,17 @@
-mod user;
 mod error;
-mod token;
 mod requests;
+mod token;
+mod user;
 
-use reqwest::blocking::{ClientBuilder, Client};
+use crate::user::AuthenticatedUser;
+use error::AurumError;
+use jwt_simple::algorithms::Ed25519PublicKey;
+use reqwest::blocking::{Client, ClientBuilder};
+use reqwest::header::HeaderMap;
+use reqwest::Url;
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use user::User as InternalUser;
-use error::AurumError;
-use reqwest::header::HeaderMap;
-use jwt_simple::algorithms::Ed25519PublicKey;
-use serde::{Serialize, Deserialize};
-use crate::user::AuthenticatedUser;
-use reqwest::Url;
-
 
 pub use crate::user::AuthenticatedUser as User;
 pub use crate::user::Role;
@@ -30,9 +29,13 @@ impl Aurum {
     pub fn new(base_url: String) -> Result<Self, AurumError> {
         log::info!("creating Aurum client at base url {}", base_url);
         let mut headers = HeaderMap::new();
-        headers.insert("Content-Type", "application/json".parse().map_err(AurumError::new)?);
+        headers.insert(
+            "Content-Type",
+            "application/json".parse().map_err(AurumError::new)?,
+        );
 
-        let base_url = base_url.parse()
+        let base_url = base_url
+            .parse()
             .map_err(|e| AurumError::new(format!("failed to parse url: {:?}", e)))?;
 
         let client = ClientBuilder::new()
@@ -53,7 +56,7 @@ impl Aurum {
 
     /// Retrieves the server's public key and parses it into an [Ed25519PublicKey]
     /// TODO: move to requests
-    fn get_pk(client: &Client, base_url: &Url) -> Result<Ed25519PublicKey, AurumError>  {
+    fn get_pk(client: &Client, base_url: &Url) -> Result<Ed25519PublicKey, AurumError> {
         log::info!("requesting public key from Aurum server");
 
         let pk = requests::pk(base_url, client)?;
@@ -61,9 +64,12 @@ impl Aurum {
         token::pem_to_key(pk.public_key.as_str())
     }
 
-
     /// Logs in the user with Aurum. TODO: more comments
-    pub fn login(&mut self, username: String, password: String) -> Result<AuthenticatedUser, AurumError> {
+    pub fn login(
+        &mut self,
+        username: String,
+        password: String,
+    ) -> Result<AuthenticatedUser, AurumError> {
         log::info!("logging in as {}", username);
 
         let user = InternalUser {
@@ -78,10 +84,20 @@ impl Aurum {
     }
 
     /// TODO: docs
-    pub fn signup(&mut self, username: String, email: String, password: String) -> Result<AuthenticatedUser, AurumError> {
-        let user = InternalUser{username, password, email, ..Default::default()};
+    pub fn signup(
+        &mut self,
+        username: String,
+        email: String,
+        password: String,
+    ) -> Result<AuthenticatedUser, AurumError> {
+        let user = InternalUser {
+            username,
+            password,
+            email,
+            ..Default::default()
+        };
         requests::signup(&self.base_url, &self.client, &user)?;
-        self.login(user.username.clone(), user.password.clone())
+        self.login(user.username.clone(), user.password)
     }
 
     // pub fn user(&mut self, username: String) {
@@ -92,22 +108,24 @@ impl Aurum {
 
 #[cfg(test)]
 mod tests {
-    use httpmock::{MockServer, Mock};
-    use httpmock::Method;
-    use crate::token::{TokenPair};
-    use crate::user::Role;
-    use crate::token::Claims as CustomClaims;
-    use jwt_simple::prelude::*;
     use super::*;
-    use jwt_simple::coarsetime::Duration;
     use crate::error::Code;
+    use crate::token::Claims as CustomClaims;
+    use crate::token::TokenPair;
+    use crate::user::Role;
+    use httpmock::Method;
+    use httpmock::{Mock, MockServer};
+    use jwt_simple::coarsetime::Duration;
+    use jwt_simple::prelude::*;
 
     const PUBLIC_TEST_KEY: &str = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAcYZfIh84oxMzA4bFmVFPNsSBCDn6D4nJiTTXsM46WGg=\n-----END PUBLIC KEY-----";
     const PUBLIC_TEST_KEY_B64: &str = "cYZfIh84oxMzA4bFmVFPNsSBCDn6D4nJiTTXsM46WGg=";
-    const SECRET_TEST_KEY_B64: &str = "ovjfGUTfVkSQ6AP0qdFX7Z20FFHCPvDpKu5CeXXzVdRxhl8iHzijEzMDhsWZUU82xIEIOfoPicmJNNewzjpYaA==";
+    const SECRET_TEST_KEY_B64: &str =
+        "ovjfGUTfVkSQ6AP0qdFX7Z20FFHCPvDpKu5CeXXzVdRxhl8iHzijEzMDhsWZUU82xIEIOfoPicmJNNewzjpYaA==";
 
     fn generate_valid_tokenpair(username: &str) -> (Ed25519KeyPair, TokenPair) {
-        let key = Ed25519KeyPair::from_bytes(base64::decode(SECRET_TEST_KEY_B64).unwrap().as_ref()).unwrap();
+        let key = Ed25519KeyPair::from_bytes(base64::decode(SECRET_TEST_KEY_B64).unwrap().as_ref())
+            .unwrap();
         let lc = CustomClaims::new(username.to_owned(), Role::default(), false);
         let rc = CustomClaims::new(username.to_owned(), Role::default(), true);
         let lclaims = Claims::with_custom_claims(lc, Duration::from_hours(2));
@@ -116,8 +134,14 @@ mod tests {
         let refresh_token = key.sign(rclaims).unwrap();
 
         // Sanity check verify
-        assert!(key.public_key().verify_token::<CustomClaims>(&login_token, None).is_ok());
-        assert!(key.public_key().verify_token::<CustomClaims>(&refresh_token, None).is_ok());
+        assert!(key
+            .public_key()
+            .verify_token::<CustomClaims>(&login_token, None)
+            .is_ok());
+        assert!(key
+            .public_key()
+            .verify_token::<CustomClaims>(&refresh_token, None)
+            .is_ok());
 
         (key, TokenPair::from_tokens(login_token, refresh_token))
     }
@@ -128,11 +152,11 @@ mod tests {
 
         let (_, tp) = generate_valid_tokenpair("yeet");
 
-        let pk = requests::PublicKeyResponse{
-            public_key: PUBLIC_TEST_KEY.to_owned()
+        let pk = requests::PublicKeyResponse {
+            public_key: PUBLIC_TEST_KEY.to_owned(),
         };
 
-        let user = InternalUser{
+        let user = InternalUser {
             username: "user".to_string(),
             password: "pass".to_string(),
             ..Default::default()
@@ -159,8 +183,10 @@ mod tests {
         let auth_user = au.login(user.username.clone(), user.password).unwrap();
         assert_eq!(auth_user.username(), &user.username);
 
-
-        assert_eq!(au.server_public_key.to_bytes(), base64::decode(PUBLIC_TEST_KEY_B64).unwrap());
+        assert_eq!(
+            au.server_public_key.to_bytes(),
+            base64::decode(PUBLIC_TEST_KEY_B64).unwrap()
+        );
         assert_eq!(auth_user.token(), tp.login_token);
 
         assert_eq!(pk_mock.times_called(), 1);
@@ -170,7 +196,10 @@ mod tests {
     #[test]
     fn test_login_failure() {
         test_login_failure_helper(reqwest::StatusCode::UNAUTHORIZED, Code::InvalidCredentials);
-        test_login_failure_helper(reqwest::StatusCode::INTERNAL_SERVER_ERROR, Code::ServerError);
+        test_login_failure_helper(
+            reqwest::StatusCode::INTERNAL_SERVER_ERROR,
+            Code::ServerError,
+        );
         test_login_failure_helper(reqwest::StatusCode::from_u16(420).unwrap(), Code::Unknown);
     }
 
@@ -179,11 +208,11 @@ mod tests {
 
         let (_, tp) = generate_valid_tokenpair("yeet");
 
-        let pk = requests::PublicKeyResponse{
-            public_key: PUBLIC_TEST_KEY.to_owned()
+        let pk = requests::PublicKeyResponse {
+            public_key: PUBLIC_TEST_KEY.to_owned(),
         };
 
-        let user = InternalUser{
+        let user = InternalUser {
             username: "user".to_string(),
             password: "pass".to_string(),
             ..Default::default()

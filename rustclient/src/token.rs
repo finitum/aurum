@@ -1,9 +1,9 @@
 use super::user;
-use serde::{Serialize, Deserialize, Deserializer};
 use crate::error::AurumError;
 use crate::error::Code;
-use jwt_simple::prelude::*;
 use crate::error::Code::InvalidPEM;
+use jwt_simple::prelude::*;
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub(crate) struct Claims {
@@ -21,7 +21,7 @@ pub(crate) struct Claims {
 
 impl Claims {
     #[cfg(test)]
-    pub(crate) fn new(username: String, role: crate::Role, refresh: bool) -> Self{
+    pub(crate) fn new(username: String, role: crate::Role, refresh: bool) -> Self {
         Self {
             username,
             role,
@@ -37,7 +37,6 @@ pub(crate) struct TokenPair {
     pub(crate) refresh_token: String,
 }
 
-
 fn none_is_empty_string<'de, D: Deserializer<'de>>(d: D) -> Result<String, D::Error> {
     Option::deserialize(d).map(Option::unwrap_or_default)
 }
@@ -46,13 +45,13 @@ impl TokenPair {
     pub(crate) fn from_tokens(login_token: String, refresh_token: String) -> Self {
         TokenPair {
             refresh_token,
-            login_token
+            login_token,
         }
     }
 
-    /// Verifies the signatures on the two tokens inside. Sets the two claims fields. Returns false 
+    /// Verifies the signatures on the two tokens inside. Sets the two claims fields. Returns false
     /// if the verification failed, but if true it makes sure the two claims fields are *NOT* None.
-    /// 
+    ///
     /// Therefore, if later any of the claims fields are None for whatever reason, this is a key verification error.
     pub(crate) fn verify_tokens(&self, key: &Ed25519PublicKey) -> bool {
         let login_claims = key.verify_token::<Claims>(&self.login_token, None);
@@ -66,7 +65,8 @@ const ED25519_OID: &str = "1.3.101.112";
 
 pub(crate) fn pem_to_key(pem: &str) -> Result<Ed25519PublicKey, AurumError> {
     // Filter headers
-    let b64 = pem.lines()
+    let b64 = pem
+        .lines()
         .filter(|&i| !i.contains("BEGIN PUBLIC KEY") && !i.contains("END PUBLIC KEY"))
         .collect::<String>();
 
@@ -77,23 +77,32 @@ pub(crate) fn pem_to_key(pem: &str) -> Result<Ed25519PublicKey, AurumError> {
     let (_, der) = der_parser::der::parse_der_recursive(&binary, 3)?;
 
     // Get content from der
-    let content = der.as_sequence().map_err(|e| AurumError::code(e, InvalidPEM))?;
+    let content = der
+        .as_sequence()
+        .map_err(|e| AurumError::code(e, InvalidPEM))?;
 
     // Get and check the oid
     let oid = content
-        .get(0).ok_or_else(|| AurumError::code("Content Vec is empty", Code::InvalidPEM))?
+        .get(0)
+        .ok_or_else(|| AurumError::code("Content Vec is empty", Code::InvalidPEM))?
         .as_sequence()?
-        .get(0).ok_or_else(|| AurumError::code("Oid Sequence is empty", Code::InvalidPEM))?
+        .get(0)
+        .ok_or_else(|| AurumError::code("Oid Sequence is empty", Code::InvalidPEM))?
         .as_oid()?;
 
     if oid.to_id_string() != ED25519_OID {
-        return Err(AurumError::code("Unexpected Crypto Algorithm", Code::InvalidPEM))
+        return Err(AurumError::code(
+            "Unexpected Crypto Algorithm",
+            Code::InvalidPEM,
+        ));
     }
 
     // Retrieve key bytes
     let key = content
-        .get(1).ok_or_else(|| AurumError::code("Content Vec is empty", Code::InvalidPEM))?
-        .as_bitstring()?.data;
+        .get(1)
+        .ok_or_else(|| AurumError::code("Content Vec is empty", Code::InvalidPEM))?
+        .as_bitstring()?
+        .data;
 
     Ed25519PublicKey::from_bytes(key).map_err(|e| AurumError::code(e.to_string(), Code::InvalidPEM))
 }
@@ -106,7 +115,8 @@ mod tests {
     fn test_der_parser_vs_reference_impl() {
         let pem = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAke7D81dEbGP9xiHsQ0/qIn/BYiphsY8qk3iSVBHTYXs=\n-----END PUBLIC KEY-----\n";
 
-        let b64 = pem.lines()
+        let b64 = pem
+            .lines()
             .filter(|&i| !i.contains("BEGIN PUBLIC KEY") && !i.contains("END PUBLIC KEY"))
             .collect::<String>();
 
@@ -118,7 +128,15 @@ mod tests {
         let (_, der) = der_parser::parse_der(&binary).unwrap();
 
         let content = der.content.as_sequence().unwrap();
-        let oid = content.get(0).unwrap().as_sequence().unwrap().get(0).unwrap().as_oid().unwrap();
+        let oid = content
+            .get(0)
+            .unwrap()
+            .as_sequence()
+            .unwrap()
+            .get(0)
+            .unwrap()
+            .as_oid()
+            .unwrap();
         assert_eq!(oid.to_id_string(), "1.3.101.112");
         assert_eq!("1.3.101.112", ED25519_OID);
 
@@ -140,7 +158,6 @@ mod tests {
         pem_to_key(openssl_pem).unwrap();
         pem_to_key(go_pem).unwrap();
     }
-
 
     #[test]
     fn test_pem_to_key_matches() {

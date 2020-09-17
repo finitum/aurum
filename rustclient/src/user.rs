@@ -1,12 +1,11 @@
-use serde::{Serialize, Deserialize};
-use serde_repr::*;
+use crate::error::AurumError;
+use crate::error::Code;
+use crate::requests;
+use crate::requests::{RefreshRequest, RefreshResponse};
 use crate::token::TokenPair;
 use crate::Aurum;
-use crate::requests;
-use crate::error::AurumError;
-use crate::requests::{RefreshRequest, RefreshResponse};
-use crate::error::Code;
-
+use serde::{Deserialize, Serialize};
+use serde_repr::*;
 
 #[repr(u8)]
 #[derive(Serialize_repr, Deserialize_repr, Debug, PartialOrd, PartialEq)]
@@ -33,7 +32,7 @@ pub(crate) struct User {
 #[derive(Debug)]
 pub struct AuthenticatedUser {
     user: User,
-    token_pair: TokenPair
+    token_pair: TokenPair,
 }
 
 impl AuthenticatedUser {
@@ -41,10 +40,7 @@ impl AuthenticatedUser {
         // CLEAR the password to make sure it can never be read again accidentally or leak
         user.password = String::new();
 
-        Self {
-            user,
-            token_pair
-        }
+        Self { user, token_pair }
     }
 
     /// TODO: docs
@@ -80,13 +76,17 @@ impl AuthenticatedUser {
             refresh_token: &self.token_pair.refresh_token,
         };
 
-        let RefreshResponse {login_token} = requests::refresh(&aurum.base_url, &aurum.client, &req)?;
+        let RefreshResponse { login_token } =
+            requests::refresh(&aurum.base_url, &aurum.client, &req)?;
 
         self.token_pair.login_token = login_token;
 
         match self.token_pair.verify_tokens(&aurum.server_public_key) {
             true => Ok(&self.token_pair.login_token),
-            _ => Err(AurumError::code("Received tokens not valid", Code::InvalidJWTToken))
+            _ => Err(AurumError::code(
+                "Received tokens not valid",
+                Code::InvalidJWTToken,
+            )),
         }
     }
 
