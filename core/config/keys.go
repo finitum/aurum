@@ -6,32 +6,27 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func loadKey(key string, keyPath string, keyType string) (k ecc.Key, err error) {
+func loadKey(key string, keyPath string, keyType string) (ecc.Key, error) {
 	if key != "" {
-		k, err = ecc.FromPem([]byte(key))
-		err = errors.Wrapf(err, "could not parse key given in environment variable")
+		k, err := ecc.FromPem([]byte(key))
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not parse key given in environment variable")
+		}
+		return k, nil
 	} else {
-		k, err = ecc.FromFile(keyPath)
+		k, err := ecc.FromFile(keyPath)
 		if err != nil {
 			log.Warnf("Couldn't find keys in environment, and reading the %v failed. Generating %v. "+
 				"NOTE: this is normal on the first run of aurum.", keyType, keyType)
 
-			// Set both to nil because this isn't really an error. Void the error and
-			// make sure k is a defined value
-			err = nil
-			k = nil
+			return nil, nil
 		}
+		return k, nil
 	}
-
-	return
 }
 
 func writeKey(key ecc.Key, keyPath string) error {
-	if err := key.WriteToFile(keyPath); err != nil {
-		return errors.Errorf("Could't write key to file: %s", err)
-	}
-
-	return nil
+	return errors.Wrap(key.WriteToFile(keyPath), "Couldn't write key to file")
 }
 
 // TODO: Testing

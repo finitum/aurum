@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/deanishe/go-env v0.4.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/dlclark/regexp2 v1.2.1 // indirect
+	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/jinzhu/gorm v1.9.12
