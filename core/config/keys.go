@@ -6,9 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-
 func loadKey(key string, keyPath string, keyType string) (k ecc.Key, err error) {
-	 if key != "" {
+	if key != "" {
 		k, err = ecc.FromPem([]byte(key))
 		err = errors.Wrapf(err, "could not parse key given in environment variable")
 	} else {

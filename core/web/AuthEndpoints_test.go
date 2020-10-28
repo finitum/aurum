@@ -20,27 +20,27 @@ type SQLConnectionMock struct {
 	mock.Mock
 }
 
-func (conn SQLConnectionMock) GetUserByName(u string) (db.User, error) {
+func (conn *SQLConnectionMock) GetUserByName(u string) (db.User, error) {
 	args := conn.Called(u)
 	return args.Get(0).(db.User), args.Error(1)
 }
 
-func (conn SQLConnectionMock) CreateUser(u db.User) error {
+func (conn *SQLConnectionMock) CreateUser(u db.User) error {
 	args := conn.Called(u)
 	return args.Error(0)
 }
 
-func (conn SQLConnectionMock) CountUsers() (int, error) {
+func (conn *SQLConnectionMock) CountUsers() (int, error) {
 	conn.Called()
 	return 1, nil
 }
 
-func (conn SQLConnectionMock) UpdateUser(user db.User) error {
+func (conn *SQLConnectionMock) UpdateUser(user db.User) error {
 	args := conn.Called(user)
 	return args.Error(0)
 }
 
-func (conn SQLConnectionMock) GetUsers(start int, end int) ([]db.User, error) {
+func (conn *SQLConnectionMock) GetUsers(start int, end int) ([]db.User, error) {
 	args := conn.Called(start, end)
 	return args.Get(0).([]db.User), args.Error(1)
 }
@@ -57,7 +57,7 @@ func TestSignup(t *testing.T) {
 	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -80,7 +80,7 @@ func TestSignupIncorrectJson(t *testing.T) {
 	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -98,7 +98,7 @@ func TestSignupNoBody(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -116,7 +116,7 @@ func TestSignupNoUsername(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -137,7 +137,7 @@ func TestSignupNoPassword(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -158,7 +158,7 @@ func TestSignupNoEmail(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -179,7 +179,7 @@ func TestSignupAdmin(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -204,7 +204,7 @@ func TestDbError(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -239,7 +239,7 @@ func TestLogin(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -286,7 +286,7 @@ func TestLoginNoBody(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -303,7 +303,7 @@ func TestLoginIncorrectJson(t *testing.T) {
 	conn := SQLConnectionMock{}
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -332,7 +332,7 @@ func TestLoginInvalidPassword(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 
@@ -455,7 +455,7 @@ func TestRefresh(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 
-	ep := Endpoints{conn, cfg}
+	ep := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, true, cfg)
 	assert.NoError(t, err)
@@ -498,7 +498,7 @@ func TestEndpoints_PublicKey(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
-		Repos:  conn,
+		Repos:  &conn,
 		Config: cfg,
 	}
 

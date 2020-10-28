@@ -31,7 +31,7 @@ func TestGetMe(t *testing.T) {
 	conn.On("GetUserByName", u.Username).Return(u, nil)
 
 	cfg := config.EphemeralConfig()
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -82,7 +82,7 @@ func TestChangePassword(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -123,7 +123,7 @@ func TestBlockSelf(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -160,7 +160,7 @@ func TestAdminSelf(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -207,7 +207,7 @@ func TestChangePasswordOtherUserAsAdmin(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -250,7 +250,7 @@ func TestChangeWrongUsername(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -282,7 +282,7 @@ func TestChangeUserNoBody(t *testing.T) {
 
 	cfg := config.EphemeralConfig()
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -309,10 +309,10 @@ func (f FakeWriter) Header() http.Header {
 }
 
 func (f FakeWriter) Write([]byte) (int, error) {
-	return 0, errors.New("Write failed")
+	return 0, errors.New("write failed")
 }
 
-func (f FakeWriter) WriteHeader(statusCode int) {
+func (f FakeWriter) WriteHeader(_ int) {
 	panic("implement me")
 }
 
@@ -327,7 +327,7 @@ func TestChangeUserBadWriter(t *testing.T) {
 	conn := SQLConnectionMock{}
 
 	cfg := config.EphemeralConfig()
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -356,7 +356,7 @@ func TestGetUsersNotAdmin(t *testing.T) {
 	conn := SQLConnectionMock{}
 
 	cfg := config.EphemeralConfig()
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	u := db.User{
 		Username: "victor",
@@ -390,7 +390,7 @@ func TestGetUsersInvalidRange(t *testing.T) {
 	conn := SQLConnectionMock{}
 
 	cfg := config.EphemeralConfig()
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	u := db.User{
 		Username: "victor",
@@ -437,7 +437,7 @@ func TestGetUsersDbError(t *testing.T) {
 	conn.On("GetUserByName", u.Username).Return(u, nil)
 	conn.On("GetUsers", mock.Anything, mock.Anything).Return([]db.User{}, errors.New("simulated DB Error"))
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -473,7 +473,7 @@ func TestGetUsers(t *testing.T) {
 
 	conn.On("GetUsers", 0, 100).Return([]db.User{u}, nil)
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -516,7 +516,7 @@ func TestGetUsersBadWriter(t *testing.T) {
 
 	conn.On("GetUsers", mock.Anything, mock.Anything).Return([]db.User{u}, nil)
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -555,7 +555,7 @@ func TestUpdateUserNilUser(t *testing.T) {
 	conn := SQLConnectionMock{}
 	cfg := config.EphemeralConfig()
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)

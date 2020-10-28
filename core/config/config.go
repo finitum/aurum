@@ -9,17 +9,17 @@ import (
 // TODO: Add options to configure the database
 // A struct containing the various config options of Aurum
 type EnvConfig struct {
-	WebAddr  string 		`env:"WEB_ADDRESS"`
-	BasePath string 		`env:"BASE_PATH"`
+	WebAddr  string `env:"WEB_ADDRESS"`
+	BasePath string `env:"BASE_PATH"`
 
-	NoKeyGen  	bool        `env:"NO_KEY_GENERATE"`
-	NoKeyWrite  bool        `env:"NO_KEY_WRITE"`
+	NoKeyGen   bool `env:"NO_KEY_GENERATE"`
+	NoKeyWrite bool `env:"NO_KEY_WRITE"`
 
-	PublicKey string 		`env:"PUBLIC_KEY"`
-	SecretKey string 		`env:"SECRET_KEY"`
+	PublicKey string `env:"PUBLIC_KEY"`
+	SecretKey string `env:"SECRET_KEY"`
 
-	PublicKeyPath string 	`env:"PUBLIC_KEY_PATH"`
-	SecretKeyPath string 	`env:"SECRET_KEY_PATH"`
+	PublicKeyPath string `env:"PUBLIC_KEY_PATH"`
+	SecretKeyPath string `env:"SECRET_KEY_PATH"`
 }
 
 type Config struct {
@@ -62,10 +62,10 @@ func GetConfig(e ...env.Env) *Config {
 	}
 
 	return &Config{
-		WebAddr:       ec.WebAddr,
-		BasePath:      ec.BasePath,
-		PublicKey:     pk,
-		SecretKey:     sk,
+		WebAddr:   ec.WebAddr,
+		BasePath:  ec.BasePath,
+		PublicKey: pk,
+		SecretKey: sk,
 	}
 }
 
@@ -80,9 +80,9 @@ func EphemeralConfig() *Config {
 	}
 
 	return &Config{
-		WebAddr:       ec.WebAddr,
-		BasePath:      ec.BasePath,
-		PublicKey:     pk,
-		SecretKey:     sk,
+		WebAddr:   ec.WebAddr,
+		BasePath:  ec.BasePath,
+		PublicKey: pk,
+		SecretKey: sk,
 	}
 }

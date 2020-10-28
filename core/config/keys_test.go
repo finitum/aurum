@@ -45,7 +45,6 @@ func TestInvalidPath(t *testing.T) {
 	assert.Error(t, err)
 }
 
-
 func TestInvalidKey(t *testing.T) {
 	_, _, err := findKeys(&EnvConfig{
 		WebAddr:       "",
@@ -73,7 +72,6 @@ func TestInvalidKey(t *testing.T) {
 
 	assert.Error(t, err)
 }
-
 
 func TestNonMatchingKeys(t *testing.T) {
 	pk1, _, err := ecc.GenerateKey()
@@ -148,7 +146,6 @@ func TestMatchingKeys(t *testing.T) {
 	assert.Equal(t, nsk, sk)
 }
 
-
 func TestNoSkNoGen(t *testing.T) {
 	pk, _, err := ecc.GenerateKey()
 	assert.NoError(t, err)
@@ -222,8 +219,8 @@ func TestOnlySecretKey(t *testing.T) {
 		BasePath:      "",
 		NoKeyGen:      false, // *Can* generate
 		NoKeyWrite:    true,
-		PublicKey:     "",    // No public key is passe
-		SecretKey:     spem,  // A valid secret key is passed
+		PublicKey:     "",   // No public key is passe
+		SecretKey:     spem, // A valid secret key is passed
 		PublicKeyPath: "",
 		SecretKeyPath: "",
 	})
