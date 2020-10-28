@@ -1,6 +1,8 @@
 package ecc
 
 import (
+	"encoding/base64"
+	"fmt"
 	"github.com/test-go/testify/assert"
 	"testing"
 )
@@ -25,4 +27,19 @@ func TestSKToFromPem(t *testing.T) {
 
 	skFromPem, err := FromPem([]byte(skPEM))
 	assert.Equal(t, sk, skFromPem)
+}
+
+func TestStuff(t *testing.T) {
+	pk, sk, err := GenerateKey()
+	assert.NoError(t, err)
+
+	pkB64 := base64.StdEncoding.EncodeToString(pk)
+	skB64 := base64.StdEncoding.EncodeToString(sk)
+
+	pkPem, err := pk.ToPem()
+	assert.NoError(t, err)
+
+	fmt.Printf("\nPublic Key PEM:\n%v", pkPem)
+	fmt.Printf("\nPublic Key Base64: %v", pkB64)
+	fmt.Printf("\nSecret Key Base64: %v\n", skB64)
 }

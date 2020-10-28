@@ -35,6 +35,9 @@ func (e *Endpoints) Signup(w http.ResponseWriter, r *http.Request) {
 
 	var u db.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+		if err != nil {
+			log.Error(err)
+		}
 		http.Error(w, "Please yeet us a valid json body", http.StatusBadRequest)
 		return
 	}
@@ -163,12 +166,18 @@ func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 	// Decode user struct and check if anything is invalid.
 	var u db.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil || len(u.Username) == 0 || len(u.Password) == 0 {
+		if err != nil {
+			log.Error(err)
+		}
 		http.Error(w, "Please yeet us a valid body", http.StatusBadRequest)
 		return
 	}
 
 	user, err := e.Repos.GetUserByName(u.Username)
 	if err != nil || user.Blocked {
+		if err != nil {
+			log.Error(err)
+		}
 		http.Error(w, "User is not authorized", http.StatusUnauthorized)
 		return
 	}
@@ -182,6 +191,7 @@ func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 	// Generate a JWT pair (Login + refresh)
 	token, err := jwt.GenerateJWTPair(&user, e.Config)
 	if err != nil {
+		log.Error(err)
 		http.Error(w, "Error in JWT generation", http.StatusInternalServerError)
 		return
 	}
@@ -189,6 +199,7 @@ func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 	// Convert the tokens into json bytes
 	bytes, err := json.Marshal(token)
 	if err != nil {
+		log.Error(err)
 		http.Error(w, "Error in serializing JWT", http.StatusInternalServerError)
 		return
 	}
@@ -197,6 +208,8 @@ func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 	if _, err = w.Write(bytes); err != nil {
 		log.Error("Error writing response to client")
 	}
+
+	log.Infof("A user with username %v has logged in.", u.Username)
 
 	return
 }
@@ -209,7 +222,7 @@ type publicKeyResponse struct {
 @api {get} /pk PublicKey
 @apiDescription Returns the server's publickey
 @apiName PublicKey
-@apiSuccess {String} public_key the PEM encoded public key
+@apiSuccess {String} public_key the base64 encoded public key
 @apiSuccessExample {json} Success Response:
 	{
 		"public_key": "<Public key here>"
