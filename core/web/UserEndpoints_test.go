@@ -30,7 +30,7 @@ func TestGetMe(t *testing.T) {
 
 	conn.On("GetUserByName", u.Username).Return(u, nil)
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
@@ -80,7 +80,7 @@ func TestChangePassword(t *testing.T) {
 		assert.True(t, hash.CheckPasswordHash(uModified.Password, user.Password))
 	}).Return(nil)
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{conn, cfg}
 
@@ -121,7 +121,7 @@ func TestBlockSelf(t *testing.T) {
 
 	conn := SQLConnectionMock{}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{conn, cfg}
 
@@ -158,7 +158,7 @@ func TestAdminSelf(t *testing.T) {
 
 	conn := SQLConnectionMock{}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{conn, cfg}
 
@@ -205,7 +205,7 @@ func TestChangePasswordOtherUserAsAdmin(t *testing.T) {
 		assert.True(t, hash.CheckPasswordHash(uModified.Password, user.Password))
 	}).Return(nil)
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{conn, cfg}
 
@@ -248,7 +248,7 @@ func TestChangeWrongUsername(t *testing.T) {
 
 	conn := SQLConnectionMock{}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{conn, cfg}
 
@@ -280,7 +280,7 @@ func TestChangeUserNoBody(t *testing.T) {
 
 	conn := SQLConnectionMock{}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{conn, cfg}
 
@@ -326,7 +326,7 @@ func TestChangeUserBadWriter(t *testing.T) {
 
 	conn := SQLConnectionMock{}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
@@ -355,7 +355,7 @@ func TestChangeUserBadWriter(t *testing.T) {
 func TestGetUsersNotAdmin(t *testing.T) {
 	conn := SQLConnectionMock{}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{conn, cfg}
 
 	u := db.User{
@@ -389,7 +389,7 @@ func TestGetUsersNotAdmin(t *testing.T) {
 func TestGetUsersInvalidRange(t *testing.T) {
 	conn := SQLConnectionMock{}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{conn, cfg}
 
 	u := db.User{
@@ -432,7 +432,7 @@ func TestGetUsersDbError(t *testing.T) {
 		Blocked:  false,
 	}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	conn.On("GetUserByName", u.Username).Return(u, nil)
 	conn.On("GetUsers", mock.Anything, mock.Anything).Return([]db.User{}, errors.New("simulated DB Error"))
@@ -469,7 +469,7 @@ func TestGetUsers(t *testing.T) {
 		Blocked:  false,
 	}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	conn.On("GetUsers", 0, 100).Return([]db.User{u}, nil)
 
@@ -512,7 +512,7 @@ func TestGetUsersBadWriter(t *testing.T) {
 		Blocked:  false,
 	}
 
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	conn.On("GetUsers", mock.Anything, mock.Anything).Return([]db.User{u}, nil)
 
@@ -553,7 +553,7 @@ func TestUpdateUserNilUser(t *testing.T) {
 	}
 
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	endpoints := Endpoints{conn, cfg}
 

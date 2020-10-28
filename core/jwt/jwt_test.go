@@ -12,7 +12,7 @@ import (
 
 func TestGenerateJWTSimple(t *testing.T) {
 	assert := tassert.New(t)
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	testUser := db.User{
 		Username: "User",
@@ -46,7 +46,7 @@ func TestGenerateJWTSimple(t *testing.T) {
 
 func TestVerifyTokenSimple(t *testing.T) {
 	assert := tassert.New(t)
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	testUser := db.User{
 		Username: "UserDAL",
@@ -67,7 +67,7 @@ func TestVerifyTokenSimple(t *testing.T) {
 
 func TestTokenPair(t *testing.T) {
 	assert := tassert.New(t)
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	testUser := db.User{
 		Username: "User",
@@ -89,7 +89,7 @@ func TestTokenPair(t *testing.T) {
 }
 
 func TestExpiredToken(t *testing.T) {
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	assert := tassert.New(t)
 
 	expirationTime := time.Now().Add(-(time.Hour + time.Minute))
@@ -115,7 +115,7 @@ func TestExpiredToken(t *testing.T) {
 
 func TestWrongSigningMethod(t *testing.T) {
 	assert := tassert.New(t)
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	tokenString := "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0=.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ==."
 
@@ -125,7 +125,7 @@ func TestWrongSigningMethod(t *testing.T) {
 
 func TestInvalidJWT(t *testing.T) {
 	assert := tassert.New(t)
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	tokenString := "This is clearly an invalid JWT Token"
 
@@ -135,7 +135,7 @@ func TestInvalidJWT(t *testing.T) {
 
 func TestJWT(t *testing.T) {
 	assert := tassert.New(t)
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	tokenString := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 

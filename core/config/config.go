@@ -68,3 +68,21 @@ func GetConfig(e ...env.Env) *Config {
 		SecretKey:     sk,
 	}
 }
+
+// EphemeralConfig returns a config that doesn't read from env or write to files, mainly for use in tests
+func EphemeralConfig() *Config {
+	ec := defaultEnvConfig()
+	ec.NoKeyWrite = true
+
+	pk, sk, err := findKeys(&ec)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return &Config{
+		WebAddr:       ec.WebAddr,
+		BasePath:      ec.BasePath,
+		PublicKey:     pk,
+		SecretKey:     sk,
+	}
+}

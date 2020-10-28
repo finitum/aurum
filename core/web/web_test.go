@@ -21,7 +21,7 @@ func (h *HandlerMock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func TestAuthenticateRequest(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	u := db.User{
 		Username: "victor",
@@ -64,7 +64,7 @@ func TestAuthenticateRequest(t *testing.T) {
 
 func TestAuthenticateRequestRefreshToken(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{conn, cfg}
 
 	u := db.User{
@@ -94,7 +94,7 @@ func TestAuthenticateRequestRefreshToken(t *testing.T) {
 
 func TestAuthenticateRequestNoToken(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{conn, cfg}
 
 	w := httptest.NewRecorder()
@@ -114,7 +114,7 @@ func TestAuthenticateRequestNoToken(t *testing.T) {
 
 func TestAuthenticateRequestNoHeader(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{conn, cfg}
 
 	w := httptest.NewRecorder()
@@ -134,7 +134,7 @@ func TestAuthenticateRequestNoHeader(t *testing.T) {
 
 func TestAuthenticateRequestInvalidToken(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{conn, cfg}
 
 	w := httptest.NewRecorder()
@@ -154,7 +154,7 @@ func TestAuthenticateRequestInvalidToken(t *testing.T) {
 
 func TestAuthenticateRequestBlockedUser(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	u := db.User{
 		Username: "victor",
