@@ -20,7 +20,7 @@ func TestSignupLoginFlowIntegration(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	config := config.GetDefault()
+	config := config.EphemeralConfig()
 	repos := db.InitDB(db.INMEMORY)
 	endpoints := Endpoints{
 		Repos:  repos,
@@ -289,10 +289,8 @@ func TestSystemIntegration(t *testing.T) {
 	}
 	assert := assert.New(t)
 
-	cfgbuilder := config.Builder{}
-	cfgbuilder.SetDefault().FindKeys(true)
-	cfgbuilder.WebAddr = "0.0.0.0:40152"
-	cfg := cfgbuilder.Build()
+	cfg := config.EphemeralConfig()
+	cfg.WebAddr = "0.0.0.0:40152"
 
 	database := db.InitDB(db.INMEMORY)
 

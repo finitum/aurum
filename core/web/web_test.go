@@ -21,7 +21,7 @@ func (h *HandlerMock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func TestAuthenticateRequest(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	u := db.User{
 		Username: "victor",
@@ -32,7 +32,7 @@ func TestAuthenticateRequest(t *testing.T) {
 
 	conn.On("GetUserByName", "victor").Return(u, nil)
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
@@ -64,8 +64,8 @@ func TestAuthenticateRequest(t *testing.T) {
 
 func TestAuthenticateRequestRefreshToken(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
-	endpoints := Endpoints{conn, cfg}
+	cfg := config.EphemeralConfig()
+	endpoints := Endpoints{&conn, cfg}
 
 	u := db.User{
 		Username: "victor",
@@ -94,8 +94,8 @@ func TestAuthenticateRequestRefreshToken(t *testing.T) {
 
 func TestAuthenticateRequestNoToken(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
-	endpoints := Endpoints{conn, cfg}
+	cfg := config.EphemeralConfig()
+	endpoints := Endpoints{&conn, cfg}
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -114,8 +114,8 @@ func TestAuthenticateRequestNoToken(t *testing.T) {
 
 func TestAuthenticateRequestNoHeader(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
-	endpoints := Endpoints{conn, cfg}
+	cfg := config.EphemeralConfig()
+	endpoints := Endpoints{&conn, cfg}
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -134,8 +134,8 @@ func TestAuthenticateRequestNoHeader(t *testing.T) {
 
 func TestAuthenticateRequestInvalidToken(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
-	endpoints := Endpoints{conn, cfg}
+	cfg := config.EphemeralConfig()
+	endpoints := Endpoints{&conn, cfg}
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -154,7 +154,7 @@ func TestAuthenticateRequestInvalidToken(t *testing.T) {
 
 func TestAuthenticateRequestBlockedUser(t *testing.T) {
 	conn := SQLConnectionMock{}
-	cfg := config.GetDefault()
+	cfg := config.EphemeralConfig()
 
 	u := db.User{
 		Username: "victor",
@@ -165,7 +165,7 @@ func TestAuthenticateRequestBlockedUser(t *testing.T) {
 
 	conn.On("GetUserByName", "victor").Return(u, nil)
 
-	endpoints := Endpoints{conn, cfg}
+	endpoints := Endpoints{&conn, cfg}
 
 	tkn, err := jwt.GenerateJWT(&u, false, cfg)
 	assert.NoError(t, err)
