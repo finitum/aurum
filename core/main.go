@@ -30,6 +30,6 @@ func main() {
 func startServer() {
 	cfg := config.GetConfig()
 
-	database := db.InitDB(db.INMEMORY)
+	database := db.InitDB(db.InMemory)
 	web.StartServer(cfg, database)
 }

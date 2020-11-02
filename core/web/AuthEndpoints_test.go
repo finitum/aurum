@@ -349,7 +349,7 @@ func TestLoginInvalidPassword(t *testing.T) {
 }
 
 func TestLoginInvalidUsername(t *testing.T) {
-	conn := db.InitDB("inmemory")
+	conn := db.InitDB(db.InMemory)
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
@@ -378,7 +378,7 @@ func TestLoginInvalidUsername(t *testing.T) {
 }
 
 func TestLoginUsernameMismatch(t *testing.T) {
-	conn := db.InitDB("inmemory")
+	conn := db.InitDB(db.InMemory)
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{
@@ -416,7 +416,7 @@ func TestLoginUsernameMismatch(t *testing.T) {
 }
 
 func TestSignupExists(t *testing.T) {
-	conn := db.InitDB("inmemory")
+	conn := db.InitDB(db.InMemory)
 
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{

@@ -3,6 +3,7 @@ package db
 import (
 	"aurum/hash"
 	"github.com/jinzhu/gorm"
+	"strings"
 )
 
 // The database model for a Gorm user
@@ -24,7 +25,11 @@ func (conn SQLConnection) CreateUser(u User) error {
 
 	// Will error if user already exists
 	d := conn.db.Create(&userDAL{User: u})
+
 	if d.Error != nil {
+		if strings.HasPrefix(d.Error.Error(), "UNIQUE constraint failed:") {
+			return ErrExists
+		}
 		return d.Error
 	}
 

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	log "github.com/sirupsen/logrus"
@@ -10,9 +11,11 @@ type RepositoryCollection interface {
 	UserRepository
 }
 
+var ErrExists = errors.New("user already exists")
+
 // An interface for database connections, abstracting underlying DB access
 type UserRepository interface {
-	// should insert a user into the database and raise an error if it exists
+	// should insert a user into the database and raise ErrExists if the user already exists
 	CreateUser(u User) error
 
 	// Gets the user based on the username
@@ -28,17 +31,20 @@ type UserRepository interface {
 	GetUsers(start int, end int) ([]User, error)
 }
 
-// The connection types (wtb enums)
+type DatabaseType int
+
 const (
-	INMEMORY = "inmemory"
+	InMemory DatabaseType = iota
 )
 
-func InitDB(connectiontype string) RepositoryCollection {
+func InitDB(db DatabaseType) RepositoryCollection {
 	// Database connection
 	log.Info("Starting up database ...")
 
-	switch connectiontype {
+	switch db {
 	// in memory
+	case InMemory:
+		fallthrough
 	default:
 		log.Debug("Using default in memory sqlite3 database")
 		connection := SQLConnection{}

@@ -3,9 +3,7 @@ package hash
 import "golang.org/x/crypto/bcrypt"
 
 func HashPassword(password string) (string, error) {
-	// Warning: High levels can be slooooowwwwwww!
-	// (2 ^ cost time)
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
 

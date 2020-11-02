@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"strings"
 )
 
 /**
@@ -35,9 +34,7 @@ func (e *Endpoints) Signup(w http.ResponseWriter, r *http.Request) {
 
 	var u db.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-		if err != nil {
-			log.Error(err)
-		}
+		log.Error(err)
 		http.Error(w, "Please yeet us a valid json body", http.StatusBadRequest)
 		return
 	}
@@ -68,8 +65,7 @@ func (e *Endpoints) Signup(w http.ResponseWriter, r *http.Request) {
 	err = e.Repos.CreateUser(u)
 	if err != nil {
 		// look if the error was caused by the username already existing
-		// TODO: This error is SQL specific so should not be handled here probably
-		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed:") {
+		if err == db.ErrExists {
 			http.Error(w, "Username already chosen", http.StatusConflict)
 		} else {
 			http.Error(w, "Server error", http.StatusInternalServerError)

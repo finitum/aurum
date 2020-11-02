@@ -4,7 +4,7 @@ import (
 	"github.com/trustelem/zxcvbn"
 )
 
-var commonPasswords = []string{
+var commonTerms = []string{
 	"aurum",
 	"finitum",
 }
@@ -19,7 +19,7 @@ func VerifyPassword(password string, userinput []string) bool {
 		return false
 	}
 
-	disallowed := append(commonPasswords, userinput...)
+	disallowed := append(commonTerms, userinput...)
 	res := zxcvbn.PasswordStrength(password, disallowed)
 
 	return res.Score > 2

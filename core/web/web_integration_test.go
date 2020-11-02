@@ -21,7 +21,7 @@ func TestSignupLoginFlowIntegration(t *testing.T) {
 	}
 
 	config := config.EphemeralConfig()
-	repos := db.InitDB(db.INMEMORY)
+	repos := db.InitDB(db.InMemory)
 	endpoints := Endpoints{
 		Repos:  repos,
 		Config: config,
@@ -292,7 +292,7 @@ func TestSystemIntegration(t *testing.T) {
 	cfg := config.EphemeralConfig()
 	cfg.WebAddr = "0.0.0.0:40152"
 
-	database := db.InitDB(db.INMEMORY)
+	database := db.InitDB(db.InMemory)
 
 	// Startup the server
 	go StartServer(cfg, database)
