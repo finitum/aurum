@@ -1,6 +1,6 @@
 {
-  "name": "Aurum core",
+  "name": "Aurum Core",
   "version": "0.0.0",
-  "description": "apiDocs for the aurum core module",
-  "title": "Aurum - apiDoc"
+  "description": "API Docs for the aurum core module",
+  "title": "Aurum - API"
 }

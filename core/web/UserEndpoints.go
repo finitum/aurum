@@ -11,7 +11,6 @@ import (
 	"strconv"
 )
 
-// TODO: This apidoc isn't right anymore (/me doesn't exist anymore)
 /**
 @apiDefine admin Admin user
 Only available to admins, the first user of the server is by default admin.
@@ -21,7 +20,7 @@ Only available to admins, the first user of the server is by default admin.
 @apiDefine UserObjectSuccess
 @apiSuccess {String} username The username of the user
 @apiSuccess {String} email The E-Mail of the user
-@apiSuccess {Number} role The role of the user (0 = UserDAL, 1 = Admin)
+@apiSuccess {Number} role The role of the user (0 = User, 1 = Admin)
 @apiSuccess {Boolean} blocked If the user is blocked
 @apiSuccessExample {json} Success Response:
 	{
@@ -37,9 +36,9 @@ Only available to admins, the first user of the server is by default admin.
 @apiParam {String} username The username of the user
 @apiParam {String} email The E-Mail of the user
 @apiParam {String} password The password of the user
-@apiParam {Number} role The role of the user (0 = UserDAL, 1 = Admin)
+@apiParam {Number} role The role of the user (0 = User, 1 = Admin)
 @apiParam {Boolean} blocked If the user is blocked
-@apiParamExample {json} Success Response:
+@apiParamExample {json} Request:
 	{
 		"username":"victor",
 		"email":"victor@example.com",

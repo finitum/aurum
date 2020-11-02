@@ -1,7 +1,7 @@
 [
   {
     "type": "post",
-    "url": "/login",
+    "url": "/Login",
     "title": "Login",
     "description": "<p>Logs a user in returning a tokenpair</p>",
     "name": "Login",
@@ -41,7 +41,7 @@
             "type": "String",
             "optional": false,
             "field": "login_token",
-            "description": "<p>The user's login token</p>"
+            "description": "<p>The user's Login token</p>"
           },
           {
             "group": "Success 200",
@@ -83,10 +83,41 @@
     "groupTitle": "Authentication"
   },
   {
+    "type": "get",
+    "url": "/pk",
+    "title": "PublicKey",
+    "description": "<p>Returns the server's publickey</p>",
+    "name": "PublicKey",
+    "group": "Authentication",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "public_key",
+            "description": "<p>the base64 encoded public key</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success Response:",
+          "content": "{\n\t\"public_key\": \"<Public key here>\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "../core/web/AuthEndpoints.go",
+    "groupTitle": "Authentication"
+  },
+  {
     "type": "post",
     "url": "/refresh",
     "title": "Refresh Token",
-    "description": "<p>Refreshes your login token by using your refresh token</p>",
+    "description": "<p>Refreshes your Login token by using your refresh token</p>",
     "name": "Refresh",
     "group": "Authentication",
     "parameter": {
@@ -117,7 +148,7 @@
             "type": "String",
             "optional": false,
             "field": "login_token",
-            "description": "<p>A renewed login token</p>"
+            "description": "<p>A renewed Login token</p>"
           }
         ]
       },
@@ -225,7 +256,7 @@
   },
   {
     "type": "get",
-    "url": "/me",
+    "url": "/user",
     "title": "Request user info",
     "name": "GetUser",
     "group": "User",
@@ -274,7 +305,7 @@
             "type": "Number",
             "optional": false,
             "field": "role",
-            "description": "<p>The role of the user (0 = UserDAL, 1 = Admin)</p>"
+            "description": "<p>The role of the user (0 = User, 1 = Admin)</p>"
           },
           {
             "group": "Success 200",
@@ -334,7 +365,7 @@
   },
   {
     "type": "put",
-    "url": "/me",
+    "url": "/user",
     "title": "Update user info",
     "name": "UpdateUser",
     "group": "User",
@@ -414,7 +445,7 @@
             "type": "Number",
             "optional": false,
             "field": "role",
-            "description": "<p>The role of the user (0 = UserDAL, 1 = Admin)</p>"
+            "description": "<p>The role of the user (0 = User, 1 = Admin)</p>"
           },
           {
             "group": "Parameter",
@@ -427,7 +458,7 @@
       },
       "examples": [
         {
-          "title": "Success Response:",
+          "title": "Request:",
           "content": "\t{\n\t\t\"username\":\"victor\",\n\t\t\"email\":\"victor@example.com\",\n  \t\t\"password\": \"hunter2\",\n\t\t\"role\":0,\n\t\t\"blocked\": false\n\t}",
           "type": "json"
         }
@@ -455,7 +486,7 @@
             "type": "Number",
             "optional": false,
             "field": "role",
-            "description": "<p>The role of the user (0 = UserDAL, 1 = Admin)</p>"
+            "description": "<p>The role of the user (0 = User, 1 = Admin)</p>"
           },
           {
             "group": "Success 200",

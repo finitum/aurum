@@ -49,7 +49,7 @@ func TestVerifyTokenSimple(t *testing.T) {
 	cfg := config.EphemeralConfig()
 
 	testUser := db.User{
-		Username: "UserDAL",
+		Username: "User",
 		Role:     db.UserRoleID,
 	}
 

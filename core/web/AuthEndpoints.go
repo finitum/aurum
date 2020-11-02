@@ -218,6 +218,7 @@ type publicKeyResponse struct {
 @api {get} /pk PublicKey
 @apiDescription Returns the server's publickey
 @apiName PublicKey
+@apiGroup Authentication
 @apiSuccess {String} public_key the base64 encoded public key
 @apiSuccessExample {json} Success Response:
 	{
