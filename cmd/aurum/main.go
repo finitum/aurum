@@ -1,15 +1,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/finitum/aurum/clients/goclient"
+	"github.com/finitum/aurum/clients/aurum-go"
 	"github.com/finitum/aurum/pkg/jwt"
 	te "github.com/muesli/termenv"
 	"os"
 )
 
-const host = "http://localhost:8042"
+var host = flag.String("host", "http://localhost:8042", "Aurum host to connect to")
 
 var (
 	color     = te.ColorProfile().Color
@@ -18,6 +19,7 @@ var (
 
 func main() {
 	p := tea.NewProgram(initialModel())
+
 	if err := p.Start(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
@@ -34,7 +36,7 @@ const (
 )
 
 type model struct {
-	au     *goclient.Aurum
+	au     *aurum.Aurum
 	tp     *jwt.TokenPair
 	screen Screen
 	err    error

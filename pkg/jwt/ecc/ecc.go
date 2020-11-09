@@ -10,4 +10,3 @@ func GenerateKey() (PublicKey, SecretKey, error) {
 	pk, sk, err := ed25519.GenerateKey(rand.Reader)
 	return PublicKey(pk), SecretKey(sk), err
 }
-

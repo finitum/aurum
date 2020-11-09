@@ -1,15 +1,14 @@
-package goclient
+package aurum
 
 import (
+	"github.com/finitum/aurum/pkg/api"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/finitum/aurum/pkg/models"
-	"github.com/finitum/aurum/pkg/api"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )
-
 
 type Aurum struct {
 	url string
@@ -36,7 +35,7 @@ func Connect(url string) (*Aurum, error) {
 		return nil, errors.New("unexpected key type")
 	}
 
-	return  &Aurum{url, pk}, nil
+	return &Aurum{url, pk}, nil
 }
 
 func (a *Aurum) Login(username, password string) (*jwt.TokenPair, error) {

@@ -16,9 +16,11 @@ func InitialUserScreenModel() UserModel {
 }
 
 func (m UserModel) View() string {
-	username := te.String(m.user.Username).Foreground(color("#00f")).String()
+	username := te.String(m.user.Username).Foreground(color("205")).String()
 
-	s := fmt.Sprintf(" Welcome %s\n\n", username)
+	s := fmt.Sprintf("Welcome %s\n\n", username)
+
+	s += te.String("Press <ESC> to logout\n").Faint().Italic().String()
 
 	return s
 }

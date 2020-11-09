@@ -37,14 +37,15 @@ func (m MainScreenModel) View() string {
 	return s
 }
 
-type screenLoginMsg struct {}
-func toLoginScreen() tea.Msg {return screenLoginMsg{}}
+type screenLoginMsg struct{}
 
-type screenRegisterMsg struct {}
-func toRegisterScreen() tea.Msg {return screenRegisterMsg{}}
+func toLoginScreen() tea.Msg { return screenLoginMsg{} }
 
+type screenRegisterMsg struct{}
 
-func (m MainScreenModel) Update(msg tea.Msg)  (MainScreenModel, tea.Cmd) {
+func toRegisterScreen() tea.Msg { return screenRegisterMsg{} }
+
+func (m MainScreenModel) Update(msg tea.Msg) (MainScreenModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {

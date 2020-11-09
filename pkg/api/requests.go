@@ -101,26 +101,14 @@ func Refresh(host string, tp *jwt.TokenPair) error {
 }
 
 func GetUser(host string, tp *jwt.TokenPair) (*models.User, error) {
-	resp, err := getUser(host, tp)
+	req, err := http.NewRequest(http.MethodGet, host+"/user", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// If we get unauthorized try again after refresh
-	if resp.StatusCode == http.StatusUnauthorized {
-		if err := Refresh(host, tp); err != nil {
-			return nil, err
-		}
-
-		resp, err = getUser(host, tp)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.Errorf("Unexpected status code (%v), (%v)", resp.StatusCode, string(body))
+	resp, err := authenticatedRequest(req, tp)
+	if err != nil {
+		return nil, err
 	}
 
 	var user models.User
@@ -131,17 +119,44 @@ func GetUser(host string, tp *jwt.TokenPair) (*models.User, error) {
 	return &user, nil
 }
 
-func getUser(host string, tp *jwt.TokenPair) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, host+"/user", nil)
+func UpdateUser(host string, tp *jwt.TokenPair, user *models.User) (ret *models.User, _ error) {
+	userb, err := json.Marshal(user)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "marshalling json")
 	}
 
-	req.Header.Set("Authorization", "Bearer "+tp.LoginToken)
+	req, err := http.NewRequest(http.MethodPost, host+"/user", bytes.NewReader(userb))
+	if err != nil {
+		return nil, errors.Wrap(err, "building update user request")
+	}
 
+	resp, err := authenticatedRequest(req, tp)
+	if err != nil {
+		return nil, errors.Wrap(err, "update user")
+	}
+
+	return ret, errors.Wrap(json.NewDecoder(resp.Body).Decode(&ret), "json decoding response")
+}
+
+func authenticatedRequest(req *http.Request, tp *jwt.TokenPair) (*http.Response, error) {
+	req.Header.Set("Authorization", "Bearer "+tp.LoginToken)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return resp, nil
 	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		if err = Refresh(req.Host, tp); err != nil {
+			return nil, err
+		}
+
+		resp, err = http.DefaultClient.Do(req)
+	}
+	if err != nil {
+		return resp, nil
+	}
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		return resp, errors.Errorf("unexpected status code (%d)", resp.StatusCode)
+	}
+
 	return resp, nil
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/finitum/aurum/clients/goclient"
+	"github.com/finitum/aurum/clients/aurum-go"
 	te "github.com/muesli/termenv"
 	"strings"
 )
@@ -84,7 +84,7 @@ func (m LoginRegisterModel) View() string {
 	return s
 }
 
-func (m LoginRegisterModel) Update(au *goclient.Aurum, msg tea.Msg) (LoginRegisterModel, tea.Cmd) {
+func (m LoginRegisterModel) Update(au *aurum.Aurum, msg tea.Msg) (LoginRegisterModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case loginErrMsg:
 		m.err = msg.err
