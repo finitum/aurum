@@ -6,13 +6,13 @@ ENV GO111MODULE=on
 WORKDIR /build
 
 # Cache dependencies
-COPY ../go.sum .
-COPY ../go.mod .
+COPY go.sum .
+COPY go.mod .
 RUN go mod download
 
 # Build project
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o aurum
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o aurum ./core/
 
 # Run stage
 FROM scratch
