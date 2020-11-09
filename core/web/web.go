@@ -123,6 +123,6 @@ func StartServer(config *config.Config, db db.UserRepository) {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Info("Starting up web server ...")
+	log.Infof("Starting up web server on %s", config.WebAddr)
 	log.Fatal(srv.ListenAndServe())
 }

@@ -211,10 +211,6 @@ func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-type publicKeyResponse struct {
-	PublicKey string `json:"public_key"`
-}
-
 /**
 @api {get} /pk PublicKey
 @apiDescription Returns the server's publickey
@@ -226,14 +222,14 @@ type publicKeyResponse struct {
 		"public_key": "<Public key here>"
 	}
 */
-func (e *Endpoints) PublicKey(w http.ResponseWriter, r *http.Request) {
+func (e *Endpoints) PublicKey(w http.ResponseWriter, _ *http.Request) {
 	pem, err := e.Config.PublicKey.ToPem()
 	if err != nil {
 		http.Error(w, "Error in getting PEM", http.StatusInternalServerError)
 		return
 	}
 
-	pk := publicKeyResponse{
+	pk := models.PublicKeyResponse{
 		PublicKey: pem,
 	}
 
