@@ -1,11 +1,11 @@
 package main
 
 import (
-	"aurum/config"
-	"aurum/db"
-	"aurum/jwt/ecc"
-	"aurum/web"
 	"flag"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/core/db"
+	"github.com/finitum/aurum/core/jwt/ecc"
+	"github.com/finitum/aurum/core/web"
 	log "github.com/sirupsen/logrus"
 )
 

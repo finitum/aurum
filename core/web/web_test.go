@@ -1,9 +1,9 @@
 package web
 
 import (
-	"aurum/config"
-	"aurum/db"
-	"aurum/jwt"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/core/db"
+	"github.com/finitum/aurum/core/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/test-go/testify/mock"
 	"net/http"

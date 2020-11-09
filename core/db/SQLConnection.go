@@ -1,7 +1,7 @@
 package db
 
 import (
-	"aurum/hash"
+	"github.com/finitum/aurum/core/hash"
 	"github.com/jinzhu/gorm"
 	"strings"
 )

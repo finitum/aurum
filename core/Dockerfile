@@ -6,8 +6,8 @@ ENV GO111MODULE=on
 WORKDIR /build
 
 # Cache dependencies
-COPY go.sum .
-COPY go.mod .
+COPY ../go.sum .
+COPY ../go.mod .
 RUN go mod download
 
 # Build project

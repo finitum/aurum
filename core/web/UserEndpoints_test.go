@@ -1,10 +1,10 @@
 package web
 
 import (
-	"aurum/config"
-	"aurum/db"
-	"aurum/hash"
-	"aurum/jwt"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/core/db"
+	"github.com/finitum/aurum/core/hash"
+	"github.com/finitum/aurum/core/jwt"
 	"bytes"
 	"context"
 	"encoding/json"

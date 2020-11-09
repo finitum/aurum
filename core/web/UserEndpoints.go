@@ -1,9 +1,9 @@
 package web
 
 import (
-	"aurum/db"
-	"aurum/hash"
-	"aurum/passwords"
+	"github.com/finitum/aurum/core/db"
+	"github.com/finitum/aurum/core/hash"
+	"github.com/finitum/aurum/core/passwords"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"

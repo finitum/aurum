@@ -1,13 +1,13 @@
 package web
 
 import (
-	"aurum/config"
-	"aurum/db"
-	hash2 "aurum/hash"
-	"aurum/jwt"
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/core/db"
+	hash2 "github.com/finitum/aurum/core/hash"
+	"github.com/finitum/aurum/core/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http"

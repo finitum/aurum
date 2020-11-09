@@ -1,9 +1,9 @@
 package jwt
 
 import (
-	"aurum/config"
-	"aurum/db"
-	"aurum/jwt/ecc"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/core/db"
+	"github.com/finitum/aurum/core/jwt/ecc"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
