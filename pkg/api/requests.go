@@ -35,7 +35,7 @@ func SignUp(host string, user models.User) error {
 		return errors.Wrap(err, "couldn't marshal user")
 	}
 
-	resp, err := http.Post(host + "/signup", "application/json", bytes.NewReader(userb))
+	resp, err := http.Post(host+"/signup", "application/json", bytes.NewReader(userb))
 	if err != nil {
 		return errors.Wrap(err, "couldn't post signup request")
 	}
@@ -55,7 +55,7 @@ func Login(host string, user models.User) (*jwt.TokenPair, error) {
 		return nil, errors.Wrap(err, "couldn't marshal user")
 	}
 
-	resp, err := http.Post(host + "/login", "application/json", bytes.NewReader(userb))
+	resp, err := http.Post(host+"/login", "application/json", bytes.NewReader(userb))
 	if err != nil {
 		return nil, errors.Wrap(err, "couldn't post login request")
 	}
@@ -63,7 +63,7 @@ func Login(host string, user models.User) (*jwt.TokenPair, error) {
 	if resp.StatusCode != http.StatusOK {
 		body, _ := ioutil.ReadAll(resp.Body)
 
-		return nil, errors.Errorf("Unexpected status code (%v), (%v)", resp.StatusCode, string(body))
+		return nil, errors.Errorf("Unexpected status code (%v): %v", resp.StatusCode, string(body))
 	}
 
 	var tp jwt.TokenPair
@@ -80,7 +80,7 @@ func Refresh(host string, tp *jwt.TokenPair) error {
 		return errors.Wrap(err, "couldn't marshal token")
 	}
 
-	resp, err := http.Post(host + "/login", "application/json", bytes.NewReader(tpb))
+	resp, err := http.Post(host+"/login", "application/json", bytes.NewReader(tpb))
 	if err != nil {
 		return errors.Wrap(err, "couldn't post refresh request")
 	}
@@ -100,7 +100,7 @@ func Refresh(host string, tp *jwt.TokenPair) error {
 	return nil
 }
 
-func GetUser(host string, tp *jwt.TokenPair) (*models.User,error) {
+func GetUser(host string, tp *jwt.TokenPair) (*models.User, error) {
 	resp, err := getUser(host, tp)
 	if err != nil {
 		return nil, err
