@@ -1,10 +1,10 @@
 package jwt
 
 import (
-	"github.com/finitum/aurum/core/config"
-	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/core/jwt/ecc"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/internal/jwt/ecc"
+	"github.com/finitum/aurum/pkg/models"
 	tassert "github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -14,12 +14,12 @@ func TestGenerateJWTSimple(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := db.User{
+	testUser := models.User{
 		Username: "User",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 	}
 
-	token, err := GenerateJWT(&testUser, false, cfg)
+	token, err := GenerateJWT(&testUser, false, cfg.SecretKey)
 	assert.Nil(err)
 	assert.NotNil(token)
 
@@ -48,16 +48,16 @@ func TestVerifyTokenSimple(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := db.User{
+	testUser := models.User{
 		Username: "User",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 	}
 
-	token, err := GenerateJWT(&testUser, false, cfg)
+	token, err := GenerateJWT(&testUser, false, cfg.SecretKey)
 	assert.Nil(err)
 	assert.NotNil(token)
 
-	claims, err := VerifyJWT(token, cfg)
+	claims, err := VerifyJWT(token, cfg.PublicKey)
 
 	assert.Nil(err)
 	assert.NotNil(claims)
@@ -69,20 +69,20 @@ func TestTokenPair(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := db.User{
+	testUser := models.User{
 		Username: "User",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 	}
-	tp, err := GenerateJWTPair(&testUser, cfg)
+	tp, err := GenerateJWTPair(&testUser, cfg.SecretKey)
 	assert.NotNil(tp)
 	assert.Nil(err)
 
-	claims, err := VerifyJWT(tp.LoginToken, cfg)
+	claims, err := VerifyJWT(tp.LoginToken, cfg.PublicKey)
 	assert.Nil(err)
 	assert.NotNil(claims)
 	assert.Equal(claims.Refresh, false)
 
-	claims, err = VerifyJWT(tp.RefreshToken, cfg)
+	claims, err = VerifyJWT(tp.RefreshToken, cfg.PublicKey)
 	assert.Nil(err)
 	assert.NotNil(claims)
 	assert.Equal(claims.Refresh, true)
@@ -109,7 +109,7 @@ func TestExpiredToken(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(tokenString)
 
-	_, err = VerifyJWT(tokenString, cfg)
+	_, err = VerifyJWT(tokenString, cfg.PublicKey)
 	assert.Error(err)
 }
 
@@ -119,7 +119,7 @@ func TestWrongSigningMethod(t *testing.T) {
 
 	tokenString := "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0=.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ==."
 
-	_, err := VerifyJWT(tokenString, cfg)
+	_, err := VerifyJWT(tokenString, cfg.PublicKey)
 	assert.Error(err)
 }
 
@@ -129,7 +129,7 @@ func TestInvalidJWT(t *testing.T) {
 
 	tokenString := "This is clearly an invalid JWT Token"
 
-	_, err := VerifyJWT(tokenString, cfg)
+	_, err := VerifyJWT(tokenString, cfg.PublicKey)
 	assert.Error(err)
 }
 
@@ -139,6 +139,6 @@ func TestJWT(t *testing.T) {
 
 	tokenString := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
-	_, err := VerifyJWT(tokenString, cfg)
+	_, err := VerifyJWT(tokenString, cfg.PublicKey)
 	assert.Error(err)
 }

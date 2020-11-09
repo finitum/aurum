@@ -14,15 +14,15 @@ stages:
   only:
     changes:
       - .gitlab-ci.yml
-      - webclient/**/*
+      - web/**/*
       - core/**/*
   before_script:
-    - cd webclient
+    - cd web
     - yarn install
 
 variables:
   CORE_IMG: "$CI_REGISTRY_IMAGE/core"
-  WEBCLIENT_IMG: "$CI_REGISTRY_IMAGE/webclient"
+  WEBCLIENT_IMG: "$CI_REGISTRY_IMAGE/web"
 
 core-test:
   stage: test
@@ -31,7 +31,7 @@ core-test:
     changes:
       - .gitlab-ci.yml
       - core/**/*
-      - webclient/**/*
+      - web/**/*
   cache:
     paths:
       - /go/pkg/mod
@@ -81,7 +81,7 @@ build-master-webclient:
   stage: deploy
   <<: *docker
   script:
-    - cd webclient
+    - cd web
     - docker build --pull -t "$WEBCLIENT_IMG" .
     - docker push "$WEBCLIENT_IMG"
   only:
@@ -91,7 +91,7 @@ build-webclient:
   stage: deploy
   <<: *docker
   script:
-    - cd webclient
+    - cd web
     - docker build --pull -t "$WEBCLIENT_IMG:$CI_COMMIT_REF_SLUG" .
     - docker push "$WEBCLIENT_IMG:$CI_COMMIT_REF_SLUG"
   except:

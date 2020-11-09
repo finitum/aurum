@@ -1,10 +1,10 @@
 package web
 
 import (
-	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/core/hash"
-	"github.com/finitum/aurum/core/passwords"
 	"encoding/json"
+	"github.com/finitum/aurum/internal/passwords"
+	"github.com/finitum/aurum/pkg/hash"
+	"github.com/finitum/aurum/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"net/url"
@@ -63,9 +63,9 @@ Only available to admins, the first user of the server is by default admin.
 @apiUse UserObjectSuccess
 */
 func (e *Endpoints) GetMe(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value(contextKeyUser).(*db.User)
+	user := r.Context().Value(contextKeyUser).(*models.User)
 
-	bytes, err := json.Marshal(db.User{
+	bytes, err := json.Marshal(models.User{
 		Username: user.Username,
 		Email:    user.Email,
 		Role:     user.Role,
@@ -118,9 +118,9 @@ func (r *Range) toQueryParameters() string {
 func (e *Endpoints) GetUsers(w http.ResponseWriter, req *http.Request) {
 	// TODO: Write docs
 
-	user := req.Context().Value(contextKeyUser).(*db.User)
+	user := req.Context().Value(contextKeyUser).(*models.User)
 
-	if user.Role != db.AdminRoleID {
+	if user.Role != models.AdminRoleID {
 		http.Error(w, "You're not an admin!", http.StatusUnauthorized)
 		return
 	}
@@ -139,9 +139,9 @@ func (e *Endpoints) GetUsers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var strippedusers []db.User
+	var strippedusers []models.User
 	for _, user := range users {
-		strippedusers = append(strippedusers, db.User{
+		strippedusers = append(strippedusers, models.User{
 			Username: user.Username,
 			Email:    user.Email,
 			Role:     user.Role,
@@ -177,25 +177,25 @@ func (e *Endpoints) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "This shouldn't happen :tm:", http.StatusInternalServerError)
 		return
 	}
-	u := utmp.(*db.User)
+	u := utmp.(*models.User)
 
-	var body db.User
+	var body models.User
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, "Please yeet us a valid body", http.StatusBadRequest)
 		return
 	}
 
-	if u.Username != body.Username && u.Role != db.AdminRoleID {
+	if u.Username != body.Username && u.Role != models.AdminRoleID {
 		http.Error(w, "Please only edit yourself", http.StatusUnauthorized)
 		return
 	}
 
-	if body.Blocked == true && u.Role != db.AdminRoleID {
+	if body.Blocked == true && u.Role != models.AdminRoleID {
 		http.Error(w, "You can't block yourself", http.StatusUnauthorized)
 		return
 	}
 
-	if body.Role == db.AdminRoleID && u.Role != db.AdminRoleID {
+	if body.Role == models.AdminRoleID && u.Role != models.AdminRoleID {
 		http.Error(w, "Nice try ;)", http.StatusUnauthorized)
 		return
 	}

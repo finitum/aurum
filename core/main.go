@@ -4,8 +4,8 @@ import (
 	"flag"
 	"github.com/finitum/aurum/core/config"
 	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/core/jwt/ecc"
 	"github.com/finitum/aurum/core/web"
+	"github.com/finitum/aurum/internal/jwt/ecc"
 	log "github.com/sirupsen/logrus"
 )
 

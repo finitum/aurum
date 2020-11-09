@@ -7,12 +7,12 @@ The core of Aurum is the server which hosts the REST API and manages the databas
 ## Running
 
 To run aurum core simply run this:
-```bash
+```shell script
 go run aurum
 ```
 
 or to build a binary:
-```bash
+```shell script
 go build aurum   # Build the binary
 ./aurum          # Run the program
 ``` 

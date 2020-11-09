@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/finitum/aurum/core/jwt/ecc"
 	"github.com/deanishe/go-env"
+	"github.com/finitum/aurum/internal/jwt/ecc"
 	log "github.com/sirupsen/logrus"
 )
 

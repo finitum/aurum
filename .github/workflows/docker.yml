@@ -76,7 +76,7 @@ jobs:
         with:
           context: webclient/
           push: true
-          file: webclient/Dockerfile
+          file: clients/web//Dockerfile
           tags: ghcr.io/finitum/aurum-webclient:${{ steps.prep.outputs.version }}
           labels: |
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}

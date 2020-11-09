@@ -6,8 +6,9 @@ import (
 	"errors"
 	"github.com/finitum/aurum/core/config"
 	"github.com/finitum/aurum/core/db"
-	hash2 "github.com/finitum/aurum/core/hash"
-	"github.com/finitum/aurum/core/jwt"
+	"github.com/finitum/aurum/internal/jwt"
+	hash2 "github.com/finitum/aurum/pkg/hash"
+	"github.com/finitum/aurum/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http"
@@ -20,12 +21,12 @@ type SQLConnectionMock struct {
 	mock.Mock
 }
 
-func (conn *SQLConnectionMock) GetUserByName(u string) (db.User, error) {
+func (conn *SQLConnectionMock) GetUserByName(u string) (models.User, error) {
 	args := conn.Called(u)
-	return args.Get(0).(db.User), args.Error(1)
+	return args.Get(0).(models.User), args.Error(1)
 }
 
-func (conn *SQLConnectionMock) CreateUser(u db.User) error {
+func (conn *SQLConnectionMock) CreateUser(u models.User) error {
 	args := conn.Called(u)
 	return args.Error(0)
 }
@@ -35,19 +36,19 @@ func (conn *SQLConnectionMock) CountUsers() (int, error) {
 	return 1, nil
 }
 
-func (conn *SQLConnectionMock) UpdateUser(user db.User) error {
+func (conn *SQLConnectionMock) UpdateUser(user models.User) error {
 	args := conn.Called(user)
 	return args.Error(0)
 }
 
-func (conn *SQLConnectionMock) GetUsers(start int, end int) ([]db.User, error) {
+func (conn *SQLConnectionMock) GetUsers(start int, end int) ([]models.User, error) {
 	args := conn.Called(start, end)
-	return args.Get(0).([]db.User), args.Error(1)
+	return args.Get(0).([]models.User), args.Error(1)
 }
 
 func TestSignup(t *testing.T) {
 	conn := SQLConnectionMock{}
-	conn.On("CreateUser", db.User{
+	conn.On("CreateUser", models.User{
 		Username: "jonathan",
 		Password: "7da033bd32005113f2208eb87bc94c126a42aadf0c94065b1fa4d9d68e7c318f",
 		Email:    "yeet@yeet.dev",
@@ -226,11 +227,11 @@ func TestLogin(t *testing.T) {
 	hash, err := hash2.HashPassword("yeetyeet")
 	assert.Nil(t, err)
 
-	u := db.User{
+	u := models.User{
 		Username: "jonathan",
 		Password: hash,
 		Email:    "yeet@yeet.dev",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 	}
 
 	conn.On("GetUserByName", mock.Anything).Run(func(args mock.Arguments) {
@@ -261,7 +262,7 @@ func TestLogin(t *testing.T) {
 	assert.NotEmpty(t, tp.RefreshToken)
 
 	// Login token
-	claims, err := jwt.VerifyJWT(tp.LoginToken, cfg)
+	claims, err := jwt.VerifyJWT(tp.LoginToken, cfg.PublicKey)
 	if assert.NoError(t, err) {
 		assert.NotNil(t, claims)
 		assert.Equal(t, "jonathan", claims.Username)
@@ -270,7 +271,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	// Refresh token
-	claims, err = jwt.VerifyJWT(tp.RefreshToken, cfg)
+	claims, err = jwt.VerifyJWT(tp.RefreshToken, cfg.PublicKey)
 	if assert.NoError(t, err) {
 		assert.NotNil(t, claims)
 		assert.Equal(t, "jonathan", claims.Username)
@@ -323,11 +324,11 @@ func TestLoginInvalidPassword(t *testing.T) {
 
 	conn.On("GetUserByName", mock.Anything).Run(func(args mock.Arguments) {
 		assert.Equal(t, args.Get(0), "jonathan")
-	}).Return(db.User{
+	}).Return(models.User{
 		Username: "jonathan",
 		Password: hash,
 		Email:    "yeet@yeet.dev",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 	}, nil)
 
 	cfg := config.EphemeralConfig()
@@ -446,7 +447,7 @@ func TestSignupExists(t *testing.T) {
 }
 
 func TestRefresh(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 	}
 
@@ -457,7 +458,7 @@ func TestRefresh(t *testing.T) {
 
 	ep := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, true, cfg)
+	tkn, err := jwt.GenerateJWT(&u, true, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	b, err := json.Marshal(jwt.TokenPair{
@@ -485,7 +486,7 @@ func TestRefresh(t *testing.T) {
 	assert.Empty(t, tp.RefreshToken)
 
 	// Check token and claim validity
-	c, err := jwt.VerifyJWT(tp.LoginToken, cfg)
+	c, err := jwt.VerifyJWT(tp.LoginToken, cfg.PublicKey)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, c)
 	assert.Equal(t, u.Username, c.Username)

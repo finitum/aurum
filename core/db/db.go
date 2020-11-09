@@ -2,33 +2,34 @@ package db
 
 import (
 	"errors"
+	"github.com/finitum/aurum/pkg/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	log "github.com/sirupsen/logrus"
 )
 
+var ErrExists = errors.New("user already exists")
+
 type RepositoryCollection interface {
 	UserRepository
 }
 
-var ErrExists = errors.New("user already exists")
-
 // An interface for database connections, abstracting underlying DB access
 type UserRepository interface {
 	// should insert a user into the database and raise ErrExists if the user already exists
-	CreateUser(u User) error
+	CreateUser(u models.User) error
 
 	// Gets the user based on the username
-	GetUserByName(username string) (User, error)
+	GetUserByName(username string) (models.User, error)
 
 	// Counts the number of users in the database
 	CountUsers() (int, error)
 
 	// changes the fields of a user matching the username
-	UpdateUser(user User) error
+	UpdateUser(user models.User) error
 
 	// Gets users using specified start and end range
-	GetUsers(start int, end int) ([]User, error)
+	GetUsers(start int, end int) ([]models.User, error)
 }
 
 type DatabaseType int

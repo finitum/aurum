@@ -1,14 +1,14 @@
 package web
 
 import (
-	"github.com/finitum/aurum/core/config"
-	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/core/hash"
-	"github.com/finitum/aurum/core/jwt"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/internal/jwt"
+	"github.com/finitum/aurum/pkg/hash"
+	"github.com/finitum/aurum/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
@@ -19,10 +19,10 @@ import (
 )
 
 func TestGetMe(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
@@ -33,7 +33,7 @@ func TestGetMe(t *testing.T) {
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -49,7 +49,7 @@ func TestGetMe(t *testing.T) {
 	resp := w.Result()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	ru := db.User{}
+	ru := models.User{}
 
 	err = json.NewDecoder(resp.Body).Decode(&ru)
 	assert.NoError(t, err)
@@ -57,10 +57,10 @@ func TestGetMe(t *testing.T) {
 }
 
 func TestChangePassword(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
@@ -72,7 +72,7 @@ func TestChangePassword(t *testing.T) {
 	conn := SQLConnectionMock{}
 
 	conn.On("UpdateUser", mock.Anything).Run(func(args mock.Arguments) {
-		user := args.Get(0).(db.User)
+		user := args.Get(0).(models.User)
 		assert.Equal(t, u.Username, user.Username)
 		assert.Equal(t, u.Email, user.Email)
 		assert.Equal(t, u.Role, user.Role)
@@ -84,7 +84,7 @@ func TestChangePassword(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -99,7 +99,7 @@ func TestChangePassword(t *testing.T) {
 	resp := w.Result()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	var ub db.User
+	var ub models.User
 	_ = json.Unmarshal(w.Body.Bytes(), &ub)
 	assert.Equal(t, u, ub)
 
@@ -107,10 +107,10 @@ func TestChangePassword(t *testing.T) {
 }
 
 func TestBlockSelf(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
@@ -125,7 +125,7 @@ func TestBlockSelf(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -144,15 +144,15 @@ func TestBlockSelf(t *testing.T) {
 }
 
 func TestAdminSelf(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
 	uModified := u
-	uModified.Role = db.AdminRoleID
+	uModified.Role = models.AdminRoleID
 
 	body, err := json.Marshal(uModified)
 
@@ -162,7 +162,7 @@ func TestAdminSelf(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -181,10 +181,10 @@ func TestAdminSelf(t *testing.T) {
 }
 
 func TestChangePasswordOtherUserAsAdmin(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.AdminRoleID,
+		Role:     models.AdminRoleID,
 		Blocked:  false,
 	}
 
@@ -197,7 +197,7 @@ func TestChangePasswordOtherUserAsAdmin(t *testing.T) {
 	conn := SQLConnectionMock{}
 
 	conn.On("UpdateUser", mock.Anything).Run(func(args mock.Arguments) {
-		user := args.Get(0).(db.User)
+		user := args.Get(0).(models.User)
 		assert.Equal(t, uModified.Username, user.Username)
 		assert.Equal(t, u.Email, user.Email)
 		assert.Equal(t, u.Role, user.Role)
@@ -209,7 +209,7 @@ func TestChangePasswordOtherUserAsAdmin(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -224,7 +224,7 @@ func TestChangePasswordOtherUserAsAdmin(t *testing.T) {
 	resp := w.Result()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	var ub db.User
+	var ub models.User
 	_ = json.Unmarshal(w.Body.Bytes(), &ub)
 	uModified.Password = ""
 	assert.Equal(t, uModified, ub)
@@ -233,10 +233,10 @@ func TestChangePasswordOtherUserAsAdmin(t *testing.T) {
 }
 
 func TestChangeWrongUsername(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
@@ -252,7 +252,7 @@ func TestChangeWrongUsername(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -271,10 +271,10 @@ func TestChangeWrongUsername(t *testing.T) {
 }
 
 func TestChangeUserNoBody(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
@@ -284,7 +284,7 @@ func TestChangeUserNoBody(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -317,10 +317,10 @@ func (f FakeWriter) WriteHeader(_ int) {
 }
 
 func TestChangeUserBadWriter(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
@@ -329,7 +329,7 @@ func TestChangeUserBadWriter(t *testing.T) {
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -358,14 +358,14 @@ func TestGetUsersNotAdmin(t *testing.T) {
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{&conn, cfg}
 
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -392,14 +392,14 @@ func TestGetUsersInvalidRange(t *testing.T) {
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{&conn, cfg}
 
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.AdminRoleID,
+		Role:     models.AdminRoleID,
 		Blocked:  false,
 	}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	rg := Range{100, 0}
@@ -425,21 +425,21 @@ func TestGetUsersInvalidRange(t *testing.T) {
 func TestGetUsersDbError(t *testing.T) {
 	conn := SQLConnectionMock{}
 
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.AdminRoleID,
+		Role:     models.AdminRoleID,
 		Blocked:  false,
 	}
 
 	cfg := config.EphemeralConfig()
 
 	conn.On("GetUserByName", u.Username).Return(u, nil)
-	conn.On("GetUsers", mock.Anything, mock.Anything).Return([]db.User{}, errors.New("simulated DB Error"))
+	conn.On("GetUsers", mock.Anything, mock.Anything).Return([]models.User{}, errors.New("simulated DB Error"))
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	rg := Range{0, 100}
@@ -462,20 +462,20 @@ func TestGetUsersDbError(t *testing.T) {
 func TestGetUsers(t *testing.T) {
 	conn := SQLConnectionMock{}
 
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.AdminRoleID,
+		Role:     models.AdminRoleID,
 		Blocked:  false,
 	}
 
 	cfg := config.EphemeralConfig()
 
-	conn.On("GetUsers", 0, 100).Return([]db.User{u}, nil)
+	conn.On("GetUsers", 0, 100).Return([]models.User{u}, nil)
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	rg := Range{0, 100}
@@ -495,9 +495,9 @@ func TestGetUsers(t *testing.T) {
 
 	assert.Equal(t, resp.StatusCode, http.StatusOK)
 
-	var ub []db.User
+	var ub []models.User
 	_ = json.Unmarshal(w.Body.Bytes(), &ub)
-	assert.Equal(t, []db.User{u}, ub)
+	assert.Equal(t, []models.User{u}, ub)
 
 	conn.AssertExpectations(t)
 }
@@ -505,20 +505,20 @@ func TestGetUsers(t *testing.T) {
 func TestGetUsersBadWriter(t *testing.T) {
 	conn := SQLConnectionMock{}
 
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.AdminRoleID,
+		Role:     models.AdminRoleID,
 		Blocked:  false,
 	}
 
 	cfg := config.EphemeralConfig()
 
-	conn.On("GetUsers", mock.Anything, mock.Anything).Return([]db.User{u}, nil)
+	conn.On("GetUsers", mock.Anything, mock.Anything).Return([]models.User{u}, nil)
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	rg := Range{0, 100}
@@ -545,10 +545,10 @@ func TestGetUsersBadWriter(t *testing.T) {
 }
 
 func TestUpdateUserNilUser(t *testing.T) {
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
@@ -557,7 +557,7 @@ func TestUpdateUserNilUser(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()

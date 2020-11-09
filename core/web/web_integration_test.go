@@ -1,12 +1,13 @@
 package web
 
 import (
-	"github.com/finitum/aurum/core/config"
-	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/core/jwt"
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/core/db"
+	"github.com/finitum/aurum/internal/jwt"
+	"github.com/finitum/aurum/pkg/models"
 	"github.com/test-go/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +28,7 @@ func TestSignupLoginFlowIntegration(t *testing.T) {
 		Config: config,
 	}
 
-	u := db.User{
+	u := models.User{
 		Username: "Test",
 		Email:    "Tester@test.com",
 		Password: "4e1243bd22c66e76c2ba9eddc1f91394e57f9f83",
@@ -50,7 +51,7 @@ func TestSignupLoginFlowIntegration(t *testing.T) {
 	assert.NoError(t, err)
 
 	// We are first user so we should be admin from here on out
-	u.Role = db.AdminRoleID
+	u.Role = models.AdminRoleID
 
 	// Login
 	w = httptest.NewRecorder()
@@ -76,16 +77,16 @@ func TestSignupLoginFlowIntegration(t *testing.T) {
 	res = w.Result()
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 
-	var newuser db.User
+	var newuser models.User
 	err = json.NewDecoder(res.Body).Decode(&newuser)
 	assert.NoError(t, err)
 	assert.Equal(t, u.Username, newuser.Username)
 	assert.Equal(t, u.Blocked, newuser.Blocked)
-	assert.Equal(t, db.AdminRoleID, newuser.Role)
+	assert.Equal(t, models.AdminRoleID, newuser.Role)
 	assert.Equal(t, u.Email, newuser.Email)
 }
 
-func VerifyLogin(assert *assert.Assertions, client *http.Client, u db.User) jwt.TokenPair {
+func VerifyLogin(assert *assert.Assertions, client *http.Client, u models.User) jwt.TokenPair {
 	body, err := json.Marshal(u)
 	assert.NoError(err)
 
@@ -105,7 +106,7 @@ func VerifyLogin(assert *assert.Assertions, client *http.Client, u db.User) jwt.
 	return tp
 }
 
-func VerifySignupLogin(assert *assert.Assertions, client *http.Client, u db.User) jwt.TokenPair {
+func VerifySignupLogin(assert *assert.Assertions, client *http.Client, u models.User) jwt.TokenPair {
 
 	body, err := json.Marshal(u)
 	assert.NoError(err)
@@ -123,7 +124,7 @@ func VerifySignupLogin(assert *assert.Assertions, client *http.Client, u db.User
 	return VerifyLogin(assert, client, u)
 }
 
-func VerifyGetUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u db.User) {
+func VerifyGetUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User) {
 
 	// get user
 	req, err := http.NewRequest("GET", "http://localhost:40152/user", nil)
@@ -134,7 +135,7 @@ func VerifyGetUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenP
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
 
-	var newuser db.User
+	var newuser models.User
 	err = json.NewDecoder(resp.Body).Decode(&newuser)
 
 	assert.Equal(u.Username, newuser.Username)
@@ -144,8 +145,8 @@ func VerifyGetUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenP
 
 }
 
-func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u db.User, cfg *config.Config) {
-	oldClaims, err := jwt.VerifyJWT(tp.LoginToken, cfg)
+func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User, cfg *config.Config) {
+	oldClaims, err := jwt.VerifyJWT(tp.LoginToken, cfg.PublicKey)
 	assert.NoError(err)
 
 	body, err := json.Marshal(tp)
@@ -166,7 +167,7 @@ func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenP
 	err = json.NewDecoder(resp.Body).Decode(&rtp)
 	assert.Empty(rtp.RefreshToken)
 
-	newClaims, err := jwt.VerifyJWT(rtp.LoginToken, cfg)
+	newClaims, err := jwt.VerifyJWT(rtp.LoginToken, cfg.PublicKey)
 	assert.NoError(err)
 
 	assert.True(oldClaims.IssuedAt < newClaims.IssuedAt)
@@ -175,8 +176,8 @@ func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenP
 	VerifyGetUser(assert, client, tp, u)
 }
 
-func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u db.User) {
-	newuser := db.User{
+func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User) {
+	newuser := models.User{
 		Username: u.Username,
 		Password: "9054fbe0b622c638224d50d20824d2ff6782e308",
 		Email:    "yeet42@finitum.dev",
@@ -193,7 +194,7 @@ func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Clien
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
 
-	var respuser db.User
+	var respuser models.User
 	err = json.NewDecoder(resp.Body).Decode(&respuser)
 
 	assert.Equal(u.Username, respuser.Username)
@@ -208,8 +209,8 @@ func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Clien
 }
 
 // Warning: this blocks the userToBlock
-func VerifyBlockUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, userToBlock db.User) {
-	blockedUser := db.User{
+func VerifyBlockUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, userToBlock models.User) {
+	blockedUser := models.User{
 		Username: userToBlock.Username,
 		Blocked:  true,
 	}
@@ -225,13 +226,13 @@ func VerifyBlockUser(assert *assert.Assertions, client *http.Client, tp jwt.Toke
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
 
-	var respuser db.User
+	var respuser models.User
 	err = json.NewDecoder(resp.Body).Decode(&respuser)
 
 	assert.True(respuser.Blocked)
 
 	// Check the user we just blocked can't login
-	blockedUserLogin := db.User{
+	blockedUserLogin := models.User{
 		Username: userToBlock.Username,
 		Password: userToBlock.Password,
 	}
@@ -260,7 +261,7 @@ func VerifyOptionsHeaders(assert *assert.Assertions, client *http.Client) {
 	assert.Equal("Origin, Content-Type, Authorization", resp.Header.Get("Access-Control-Allow-Headers"))
 }
 
-func VerifyGetUsers(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, users []db.User) {
+func VerifyGetUsers(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, users []models.User) {
 	req, err := http.NewRequest("GET", "http://localhost:40152/users", nil)
 	assert.NoError(err)
 
@@ -273,12 +274,12 @@ func VerifyGetUsers(assert *assert.Assertions, client *http.Client, tp jwt.Token
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
 
-	var ub []db.User
+	var ub []models.User
 	err = json.NewDecoder(resp.Body).Decode(&ub)
 	assert.NoError(err)
 
 	assert.Equal(users[0].Username, ub[0].Username)
-	assert.Equal(db.AdminRoleID, ub[0].Role)
+	assert.Equal(models.AdminRoleID, ub[0].Role)
 	assert.Empty(ub[0].Password)
 	assert.Equal(users[1].Username, ub[1].Username)
 }
@@ -301,14 +302,14 @@ func TestSystemIntegration(t *testing.T) {
 	// Wait for the server  to start up
 	time.Sleep(3 * time.Second)
 
-	admin := db.User{
+	admin := models.User{
 		Username: "TestAdmin",
 		Email:    "Tester@test.com",
 		Password: "4e1243bd22c66e76c2ba9eddc1f91394e57f9f83",
 		Blocked:  false,
 	}
 
-	normal := db.User{
+	normal := models.User{
 		Username: "TestNormal",
 		Email:    "Tester@test.com",
 		Password: "4e1243bd22c66e76c2ba9eddc1f91394e57f9f83",
@@ -324,7 +325,7 @@ func TestSystemIntegration(t *testing.T) {
 	tpadmin := VerifySignupLogin(assert, client, admin)
 	tpnormal := VerifySignupLogin(assert, client, normal)
 
-	admin.Role = db.AdminRoleID
+	admin.Role = models.AdminRoleID
 	VerifyGetUser(assert, client, tpadmin, admin)
 	VerifyGetUser(assert, client, tpnormal, normal)
 
@@ -333,7 +334,7 @@ func TestSystemIntegration(t *testing.T) {
 
 	VerifyUpdateUserPasswordEmail(assert, client, tpnormal, normal)
 
-	users := []db.User{
+	users := []models.User{
 		admin,
 		normal,
 	}

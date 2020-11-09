@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/finitum/aurum/core/jwt/ecc"
+	"github.com/finitum/aurum/internal/jwt/ecc"
 	"github.com/test-go/testify/assert"
 	"os"
 	"testing"
