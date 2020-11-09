@@ -513,14 +513,14 @@ func TestEndpoints_PublicKey(t *testing.T) {
 	res := w.Result()
 	assert.Equal(t, res.StatusCode, http.StatusOK)
 
-	pk := publicKeyResponse{}
+	pk := models.PublicKeyResponse{}
 	err := json.NewDecoder(res.Body).Decode(&pk)
 	assert.NoError(t, err)
 
 	pem, err := cfg.PublicKey.ToPem()
 	assert.NoError(t, err)
 	assert.Contains(t, pem, "PUBLIC KEY")
-	epk := publicKeyResponse{pem}
+	epk := models.PublicKeyResponse{PublicKey: pem}
 
 	assert.Equal(t, epk, pk)
 }
