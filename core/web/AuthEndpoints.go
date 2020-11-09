@@ -3,9 +3,9 @@ package web
 import (
 	"encoding/json"
 	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/internal/jwt"
 	"github.com/finitum/aurum/internal/passwords"
 	"github.com/finitum/aurum/pkg/hash"
+	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -123,14 +123,10 @@ func (e *Endpoints) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bytes, err := json.Marshal(jwt.TokenPair{
+	if err := json.NewEncoder(w).Encode(&jwt.TokenPair{
 		LoginToken: token,
-	})
-
-	_, err = w.Write(bytes)
-
-	if err != nil {
-		log.Error("Couldn't write to client")
+	}); err != nil {
+		log.Errorf("Couldn't write to client: %v", err)
 	}
 
 	return

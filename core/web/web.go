@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/finitum/aurum/core/config"
 	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/internal/jwt"
+	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
