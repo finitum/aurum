@@ -21,15 +21,16 @@ type loginMsg struct {
 	tp *jwt.TokenPair
 }
 
-type getMeMsg struct {
-	user *models.User
-}
-
 type loginErrMsg struct {
 	err error
 }
 
 type registerMsg struct{}
+
+
+type getMeMsg struct {
+	user *models.User
+}
 
 func connect() tea.Msg {
 	au, err := goclient.Connect(host)
@@ -38,6 +39,17 @@ func connect() tea.Msg {
 	}
 
 	return connectMsg{au}
+}
+
+func getme(au *goclient.Aurum, tp *jwt.TokenPair) tea.Cmd {
+	return func() tea.Msg {
+		user, err := au.GetUserInfo(tp)
+		if err != nil {
+			return errMsg{err}
+		}
+
+		return getMeMsg{user}
+	}
 }
 
 func login(au *goclient.Aurum, username, password string) tea.Cmd {
@@ -59,16 +71,5 @@ func register(au *goclient.Aurum, username, email, password string) tea.Cmd {
 		}
 
 		return registerMsg{}
-	}
-}
-
-func getme(au *goclient.Aurum, tp *jwt.TokenPair) tea.Cmd {
-	return func() tea.Msg {
-		user, err := au.GetUserInfo(tp)
-		if err != nil {
-			return errMsg{err}
-		}
-
-		return getMeMsg{user}
 	}
 }

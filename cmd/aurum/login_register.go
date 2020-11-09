@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/finitum/aurum/clients/goclient"
 	te "github.com/muesli/termenv"
 	"strings"
 )
@@ -17,7 +18,7 @@ var (
 	blurredSubmitButton = "[ " + te.String("Submit").Foreground(color("240")).String() + " ]"
 )
 
-type LoginScreenModel struct {
+type LoginRegisterModel struct {
 	index         int
 	usernameInput textinput.Model
 	passwordInput textinput.Model
@@ -29,7 +30,7 @@ type LoginScreenModel struct {
 	err error
 }
 
-func initialLoginScreenModel() LoginScreenModel {
+func InitialLoginScreenModel() LoginRegisterModel {
 	name := textinput.NewModel()
 	name.Placeholder = "username"
 	name.Focus()
@@ -46,12 +47,12 @@ func initialLoginScreenModel() LoginScreenModel {
 	password.EchoMode = textinput.EchoPassword
 	password.EchoCharacter = '•'
 
-	return LoginScreenModel{0, name, password, email, blurredSubmitButton, true, nil}
+	return LoginRegisterModel{0, name, password, email, blurredSubmitButton, true, nil}
 }
 
-func LoginScreenView(m model) string {
+func (m LoginRegisterModel) View() string {
 	var header string
-	if m.login.login {
+	if m.login {
 		header = "Login"
 	} else {
 		header = "Register"
@@ -59,18 +60,18 @@ func LoginScreenView(m model) string {
 
 	s := fmt.Sprintf(" %s %s\n", aurumText, header)
 
-	if m.login.err != nil {
-		s += te.String("Error: ").Foreground(color("#f00")).String() + strings.TrimSpace(m.login.err.Error()) + "\n"
+	if m.err != nil {
+		s += te.String("Error: ").Foreground(color("#f00")).String() + strings.TrimSpace(m.err.Error()) + "\n"
 	}
 
 	s += "\n"
 
 	var inputs []string
-	inputs = append(inputs, m.login.usernameInput.View())
-	if !m.login.login {
-		inputs = append(inputs, m.login.emailInput.View())
+	inputs = append(inputs, m.usernameInput.View())
+	if !m.login {
+		inputs = append(inputs, m.emailInput.View())
 	}
-	inputs = append(inputs, m.login.passwordInput.View())
+	inputs = append(inputs, m.passwordInput.View())
 
 	for i := 0; i < len(inputs); i++ {
 		s += inputs[i]
@@ -79,49 +80,47 @@ func LoginScreenView(m model) string {
 		}
 	}
 
-	s += "\n\n" + m.login.submitButton + "\n"
+	s += "\n\n" + m.submitButton + "\n"
 	return s
 }
 
-func LoginScreenMsgHandler(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
+func (m LoginRegisterModel) Update(au *goclient.Aurum, msg tea.Msg) (LoginRegisterModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case loginErrMsg:
-		m.login.err = msg.err
+		m.err = msg.err
 	case tea.KeyMsg:
 		switch key := msg.Type; key {
 		case tea.KeyShiftTab, tea.KeyTab, tea.KeyEnter, tea.KeyUp, tea.KeyDown:
 			var inputs []textinput.Model
-			inputs = append(inputs, m.login.usernameInput)
-			if !m.login.login {
-				inputs = append(inputs, m.login.emailInput)
+			inputs = append(inputs, m.usernameInput)
+			if !m.login {
+				inputs = append(inputs, m.emailInput)
 			}
-			inputs = append(inputs, m.login.passwordInput)
+			inputs = append(inputs, m.passwordInput)
 
 			// if submit login
-			if key == tea.KeyEnter && m.login.index == len(inputs) {
-				if m.login.login {
-					return m, login(m.au, m.login.usernameInput.Value(), m.login.passwordInput.Value())
+			if key == tea.KeyEnter && m.index == len(inputs) {
+				if m.login {
+					return m, login(au, m.usernameInput.Value(), m.passwordInput.Value())
 				} else {
-					return m, register(m.au, m.login.usernameInput.Value(), m.login.emailInput.Value(), m.login.passwordInput.Value())
+					return m, register(au, m.usernameInput.Value(), m.emailInput.Value(), m.passwordInput.Value())
 				}
 			}
 
 			if key == tea.KeyUp || key == tea.KeyShiftTab {
-				m.login.index--
+				m.index--
 			} else {
-				m.login.index++
+				m.index++
 			}
 
-			if m.login.index > len(inputs) {
-				m.login.index = 0
-			} else if m.login.index < 0 {
-				m.login.index = len(inputs)
+			if m.index > len(inputs) {
+				m.index = 0
+			} else if m.index < 0 {
+				m.index = len(inputs)
 			}
 
 			for i := 0; i <= len(inputs)-1; i++ {
-				if i == m.login.index {
+				if i == m.index {
 					// Set focused state
 					inputs[i].Focus()
 					inputs[i].Prompt = focusedPrompt
@@ -134,32 +133,31 @@ func LoginScreenMsgHandler(m model, msg tea.Msg) (tea.Model, tea.Cmd) {
 				inputs[i].TextColor = ""
 			}
 
-			m.login.usernameInput = inputs[0]
-			if m.login.login {
-				m.login.passwordInput = inputs[1]
+			m.usernameInput = inputs[0]
+			if m.login {
+				m.passwordInput = inputs[1]
 			} else {
-				m.login.emailInput = inputs[1]
-				m.login.passwordInput = inputs[2]
+				m.emailInput = inputs[1]
+				m.passwordInput = inputs[2]
 			}
 
-			if m.login.index == len(inputs) {
-				m.login.submitButton = focusedSubmitButton
+			if m.index == len(inputs) {
+				m.submitButton = focusedSubmitButton
 			} else {
-				m.login.submitButton = blurredSubmitButton
+				m.submitButton = blurredSubmitButton
 			}
 
 			return m, nil
 		}
 	}
 
-	m.login, cmd = updateInputs(msg, m.login)
-	return m, cmd
+	return updateInputs(msg, m)
 }
 
 // Pass messages and models through to text input components. Only text inputs
 // with Focus() set will respond, so it's safe to simply update all of them
 // here without any further logic.
-func updateInputs(msg tea.Msg, m LoginScreenModel) (LoginScreenModel, tea.Cmd) {
+func updateInputs(msg tea.Msg, m LoginRegisterModel) (LoginRegisterModel, tea.Cmd) {
 	var (
 		cmd  tea.Cmd
 		cmds []tea.Cmd

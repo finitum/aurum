@@ -42,8 +42,8 @@ type model struct {
 	info string
 
 	main  MainScreenModel
-	login LoginScreenModel
-	user  UserScreenModel
+	login LoginRegisterModel
+	user  UserModel
 }
 
 func initialModel() model {
@@ -51,9 +51,9 @@ func initialModel() model {
 		au:     nil,
 		screen: MainScreen,
 		err:    nil,
-		main:   initialMainScreenModel(),
-		login:  initialLoginScreenModel(),
-		user:   initialUserScreenModel(),
+		main:   InitialMainScreenModel(),
+		login:  InitialLoginScreenModel(),
+		user:   InitialUserScreenModel(),
 	}
 }
 
@@ -62,44 +62,50 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
-	case getMeMsg:
-		m.user.user = msg.user
+	case screenLoginMsg:
+		m.screen = LoginScreen
+		m.login = InitialLoginScreenModel()
+		m.login.login = true
+		m.screen = RegisterScreen
+	case screenRegisterMsg:
+		m.login = InitialLoginScreenModel()
+		m.login.login = false
+		m.screen = RegisterScreen
 	case loginMsg:
 		m.screen = UserScreen
-		m.login = initialLoginScreenModel()
 		m.tp = msg.tp
-		return m, getme(m.au, msg.tp)
+		cmds = append(cmds, getme(m.au, msg.tp))
 	case registerMsg:
 		m.info = te.String("Registered successfully!").Foreground(color("#0f0")).String()
 		m.screen = MainScreen
-		return m, nil
 	case errMsg:
 		m.err = msg
 		return m, tea.Quit
 	case connectMsg:
 		m.au = msg.au
-		return m, nil
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC:
 			return m, tea.Quit
 		case tea.KeyEsc:
 			m.screen = MainScreen
-			return m, nil
 		}
 	}
 
+	var cmd tea.Cmd
 	switch m.screen {
 	case MainScreen:
-		return MainScreenMsgHandler(m, msg)
+		m.main, cmd = m.main.Update(msg)
 	case LoginScreen, RegisterScreen:
-		return LoginScreenMsgHandler(m, msg)
+		m.login, cmd = m.login.Update(m.au, msg)
 	case UserScreen:
-		return UserScreenMsgHandler(m, msg)
-	default:
-		return m, nil
+		m.user, cmd = m.user.Update(msg)
 	}
+	cmds = append(cmds, cmd)
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
@@ -111,14 +117,15 @@ func (m model) View() string {
 		return fmt.Sprint("Connecting...\n")
 	}
 
+	var s string
 	switch m.screen {
-	default:
-		fallthrough
 	case MainScreen:
-		return MainScreenView(m)
+		s += m.main.View()
 	case LoginScreen, RegisterScreen:
-		return LoginScreenView(m)
+		s += m.login.View()
 	case UserScreen:
-		return UserScreenView(m)
+		s += m.user.View()
 	}
+
+	return s
 }
