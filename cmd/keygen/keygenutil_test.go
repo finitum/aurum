@@ -1,4 +1,4 @@
-package ecc
+package main
 
 import (
 	"testing"
