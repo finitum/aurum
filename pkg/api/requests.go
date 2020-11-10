@@ -80,7 +80,7 @@ func Refresh(host string, tp *jwt.TokenPair) error {
 		return errors.Wrap(err, "couldn't marshal token")
 	}
 
-	resp, err := http.Post(host+"/login", "application/json", bytes.NewReader(tpb))
+	resp, err := http.Post(host+"/refresh", "application/json", bytes.NewReader(tpb))
 	if err != nil {
 		return errors.Wrap(err, "couldn't post refresh request")
 	}
@@ -142,17 +142,18 @@ func authenticatedRequest(req *http.Request, tp *jwt.TokenPair) (*http.Response,
 	req.Header.Set("Authorization", "Bearer "+tp.LoginToken)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return resp, nil
+		return nil, err
 	}
 	if resp.StatusCode == http.StatusUnauthorized {
-		if err = Refresh(req.Host, tp); err != nil {
+		if err = Refresh(req.URL.Scheme + "://" + req.URL.Host, tp); err != nil {
 			return nil, err
 		}
 
+		req.Header.Set("Authorization", "Bearer "+tp.LoginToken)
 		resp, err = http.DefaultClient.Do(req)
 	}
 	if err != nil {
-		return resp, nil
+		return nil, err
 	}
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		return resp, errors.Errorf("unexpected status code (%d)", resp.StatusCode)
