@@ -76,7 +76,7 @@ func TestLogin(t *testing.T) {
 
 		err = json.NewEncoder(w).Encode(&tp)
 		assert.NoError(t, err)
-		}))
+	}))
 	defer ts.Close()
 
 	rtp, err := Login(ts.URL, u)
@@ -91,13 +91,12 @@ func TestRefresh(t *testing.T) {
 	}
 
 	tp2 := jwt.TokenPair{
-		LoginToken:   "login2",
+		LoginToken: "login2",
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/refresh", r.URL.Path)
 		assert.Equal(t, http.MethodPost, r.Method)
-
 
 		var recv jwt.TokenPair
 		err := json.NewDecoder(r.Body).Decode(&recv)
@@ -137,9 +136,8 @@ func TestGetUser(t *testing.T) {
 		assert.Equal(t, "/user", r.URL.Path)
 		assert.Equal(t, http.MethodGet, r.Method)
 
-
 		token := r.Header.Get("Authorization")
-		assert.Equal(t, "Bearer " + tp.LoginToken, token)
+		assert.Equal(t, "Bearer "+tp.LoginToken, token)
 
 		err := json.NewEncoder(w).Encode(&u)
 		assert.NoError(t, err)
@@ -172,7 +170,7 @@ func TestUpdateUser(t *testing.T) {
 		assert.Equal(t, http.MethodPost, r.Method)
 
 		token := r.Header.Get("Authorization")
-		assert.Equal(t, "Bearer " + tp.LoginToken, token)
+		assert.Equal(t, "Bearer "+tp.LoginToken, token)
 
 		err := json.NewEncoder(w).Encode(&u)
 		assert.NoError(t, err)
@@ -230,11 +228,11 @@ func TestUpdateUserRefreshNeeded(t *testing.T) {
 		} else if r.URL.Path == "/user" {
 			assert.Equal(t, http.MethodPost, r.Method)
 			token := r.Header.Get("Authorization")
-			if token == "Bearer " + initialLogin {
+			if token == "Bearer "+initialLogin {
 				hasTried = true
 				w.WriteHeader(http.StatusUnauthorized)
 				return
-			} else if token == "Bearer " + refreshLogin {
+			} else if token == "Bearer "+refreshLogin {
 				assert.False(t, hasGot)
 				assert.True(t, hasRefreshed)
 
@@ -303,11 +301,11 @@ func TestGetUserRefreshNeeded(t *testing.T) {
 		} else if r.URL.Path == "/user" {
 			assert.Equal(t, http.MethodGet, r.Method)
 			token := r.Header.Get("Authorization")
-			if token == "Bearer " + initialLogin {
+			if token == "Bearer "+initialLogin {
 				hasTried = true
 				w.WriteHeader(http.StatusUnauthorized)
 				return
-			} else if token == "Bearer " + refreshLogin {
+			} else if token == "Bearer "+refreshLogin {
 				assert.False(t, hasGot)
 				assert.True(t, hasRefreshed)
 				err := json.NewEncoder(w).Encode(&u)

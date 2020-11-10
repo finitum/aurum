@@ -145,7 +145,7 @@ func authenticatedRequest(req *http.Request, tp *jwt.TokenPair) (*http.Response,
 		return nil, err
 	}
 	if resp.StatusCode == http.StatusUnauthorized {
-		if err = Refresh(req.URL.Scheme + "://" + req.URL.Host, tp); err != nil {
+		if err = Refresh(req.URL.Scheme+"://"+req.URL.Host, tp); err != nil {
 			return nil, err
 		}
 
