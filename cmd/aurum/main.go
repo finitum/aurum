@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/finitum/aurum/clients/aurum-go"
+	"github.com/finitum/aurum/clients/go"
 	"github.com/finitum/aurum/pkg/jwt"
 	te "github.com/muesli/termenv"
 	"os"
@@ -18,6 +18,8 @@ var (
 )
 
 func main() {
+	flag.Parse()
+
 	p := tea.NewProgram(initialModel())
 
 	if err := p.Start(); err != nil {

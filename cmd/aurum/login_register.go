@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/finitum/aurum/clients/aurum-go"
+	"github.com/finitum/aurum/clients/go"
 	te "github.com/muesli/termenv"
 	"strings"
 )
