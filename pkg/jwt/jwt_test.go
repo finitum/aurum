@@ -3,7 +3,7 @@ package jwt
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/finitum/aurum/core/config"
-	"github.com/finitum/aurum/internal/jwt/ecc"
+	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/finitum/aurum/pkg/models"
 	tassert "github.com/stretchr/testify/assert"
 	"testing"

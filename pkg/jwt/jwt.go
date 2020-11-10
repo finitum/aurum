@@ -3,7 +3,7 @@ package jwt
 import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/finitum/aurum/internal/jwt/ecc"
+	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/finitum/aurum/pkg/models"
 	"time"
 )

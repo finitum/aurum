@@ -3,9 +3,9 @@ package web
 import (
 	"encoding/json"
 	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/internal/jwt"
 	"github.com/finitum/aurum/internal/passwords"
 	"github.com/finitum/aurum/pkg/hash"
+	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -123,14 +123,10 @@ func (e *Endpoints) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bytes, err := json.Marshal(jwt.TokenPair{
+	if err := json.NewEncoder(w).Encode(&jwt.TokenPair{
 		LoginToken: token,
-	})
-
-	_, err = w.Write(bytes)
-
-	if err != nil {
-		log.Error("Couldn't write to client")
+	}); err != nil {
+		log.Errorf("Couldn't write to client: %v", err)
 	}
 
 	return
@@ -211,10 +207,6 @@ func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-type publicKeyResponse struct {
-	PublicKey string `json:"public_key"`
-}
-
 /**
 @api {get} /pk PublicKey
 @apiDescription Returns the server's publickey
@@ -226,14 +218,14 @@ type publicKeyResponse struct {
 		"public_key": "<Public key here>"
 	}
 */
-func (e *Endpoints) PublicKey(w http.ResponseWriter, r *http.Request) {
+func (e *Endpoints) PublicKey(w http.ResponseWriter, _ *http.Request) {
 	pem, err := e.Config.PublicKey.ToPem()
 	if err != nil {
 		http.Error(w, "Error in getting PEM", http.StatusInternalServerError)
 		return
 	}
 
-	pk := publicKeyResponse{
+	pk := models.PublicKeyResponse{
 		PublicKey: pem,
 	}
 

@@ -2,7 +2,7 @@ package web
 
 import (
 	"github.com/finitum/aurum/core/config"
-	"github.com/finitum/aurum/internal/jwt"
+	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/test-go/testify/mock"

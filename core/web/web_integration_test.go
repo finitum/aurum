@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"github.com/finitum/aurum/core/config"
 	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/internal/jwt"
+	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/test-go/testify/assert"
 	"net/http"

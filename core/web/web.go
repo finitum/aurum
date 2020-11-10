@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/finitum/aurum/core/config"
 	"github.com/finitum/aurum/core/db"
-	"github.com/finitum/aurum/internal/jwt"
+	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -123,6 +123,6 @@ func StartServer(config *config.Config, db db.UserRepository) {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Info("Starting up web server ...")
+	log.Infof("Starting up web server on %s", config.WebAddr)
 	log.Fatal(srv.ListenAndServe())
 }

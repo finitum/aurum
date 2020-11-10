@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/finitum/aurum/internal/jwt/ecc"
+	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
