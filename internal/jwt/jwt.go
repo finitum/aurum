@@ -1,11 +1,10 @@
 package jwt
 
 import (
-	"aurum/config"
-	"aurum/db"
-	"aurum/jwt/ecc"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/finitum/aurum/internal/jwt/ecc"
+	"github.com/finitum/aurum/pkg/models"
 	"time"
 )
 
@@ -21,7 +20,7 @@ type TokenPair struct {
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
-func GenerateJWT(user *db.User, refresh bool, cfg *config.Config) (string, error) {
+func GenerateJWT(user *models.User, refresh bool, key ecc.SecretKey) (string, error) {
 	// expirationTime := time.Now().Add(time.Hour)
 	var expirationTime time.Time
 
@@ -47,29 +46,34 @@ func GenerateJWT(user *db.User, refresh bool, cfg *config.Config) (string, error
 
 	token := jwt.NewWithClaims(&ecc.SigningMethodEdDSA{}, claims)
 
-	return token.SignedString(cfg.SecretKey)
+	return token.SignedString(key)
 }
 
-func GenerateJWTPair(user *db.User, cfg *config.Config) (TokenPair, error) {
-	login, erra := GenerateJWT(user, false, cfg)
-	refresh, errb := GenerateJWT(user, true, cfg)
-
-	if erra != nil {
-		errb = erra
+func GenerateJWTPair(user *models.User, key ecc.SecretKey) (TokenPair, error) {
+	login, err := GenerateJWT(user, false, key)
+	if err != nil {
+		return TokenPair{}, err
 	}
 
-	return TokenPair{login, refresh}, errb
+	refresh, err := GenerateJWT(user, true, key)
+	if err != nil {
+		return TokenPair{}, err
+	}
+
+	return TokenPair{login, refresh}, nil
 }
 
-func VerifyJWT(token string, cfg *config.Config) (*Claims, error) {
+func VerifyJWT(token string, key ecc.PublicKey) (*Claims, error) {
 	claims := &Claims{}
 
-	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+	if _, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*ecc.SigningMethodEdDSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return cfg.PublicKey, nil
-	})
+		return key, nil
+	}); err != nil {
+		return nil, err
+	}
 
-	return claims, err
+	return claims, nil
 }

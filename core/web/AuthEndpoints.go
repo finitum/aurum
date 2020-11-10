@@ -1,11 +1,12 @@
 package web
 
 import (
-	"aurum/db"
-	"aurum/hash"
-	"aurum/jwt"
-	"aurum/passwords"
 	"encoding/json"
+	"github.com/finitum/aurum/core/db"
+	"github.com/finitum/aurum/internal/jwt"
+	"github.com/finitum/aurum/internal/passwords"
+	"github.com/finitum/aurum/pkg/hash"
+	"github.com/finitum/aurum/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -32,14 +33,14 @@ import (
 */
 func (e *Endpoints) Signup(w http.ResponseWriter, r *http.Request) {
 
-	var u db.User
+	var u models.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		log.Error(err)
 		http.Error(w, "Please yeet us a valid json body", http.StatusBadRequest)
 		return
 	}
 
-	if u.Username == "" || u.Password == "" || u.Email == "" || u.Role != db.UserRoleID {
+	if u.Username == "" || u.Password == "" || u.Email == "" || u.Role != models.UserRoleID {
 		http.Error(w, "Please yeet us a valid json body", http.StatusBadRequest)
 		return
 	}
@@ -58,7 +59,7 @@ func (e *Endpoints) Signup(w http.ResponseWriter, r *http.Request) {
 
 	if number == 0 {
 		log.Infof("A user with username \"%s\" has signed up. This is the first user and will get admin privileges.", u.Username)
-		u.Role = db.AdminRoleID
+		u.Role = models.AdminRoleID
 	}
 
 	// Actually add the user to the db
@@ -104,7 +105,7 @@ func (e *Endpoints) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := jwt.VerifyJWT(t.RefreshToken, e.Config)
+	c, err := jwt.VerifyJWT(t.RefreshToken, e.Config.PublicKey)
 	if err != nil || !c.Refresh {
 		http.Error(w, "Please specify a valid refresh token", http.StatusBadRequest)
 		return
@@ -116,7 +117,7 @@ func (e *Endpoints) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := jwt.GenerateJWT(&user, false, e.Config)
+	token, err := jwt.GenerateJWT(&user, false, e.Config.SecretKey)
 	if err != nil {
 		http.Error(w, "Couldn't generate Login token", http.StatusInternalServerError)
 		return
@@ -160,7 +161,7 @@ func (e *Endpoints) Refresh(w http.ResponseWriter, r *http.Request) {
 func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 
 	// Decode user struct and check if anything is invalid.
-	var u db.User
+	var u models.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil || len(u.Username) == 0 || len(u.Password) == 0 {
 		if err != nil {
 			log.Error(err)
@@ -185,7 +186,7 @@ func (e *Endpoints) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate a JWT pair (Login + refresh)
-	token, err := jwt.GenerateJWTPair(&user, e.Config)
+	token, err := jwt.GenerateJWTPair(&user, e.Config.SecretKey)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, "Error in JWT generation", http.StatusInternalServerError)

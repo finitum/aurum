@@ -1,6 +1,6 @@
 FROM node:13-slim as builder
 
-WORKDIR /webclient
+WORKDIR /build
 # Install dependencies
 COPY package.json .
 COPY yarn.lock .
@@ -13,4 +13,4 @@ RUN yarn parcel build index.html
 FROM nginx
 EXPOSE 80
 
-COPY --from=builder /webclient/dist /usr/share/nginx/html
+COPY --from=builder /build/dist /usr/share/nginx/html

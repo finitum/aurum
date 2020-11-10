@@ -1,4 +1,4 @@
-package db
+package models
 
 // The various roles a user can be
 const (

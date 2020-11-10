@@ -1,9 +1,9 @@
 package web
 
 import (
-	"aurum/config"
-	"aurum/db"
-	"aurum/jwt"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/internal/jwt"
+	"github.com/finitum/aurum/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/test-go/testify/mock"
 	"net/http"
@@ -23,10 +23,10 @@ func TestAuthenticateRequest(t *testing.T) {
 	conn := SQLConnectionMock{}
 	cfg := config.EphemeralConfig()
 
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
@@ -34,7 +34,7 @@ func TestAuthenticateRequest(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -48,7 +48,7 @@ func TestAuthenticateRequest(t *testing.T) {
 		// assert.Equal(t, u.Username, claims.Username)
 		req := args.Get(1).(*http.Request)
 		claims := req.Context().Value(contextKeyClaims).(*jwt.Claims)
-		user := req.Context().Value(contextKeyUser).(*db.User)
+		user := req.Context().Value(contextKeyUser).(*models.User)
 		assert.Equal(t, u.Username, claims.Username)
 		assert.Equal(t, u.Username, user.Username)
 	})
@@ -67,14 +67,14 @@ func TestAuthenticateRequestRefreshToken(t *testing.T) {
 	cfg := config.EphemeralConfig()
 	endpoints := Endpoints{&conn, cfg}
 
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  false,
 	}
 
-	tkn, err := jwt.GenerateJWT(&u, true, cfg)
+	tkn, err := jwt.GenerateJWT(&u, true, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -156,10 +156,10 @@ func TestAuthenticateRequestBlockedUser(t *testing.T) {
 	conn := SQLConnectionMock{}
 	cfg := config.EphemeralConfig()
 
-	u := db.User{
+	u := models.User{
 		Username: "victor",
 		Email:    "victor@example.com",
-		Role:     db.UserRoleID,
+		Role:     models.UserRoleID,
 		Blocked:  true,
 	}
 
@@ -167,7 +167,7 @@ func TestAuthenticateRequestBlockedUser(t *testing.T) {
 
 	endpoints := Endpoints{&conn, cfg}
 
-	tkn, err := jwt.GenerateJWT(&u, false, cfg)
+	tkn, err := jwt.GenerateJWT(&u, false, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	w := httptest.NewRecorder()
@@ -191,7 +191,7 @@ func TestCORSMiddlewareOptions(t *testing.T) {
 
 	hm := &HandlerMock{}
 
-	handler := accessControlMiddleware(hm)
+	handler := corsMiddleware(hm)
 
 	handler.ServeHTTP(w, r)
 
@@ -214,7 +214,7 @@ func TestCORSMiddlewareNotOptions(t *testing.T) {
 		assert.Equal(t, "Origin, Content-Type, Authorization", w2.Header().Get("Access-Control-Allow-Headers"))
 	})
 
-	handler := accessControlMiddleware(hm)
+	handler := corsMiddleware(hm)
 
 	handler.ServeHTTP(w, r)
 

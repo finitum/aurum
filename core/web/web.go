@@ -1,10 +1,10 @@
 package web
 
 import (
-	"aurum/config"
-	"aurum/db"
-	"aurum/jwt"
 	"context"
+	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/core/db"
+	"github.com/finitum/aurum/internal/jwt"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -27,7 +27,7 @@ var (
 )
 
 // Set access control headers on all requests
-func accessControlMiddleware(next http.Handler) http.Handler {
+func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
@@ -52,7 +52,7 @@ func (e *Endpoints) authenticationMiddleware(next http.Handler) http.Handler {
 		}
 		token = strings.TrimPrefix(token, "Bearer ")
 
-		claims, err := jwt.VerifyJWT(token, e.Config)
+		claims, err := jwt.VerifyJWT(token, e.Config.PublicKey)
 		if err != nil {
 			http.Error(w, "Invalid JWT Token", http.StatusUnauthorized)
 			return
@@ -96,7 +96,7 @@ func StartServer(config *config.Config, db db.UserRepository) {
 
 	// Router
 	router := mux.NewRouter()
-	router.Use(accessControlMiddleware)
+	router.Use(corsMiddleware)
 
 	unauthenticatedRouter := router.PathPrefix(config.BasePath).Subrouter()
 

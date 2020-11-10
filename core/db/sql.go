@@ -1,22 +1,23 @@
 package db
 
 import (
-	"aurum/hash"
+	"github.com/finitum/aurum/pkg/hash"
+	"github.com/finitum/aurum/pkg/models"
 	"github.com/jinzhu/gorm"
 	"strings"
 )
 
 // The database model for a Gorm user
 type userDAL struct {
-	gorm.Model `json:"-"`
-	User       `gorm:"embedded"`
+	gorm.Model  `json:"-"`
+	models.User `gorm:"embedded"`
 }
 
 type SQLConnection struct {
 	db *gorm.DB
 }
 
-func (conn SQLConnection) CreateUser(u User) error {
+func (conn SQLConnection) CreateUser(u models.User) error {
 	pass, err := hash.HashPassword(u.Password)
 	if err != nil {
 		return err
@@ -36,12 +37,12 @@ func (conn SQLConnection) CreateUser(u User) error {
 	return nil
 }
 
-func (conn SQLConnection) GetUserByName(username string) (User, error) {
+func (conn SQLConnection) GetUserByName(username string) (models.User, error) {
 	var u = &userDAL{}
 	u.Username = username
 
 	if d := conn.db.Where(u).First(&u); d.Error != nil {
-		return User{}, d.Error
+		return models.User{}, d.Error
 	}
 
 	return u.User, nil
@@ -57,7 +58,7 @@ func (conn SQLConnection) CountUsers() (int, error) {
 	return i, nil
 }
 
-func (conn SQLConnection) UpdateUser(user User) error {
+func (conn SQLConnection) UpdateUser(user models.User) error {
 	var dbuser = &userDAL{}
 	dbuser.Username = user.Username
 
@@ -75,14 +76,14 @@ func (conn SQLConnection) UpdateUser(user User) error {
 	return nil
 }
 
-func (conn SQLConnection) GetUsers(start int, end int) ([]User, error) {
+func (conn SQLConnection) GetUsers(start int, end int) ([]models.User, error) {
 	var users []userDAL
 	d := conn.db.Model(&userDAL{}).Offset(start).Limit(end - start).Find(&users)
 	if d.Error != nil {
 		return nil, d.Error
 	}
 
-	var us []User
+	var us []models.User
 
 	for _, element := range users {
 		us = append(us, element.User)

@@ -7,4 +7,4 @@ for every single small webapp you make.
 # Components
 
 * [Core](core/README.md)
-* [Webclient](webclient/README.md)
+* [Webclient](clients/web/README.md)

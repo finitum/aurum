@@ -1,4 +1,4 @@
-module aurum
+module github.com/finitum/aurum
 
 go 1.15
 

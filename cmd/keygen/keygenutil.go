@@ -1,10 +1,9 @@
-package ecc
+package main
 
 import (
-	"crypto/ed25519"
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"github.com/finitum/aurum/internal/jwt/ecc"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -14,18 +13,12 @@ const (
 	generateKeysBoth   = "both"
 )
 
-// Generates a pair of ed25519 keys and wraps them into the ecc types
-func GenerateKey() (PublicKey, SecretKey, error) {
-	pk, sk, err := ed25519.GenerateKey(rand.Reader)
-	return PublicKey(pk), SecretKey(sk), err
-}
-
 // Generates keys and writes them to stdout, file or both
 // Path parameters can be left if not writing to a file
 // `generateKeys` should be one of "stdout", "file" or "both"
 // Warning: this function can call Fatal as it is meant to be run as a cli user util.
 func KeyGenerationUtil(generateKeys string, pkPath string, skPath string) {
-	pk, sk, err := GenerateKey()
+	pk, sk, err := ecc.GenerateKey()
 	if err != nil {
 		log.Fatal("Key generation failed: " + err.Error())
 		return
