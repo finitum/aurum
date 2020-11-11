@@ -1,9 +1,9 @@
 package aurum
 
 import (
-	"github.com/finitum/aurum/pkg/api"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
+	"github.com/finitum/aurum/pkg/api"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  dgraph:
+    container_name: dgraph
+    image: dgraph/standalone:v20.03.0
+    ports:
+    - 9080:9080
+    - 8000:8000
+    - 8080:8080

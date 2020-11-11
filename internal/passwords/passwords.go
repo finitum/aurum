@@ -9,7 +9,7 @@ var commonTerms = []string{
 	"finitum",
 }
 
-func VerifyPassword(password string, userinput []string) bool {
+func CheckStrength(password string, userinput []string) bool {
 	if len(password) < 8 {
 		return false
 	}

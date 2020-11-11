@@ -128,8 +128,6 @@ func TestGetUser(t *testing.T) {
 		Username: "user",
 		Password: "pass",
 		Email:    "mail",
-		Role:     models.AdminRoleID,
-		Blocked:  false,
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -161,8 +159,6 @@ func TestUpdateUser(t *testing.T) {
 		Username: "user",
 		Password: "pass",
 		Email:    "mail",
-		Role:     models.AdminRoleID,
-		Blocked:  false,
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -200,8 +196,6 @@ func TestUpdateUserRefreshNeeded(t *testing.T) {
 		Username: "user",
 		Password: "pass",
 		Email:    "mail",
-		Role:     models.AdminRoleID,
-		Blocked:  false,
 	}
 	upd := u
 
@@ -274,8 +268,6 @@ func TestGetUserRefreshNeeded(t *testing.T) {
 		Username: "user",
 		Password: "pass",
 		Email:    "mail",
-		Role:     models.AdminRoleID,
-		Blocked:  false,
 	}
 
 	hasRefreshed := false
