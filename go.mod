@@ -11,8 +11,6 @@ require (
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/google/uuid v1.1.2
-	github.com/gorilla/mux v1.8.0
-	github.com/jinzhu/gorm v1.9.12
 	github.com/muesli/termenv v0.7.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.4.2
