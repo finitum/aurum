@@ -67,6 +67,8 @@ func (rs Routes) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tp.RefreshToken = ""
+
 	_ = json.NewEncoder(w).Encode(&tp)
 }
 
@@ -77,11 +79,34 @@ func (rs Routes) GetMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := rs.store.GetUser(r.Context(), claims.Username)
+	user, err := aurum.GetUser(r.Context(), rs.store, claims.Username)
 	if err != nil {
 		_ = RenderError(w, err, ServerError)
 		return
 	}
 
 	_ = json.NewEncoder(w).Encode(user)
+}
+
+func (rs Routes) SetUser(w http.ResponseWriter, r *http.Request) {
+	claims := ClaimsFromContext(r.Context())
+	if claims == nil {
+		_ = RenderError(w, errors.New("token claims got lost"), ServerError)
+		return
+	}
+
+	var u models.User
+	err := json.NewDecoder(r.Body).Decode(&u)
+	if err != nil {
+		_ = RenderError(w, err, InvalidRequest)
+		return
+	}
+
+	u.Username = claims.Username
+
+	err = aurum.UpdateUser(r.Context(), rs.store, u)
+	if err != nil {
+		_ = RenderError(w, err, ServerError)
+		return
+	}
 }

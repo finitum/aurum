@@ -3,7 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
-	"github.com/finitum/aurum/core/config"
+	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
@@ -34,13 +34,6 @@ type ErrorResponse struct {
 }
 
 func RenderError(w http.ResponseWriter, err error, code ErrorCode) error {
-	if err := json.NewEncoder(w).Encode(&ErrorResponse{
-		Message: err.Error(),
-		Code:    code,
-	}); err != nil {
-		return err
-	}
-
 	switch code {
 	case Unauthorized:
 		w.WriteHeader(http.StatusUnauthorized)
@@ -50,6 +43,13 @@ func RenderError(w http.ResponseWriter, err error, code ErrorCode) error {
 		fallthrough
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	if err := json.NewEncoder(w).Encode(&ErrorResponse{
+		Message: err.Error(),
+		Code:    code,
+	}); err != nil {
+		return err
 	}
 
 	return nil

@@ -2,8 +2,8 @@ package aurum
 
 import (
 	"context"
+	"github.com/finitum/aurum/internal/hash"
 	"github.com/finitum/aurum/internal/passwords"
-	"github.com/finitum/aurum/pkg/hash"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/finitum/aurum/pkg/models"
@@ -52,7 +52,7 @@ func Login(ctx context.Context, db store.AurumStore, user models.User, key ecc.S
 		return jwt.TokenPair{}, errors.New("invalid password")
 	}
 
-	return jwt.GenerateJWTPair(dbu, key)
+	return jwt.GenerateJWTPair(dbu.Username, key)
 }
 
 func Access(ctx context.Context, db store.AurumStore, user string, appid uuid.UUID) (models.AccessResponse, error) {
@@ -87,17 +87,32 @@ func RefreshToken(tp *jwt.TokenPair, pk ecc.PublicKey, sk ecc.SecretKey) error {
 		return errors.Wrap(err, "verification error")
 	}
 	
-	refresh, err := jwt.GenerateJWT(claims.Username, false, sk)
+	newtoken, err := jwt.GenerateJWT(claims.Username, false, sk)
 	if err != nil {
 		return errors.Wrap(err, "jwt generation error")
 	}
 
-	tp.RefreshToken = refresh
+	tp.LoginToken = newtoken
 
 	return nil
 }
 
-func GetUser(ctx context.Context, db store.AurumStore, user string) (*models.User, error) {
+func GetUser(ctx context.Context, db store.AurumStore, user string) (models.User, error) {
 	return db.GetUser(ctx, user)
 }
 
+func UpdateUser(ctx context.Context, db store.AurumStore, user models.User) error {
+
+	if !passwords.CheckStrength(user.Password, []string{user.Username, user.Email}) {
+		return ErrWeakPassword
+	}
+
+	hashed, err := hash.HashPassword(user.Password)
+	if err != nil {
+		return errors.Wrap(err, "hashing failed")
+	}
+
+	user.Password = hashed
+
+	return db.SetUser(ctx, &user)
+}

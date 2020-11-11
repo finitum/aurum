@@ -3,13 +3,14 @@ package dgraph
 import (
 	"context"
 	"encoding/json"
+	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
-func (dg DGraph) getApplication(ctx context.Context, appId uuid.UUID) (*Application, error) {
+func (dg DGraph) getApplication(ctx context.Context, txn *dgo.Txn, appId uuid.UUID) (*Application, error) {
 	query := `
 		query q($aid: string) {
 		  q(func:eq(appID, $aid)) {
@@ -19,10 +20,8 @@ func (dg DGraph) getApplication(ctx context.Context, appId uuid.UUID) (*Applicat
 		  }
 		}
 	`
-
 	variables := map[string]string{"$aid": appId.String()}
 
-	txn := dg.NewReadOnlyTxn().BestEffort()
 	resp, err := txn.QueryWithVars(ctx, query, variables)
 	if err != nil {
 		return nil, errors.Wrap(err, "query")
@@ -47,7 +46,8 @@ func (dg DGraph) getApplication(ctx context.Context, appId uuid.UUID) (*Applicat
 }
 
 func (dg DGraph) GetApplication(ctx context.Context, appId uuid.UUID) (*models.Application, error) {
-	app, err := dg.getApplication(ctx, appId)
+	txn := dg.NewReadOnlyTxn().BestEffort()
+	app, err := dg.getApplication(ctx, txn, appId)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (dg DGraph) CreateApplication(ctx context.Context, application *models.Appl
 	}
 
 	// Add the new user to the database
-	dApplication := NewDGraphApplication(application)
+	dApplication := NewDGraphApplication(*application)
 
 	js, err := json.Marshal(dApplication)
 	if err != nil {
@@ -142,7 +142,9 @@ func (dg DGraph) CreateApplication(ctx context.Context, application *models.Appl
 }
 
 func (dg DGraph) RemoveApplication(ctx context.Context, appId uuid.UUID) error {
-	app, err := dg.getApplication(ctx, appId)
+	txn := dg.NewTxn()
+
+	app, err := dg.getApplication(ctx, txn, appId)
 	if err != nil {
 		return errors.Wrap(err, "get user (internal)")
 	}
@@ -158,7 +160,7 @@ func (dg DGraph) RemoveApplication(ctx context.Context, appId uuid.UUID) error {
 		DeleteJson: js,
 	}
 
-	_, err = dg.NewTxn().Mutate(ctx, mu)
+	_, err = txn.Mutate(ctx, mu)
 
 	return errors.Wrap(err, "delete")
 }

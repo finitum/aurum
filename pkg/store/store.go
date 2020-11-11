@@ -34,10 +34,14 @@ type AurumStore interface {
 
 	// GetUser retrieves a user from the database based on it's
 	// user id.
-	GetUser(ctx context.Context, user string) (*models.User, error)
+	GetUser(ctx context.Context, user string) (models.User, error)
 
 	// GetUsers lists all users.
 	GetUsers(ctx context.Context) ([]models.User, error)
+
+	// SetUser updates a users info in the database.
+	// User names and ids must be the same
+	SetUser(ctx context.Context, user *models.User) error
 
 	// AddUserToApplication links a user to an application with a given role.
 	// This role is the role the user has within this application.

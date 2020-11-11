@@ -1,16 +1,16 @@
-package oldapi
+package api
 
 import (
 	"bytes"
 	"encoding/json"
 	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/oldmodels"
+	"github.com/finitum/aurum/pkg/models"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 )
 
-func GetPublicKey(host string) (*oldmodels.PublicKeyResponse, error) {
+func GetPublicKey(host string) (*models.PublicKeyResponse, error) {
 	resp, err := http.Get(host + "/pk")
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting public key")
@@ -21,7 +21,7 @@ func GetPublicKey(host string) (*oldmodels.PublicKeyResponse, error) {
 		return nil, errors.Wrapf(err, "error connecting (%v), (%v)", resp.StatusCode, body)
 	}
 
-	var pk oldmodels.PublicKeyResponse
+	var pk models.PublicKeyResponse
 	if err := json.NewDecoder(resp.Body).Decode(&pk); err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func GetPublicKey(host string) (*oldmodels.PublicKeyResponse, error) {
 	return &pk, nil
 }
 
-func SignUp(host string, user oldmodels.User) error {
+func SignUp(host string, user models.User) error {
 	userb, err := json.Marshal(&user)
 	if err != nil {
 		return errors.Wrap(err, "couldn't marshal user")
@@ -49,7 +49,7 @@ func SignUp(host string, user oldmodels.User) error {
 	return nil
 }
 
-func Login(host string, user oldmodels.User) (*jwt.TokenPair, error) {
+func Login(host string, user models.User) (*jwt.TokenPair, error) {
 	userb, err := json.Marshal(&user)
 	if err != nil {
 		return nil, errors.Wrap(err, "couldn't marshal user")
@@ -100,7 +100,7 @@ func Refresh(host string, tp *jwt.TokenPair) error {
 	return nil
 }
 
-func GetUser(host string, tp *jwt.TokenPair) (*oldmodels.User, error) {
+func GetUser(host string, tp *jwt.TokenPair) (*models.User, error) {
 	req, err := http.NewRequest(http.MethodGet, host+"/user", nil)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func GetUser(host string, tp *jwt.TokenPair) (*oldmodels.User, error) {
 		return nil, err
 	}
 
-	var user oldmodels.User
+	var user models.User
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func GetUser(host string, tp *jwt.TokenPair) (*oldmodels.User, error) {
 	return &user, nil
 }
 
-func UpdateUser(host string, tp *jwt.TokenPair, user *oldmodels.User) (ret *oldmodels.User, _ error) {
+func UpdateUser(host string, tp *jwt.TokenPair, user *models.User) (ret *models.User, _ error) {
 	userb, err := json.Marshal(user)
 	if err != nil {
 		return nil, errors.Wrap(err, "marshalling json")

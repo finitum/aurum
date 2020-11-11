@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"github.com/finitum/aurum/pkg/models"
 	"time"
 )
 
@@ -48,7 +47,7 @@ func GenerateJWT(username string, refresh bool, key ecc.SecretKey) (string, erro
 	return token.SignedString(key)
 }
 
-func GenerateJWTPair(user *models.User, key ecc.SecretKey) (TokenPair, error) {
+func GenerateJWTPair(user string, key ecc.SecretKey) (TokenPair, error) {
 	login, err := GenerateJWT(user, false, key)
 	if err != nil {
 		return TokenPair{}, err

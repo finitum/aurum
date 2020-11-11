@@ -3,7 +3,7 @@ package dgraph
 import "github.com/finitum/aurum/pkg/models"
 
 type User struct {
-	*models.User
+	models.User
 
 	DType []string `json:"dgraph.type,omitempty"`
 	Uid   string   `json:"uid,omitempty"`
@@ -20,12 +20,12 @@ type Application struct {
 	Uid   string   `json:"uid,omitempty"`
 }
 
-func NewDGraphUser(user *models.User) *User {
+func NewDGraphUser(user models.User) *User {
 	return &User{User: user, DType: []string{"User"}}
 }
 
 
 
-func NewDGraphApplication(application *models.Application) *Application {
-	return &Application{Application: *application, DType: []string{"Application"}}
+func NewDGraphApplication(application models.Application) *Application {
+	return &Application{Application: application, DType: []string{"Application"}}
 }

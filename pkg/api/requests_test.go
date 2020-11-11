@@ -1,4 +1,4 @@
-package oldapi
+package api
 
 import (
 	"encoding/json"

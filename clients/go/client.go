@@ -3,8 +3,8 @@ package aurum
 import (
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"github.com/finitum/aurum/pkg/oldapi"
-	"github.com/finitum/aurum/pkg/oldmodels"
+	"github.com/finitum/aurum/pkg/api"
+	"github.com/finitum/aurum/pkg/models"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -20,7 +20,7 @@ func Connect(url string) (*Aurum, error) {
 		log.Warnf("[aurum] using insecure url %s, security can not be guaranteed!", url)
 	}
 
-	pkr, err := oldapi.GetPublicKey(url)
+	pkr, err := api.GetPublicKey(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed getting public key")
 	}
@@ -39,7 +39,7 @@ func Connect(url string) (*Aurum, error) {
 }
 
 func (a *Aurum) Login(username, password string) (*jwt.TokenPair, error) {
-	tp, err := oldapi.Login(a.url, oldmodels.User{
+	tp, err := api.Login(a.url, models.User{
 		Username: username,
 		Password: password,
 	})
@@ -51,7 +51,7 @@ func (a *Aurum) Login(username, password string) (*jwt.TokenPair, error) {
 }
 
 func (a *Aurum) Register(username, password, email string) error {
-	return errors.Wrap(oldapi.SignUp(a.url, oldmodels.User{
+	return errors.Wrap(api.SignUp(a.url, models.User{
 		Username: username,
 		Password: password,
 		Email:    email,
@@ -63,10 +63,10 @@ func (a *Aurum) Verify(token string) (*jwt.Claims, error) {
 }
 
 func (a *Aurum) Refresh(tp *jwt.TokenPair) error {
-	return errors.Wrap(oldapi.Refresh(a.url, tp), "refresh oldapi request failed")
+	return errors.Wrap(api.Refresh(a.url, tp), "refresh api request failed")
 }
 
-func (a *Aurum) GetUserInfo(tp *jwt.TokenPair) (*oldmodels.User, error) {
-	user, err := oldapi.GetUser(a.url, tp)
-	return user, errors.Wrap(err, "get user oldapi request failed")
+func (a *Aurum) GetUserInfo(tp *jwt.TokenPair) (*models.User, error) {
+	user, err := api.GetUser(a.url, tp)
+	return user, errors.Wrap(err, "get user api request failed")
 }

@@ -21,11 +21,9 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 		return nil, err
 	}
 
-	dg := dgo.NewDgraphClient(
-		api.NewDgraphClient(d),
-	)
+	dg := dgo.NewDgraphClient(api.NewDgraphClient(d))
 
-	err = dg.Alter(ctx, &api.Operation{
+	if err := dg.Alter(ctx, &api.Operation{
 		Schema: `
 			type User {
 				username
@@ -47,9 +45,7 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 			appID: string @index(hash) .
 			name: string @index(hash) .
 		`,
-	})
-
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 
