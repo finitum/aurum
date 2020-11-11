@@ -16,7 +16,7 @@ define([
         }
         text = text.replace(/((\[(.*?)\])?\(#)((.+?):(.+?))(\))/mg, function(match, p1, p2, p3, p4, p5, p6) {
           var link = p3 || p5 + '/' + p6;
-          return '<a href="#api-' + p5 + '-' + p6 + '">' + link + '</a>';
+          return '<a href="#oldapi-' + p5 + '-' + p6 + '">' + link + '</a>';
         });
         return text;
     });

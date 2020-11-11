@@ -123,7 +123,7 @@ function init($, _, locale, Handlebars, apiProject, apiData, Prism, sampleReques
     });
 
     //
-    // sort api within a group by title ASC and custom order
+    // sort oldapi within a group by title ASC and custom order
     //
     var newList = [];
     var umlauts = { 'ä': 'ae', 'ü': 'ue', 'ö': 'oe', 'ß': 'ss' }; // TODO: remove in version 1.0
@@ -153,7 +153,7 @@ function init($, _, locale, Handlebars, apiProject, apiData, Prism, sampleReques
             });
         });
     });
-    // api overwrite with ordered list
+    // oldapi overwrite with ordered list
     api = newList;
 
     //
@@ -505,19 +505,19 @@ function init($, _, locale, Handlebars, apiProject, apiData, Prism, sampleReques
             $('.show-group').click(function () {
                 var apiGroup = '.' + $(this).attr('data-group') + '-group';
                 var apiGroupArticle = '.' + $(this).attr('data-group') + '-article';
-                $(".show-api-group").addClass('hide');
+                $(".show-oldapi-group").addClass('hide');
                 $(apiGroup).removeClass('hide');
-                $(".show-api-article").addClass('hide');
+                $(".show-oldapi-article").addClass('hide');
                 $(apiGroupArticle).removeClass('hide');
             });
 
-            //show api
-            $('.show-api').click(function () {
+            //show oldapi
+            $('.show-oldapi').click(function () {
                 var apiName = '.' + $(this).attr('data-name') + '-article';
                 var apiGroup = '.' + $(this).attr('data-group') + '-group';
-                $(".show-api-group").addClass('hide');
+                $(".show-oldapi-group").addClass('hide');
                 $(apiGroup).removeClass('hide');
-                $(".show-api-article").addClass('hide');
+                $(".show-oldapi-article").addClass('hide');
                 $(apiName).removeClass('hide');
             });
         }
@@ -574,11 +574,11 @@ function init($, _, locale, Handlebars, apiProject, apiData, Prism, sampleReques
         // show 1st equal or lower Version of each entry
         $('article[data-version]').each(function(index) {
             var group = $(this).data('group');
-            $('section#api-' + group).removeClass('hide');
-            if ($('section#api-' + group + ' article:visible').length === 0) {
-                $('section#api-' + group).addClass('hide');
+            $('section#oldapi-' + group).removeClass('hide');
+            if ($('section#oldapi-' + group + ' article:visible').length === 0) {
+                $('section#oldapi-' + group).addClass('hide');
             } else {
-                $('section#api-' + group).removeClass('hide');
+                $('section#oldapi-' + group).removeClass('hide');
             }
         });
 

@@ -3,16 +3,16 @@ package main
 import (
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/finitum/aurum/pkg/models"
+	"github.com/finitum/aurum/pkg/oldmodels"
 	te "github.com/muesli/termenv"
 )
 
 type UserModel struct {
-	user *models.User
+	user *oldmodels.User
 }
 
 func InitialUserScreenModel() UserModel {
-	return UserModel{&models.User{}}
+	return UserModel{&oldmodels.User{}}
 }
 
 func (m UserModel) View() string {

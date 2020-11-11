@@ -4,7 +4,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/finitum/aurum/core/config"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"github.com/finitum/aurum/pkg/models"
+	"github.com/finitum/aurum/pkg/oldmodels"
 	tassert "github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -14,9 +14,9 @@ func TestGenerateJWTSimple(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := models.User{
+	testUser := oldmodels.User{
 		Username: "User",
-		Role:     models.UserRoleID,
+		Role:     oldmodels.UserRoleID,
 	}
 
 	token, err := GenerateJWT(&testUser, false, cfg.SecretKey)
@@ -48,9 +48,9 @@ func TestVerifyTokenSimple(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := models.User{
+	testUser := oldmodels.User{
 		Username: "User",
-		Role:     models.UserRoleID,
+		Role:     oldmodels.UserRoleID,
 	}
 
 	token, err := GenerateJWT(&testUser, false, cfg.SecretKey)
@@ -69,9 +69,9 @@ func TestTokenPair(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := models.User{
+	testUser := oldmodels.User{
 		Username: "User",
-		Role:     models.UserRoleID,
+		Role:     oldmodels.UserRoleID,
 	}
 	tp, err := GenerateJWTPair(&testUser, cfg.SecretKey)
 	assert.NotNil(tp)

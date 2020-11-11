@@ -154,7 +154,7 @@ func (m LoginRegisterModel) Update(au *aurum.Aurum, msg tea.Msg) (LoginRegisterM
 	return updateInputs(msg, m)
 }
 
-// Pass messages and models through to text input components. Only text inputs
+// Pass messages and oldmodels through to text input components. Only text inputs
 // with Focus() set will respond, so it's safe to simply update all of them
 // here without any further logic.
 func updateInputs(msg tea.Msg, m LoginRegisterModel) (LoginRegisterModel, tea.Cmd) {

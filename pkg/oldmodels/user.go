@@ -1,4 +1,4 @@
-package models
+package oldmodels
 
 // The various roles a user can be
 const (

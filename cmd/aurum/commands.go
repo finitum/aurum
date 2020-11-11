@@ -4,7 +4,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/finitum/aurum/clients/go"
 	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/models"
+	"github.com/finitum/aurum/pkg/oldmodels"
 )
 
 type errMsg struct {
@@ -28,7 +28,7 @@ type loginErrMsg struct {
 type registerMsg struct{}
 
 type getMeMsg struct {
-	user *models.User
+	user *oldmodels.User
 }
 
 func connect() tea.Msg {
