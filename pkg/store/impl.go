@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/finitum/aurum/pkg/models"
@@ -8,37 +9,35 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (dg DGraph) CreateUser(user *models.User) error {
+func (dg DGraph) CreateUser(ctx context.Context, user *models.User) error {
 	// start a new transaction
 	txn := dg.NewTxn()
-	defer txn.Discard(dg.ctx)
+	defer txn.Discard(ctx)
 
 	// query the database for the number of users that exist with either the same user id
 	// or the same username
 	query := `
-		query q($uid: string, $uname: string) {
-		  q(func:type(User)) @filter( eq(userID, $uid) OR eq(username, $uname)) {
-				count(uid)
+		query q($uname: string) {
+		  q(func: eq(username, $uname)) {
+			count(uid)
 		  }
 		}
 	`
 	variables := map[string]string{
-		"$uid":   user.UserId.String(),
 		"$uname": user.Username,
 	}
 
-	resp, err := txn.QueryWithVars(dg.ctx, query, variables)
+	resp, err := txn.QueryWithVars(ctx, query, variables)
 	if err != nil {
 		return errors.Wrap(err, "query")
 	}
 
-	type Root struct {
+	var r struct {
 		Q []struct {
 			Count int `json:"count"`
 		} `json:"q"`
 	}
 
-	var r Root
 	err = json.Unmarshal(resp.Json, &r)
 	if err != nil {
 		return errors.Wrap(err, "json unmarshal")
@@ -52,27 +51,60 @@ func (dg DGraph) CreateUser(user *models.User) error {
 	// Add the new user to the database
 	dUser := NewDGraphUser(user)
 
-	mu := &api.Mutation{
-		CommitNow: true,
-	}
-
 	js, err := json.Marshal(dUser)
 	if err != nil {
 		return err
 	}
 
-	mu.SetJson = js
-
-	_, err = txn.Mutate(dg.ctx, mu)
-	if err != nil {
-		return errors.Wrap(err, "mutate")
+	mu := &api.Mutation{
+		CommitNow: true,
+		SetJson: js,
 	}
 
-	return nil
+	_, err = txn.Mutate(ctx, mu)
+	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) RemoveUser(userId uuid.UUID) error {
-	user, err := dg.getUserInternal(userId)
+func (dg DGraph) getUser(ctx context.Context, user string) (*DGraphUser, error) {
+	query := `
+		query q($uname: string) {
+		  q(func:eq(userID, $uname)) {
+			uid
+			username
+			password
+			email
+		  }
+		}
+	`
+
+	variables := map[string]string{"$uname": user}
+
+	txn := dg.NewReadOnlyTxn().BestEffort()
+	resp, err := txn.QueryWithVars(ctx, query, variables)
+	if err != nil {
+		return nil, errors.Wrap(err, "query")
+	}
+
+	var r struct {
+		Q []DGraphUser `json:"q"`
+	}
+
+	err = json.Unmarshal(resp.Json, &r)
+	if err != nil {
+		return nil, errors.Wrap(err, "json unmarshal")
+	}
+
+	if len(r.Q) == 0 {
+		return nil, errors.Errorf("user %s wasn't found", user)
+	} else if len(r.Q) != 1 {
+		return nil, errors.Errorf("expected one unique user %s, but found %d", user, len(r.Q))
+	}
+
+	return &r.Q[0], nil
+}
+
+func (dg DGraph) RemoveUser(ctx context.Context, username string) error {
+	user, err := dg.getUser(ctx, username)
 	if err != nil {
 		return errors.Wrap(err, "get user (internal)")
 	}
@@ -88,53 +120,12 @@ func (dg DGraph) RemoveUser(userId uuid.UUID) error {
 		DeleteJson: js,
 	}
 
-	_, err = dg.NewTxn().Mutate(dg.ctx, mu)
-
+	_, err = dg.NewTxn().Mutate(ctx, mu)
 	return errors.Wrap(err, "delete")
 }
 
-func (dg DGraph) getUserInternal(userID uuid.UUID) (*DGraphUser, error) {
-	query := `
-		query q($uid: string) {
-		  q(func:eq(userID, $uid)) {
-			uid
-			userID
-			username
-			password
-			email
-		  }
-		}
-	`
-
-	variables := map[string]string{"$uid": userID.String()}
-
-	txn := dg.NewReadOnlyTxn().BestEffort()
-	resp, err := txn.QueryWithVars(dg.ctx, query, variables)
-	if err != nil {
-		return nil, errors.Wrap(err, "query")
-	}
-
-	type Root struct {
-		Q []DGraphUser `json:"q"`
-	}
-
-	var r Root
-	err = json.Unmarshal(resp.Json, &r)
-	if err != nil {
-		return nil, errors.Wrap(err, "json unmarshal")
-	}
-
-	if len(r.Q) == 0 {
-		return nil, errors.Errorf("user with user id %s wasn't found", userID)
-	} else if len(r.Q) != 1 {
-		return nil, errors.Errorf("expected unique (one) user id %s, but found %d", userID, len(r.Q))
-	}
-
-	return &r.Q[0], nil
-}
-
-func (dg DGraph) GetUser(userId uuid.UUID) (*models.User, error) {
-	user, err := dg.getUserInternal(userId)
+func (dg DGraph) GetUser(ctx context.Context, username string) (*models.User, error) {
+	user, err := dg.getUser(ctx, username)
 	if err != nil {
 		return nil, err
 	}
@@ -142,11 +133,10 @@ func (dg DGraph) GetUser(userId uuid.UUID) (*models.User, error) {
 	return user.User, nil
 }
 
-func (dg DGraph) GetUsers() ([]models.User, error) {
+func (dg DGraph) GetUsers(ctx context.Context) ([]models.User, error) {
 	query := `
 		{
 			q(func: type(User)) {
-				userID
 				username
 				password
 				email
@@ -155,16 +145,15 @@ func (dg DGraph) GetUsers() ([]models.User, error) {
 	`
 
 	txn := dg.NewReadOnlyTxn().BestEffort()
-	resp, err := txn.Query(dg.ctx, query)
+	resp, err := txn.Query(ctx, query)
 	if err != nil {
 		return nil, errors.Wrap(err, "query")
 	}
 
-	type Root struct {
+	var r struct {
 		Q []models.User `json:"q"`
 	}
 
-	var r Root
 	err = json.Unmarshal(resp.Json, &r)
 	if err != nil {
 		return nil, errors.Wrap(err, "json unmarshal")
@@ -173,53 +162,52 @@ func (dg DGraph) GetUsers() ([]models.User, error) {
 	return r.Q, nil
 }
 
-func (dg DGraph) AddUserToApplication(userId uuid.UUID, appId uuid.UUID, role models.Role) error {
+func (dg DGraph) AddUserToApplication(ctx context.Context, name string, appId uuid.UUID, role models.Role) error {
 	panic("implement me")
 }
 
-func (dg DGraph) RemoveUserFromApplication(userId uuid.UUID, appId uuid.UUID) error {
+func (dg DGraph) RemoveUserFromApplication(ctx context.Context, name string, appId uuid.UUID) error {
 	panic("implement me")
 }
 
-func (dg DGraph) SetApplicationRole(userId uuid.UUID, appId uuid.UUID, role models.Role) error {
+func (dg DGraph) SetApplicationRole(ctx context.Context, name string, appId uuid.UUID, role models.Role) error {
 	panic("implement me")
 }
 
-func (dg DGraph) GetApplicationRole(userId uuid.UUID, appId uuid.UUID) (models.Role, error) {
+func (dg DGraph) GetApplicationRole(ctx context.Context, name string, appId uuid.UUID) (models.Role, error) {
 	panic("implement me")
 }
 
-func (dg DGraph) CreateApplication(application *models.Application) error {
+func (dg DGraph) CreateApplication(ctx context.Context, application *models.Application) error {
 	// start a new transaction
 	txn := dg.NewTxn()
-	defer txn.Discard(dg.ctx)
+	defer txn.Discard(ctx)
 
-	// query the database for the number of users that exist with either the same user id
-	// or the same username
+	// query the database for the number of applications that exist with either the same application id
+	// or the same application name
 	query := `
 		query q($aid: string, $aname: string) {
 		  q(func:type(Application)) @filter( eq(appID, $aid) OR eq(name, $aname)) {
 				count(uid)
 		  }
-		}
-	`
+		}`
+
 	variables := map[string]string{
 		"$aid":   application.AppId.String(),
 		"$aname": application.Name,
 	}
 
-	resp, err := txn.QueryWithVars(dg.ctx, query, variables)
+	resp, err := txn.QueryWithVars(ctx, query, variables)
 	if err != nil {
 		return errors.Wrap(err, "query")
 	}
 
-	type Root struct {
+	var r struct {
 		Q []struct {
 			Count int `json:"count"`
 		} `json:"q"`
 	}
 
-	var r Root
 	err = json.Unmarshal(resp.Json, &r)
 	if err != nil {
 		return errors.Wrap(err, "json unmarshal")
@@ -233,27 +221,24 @@ func (dg DGraph) CreateApplication(application *models.Application) error {
 	// Add the new user to the database
 	dApplication := NewDGraphApplication(application)
 
-	mu := &api.Mutation{
-		CommitNow: true,
-	}
 
 	js, err := json.Marshal(dApplication)
 	if err != nil {
 		return err
 	}
 
-	mu.SetJson = js
-
-	_, err = txn.Mutate(dg.ctx, mu)
-	if err != nil {
-		return errors.Wrap(err, "mutate")
+	mu := &api.Mutation{
+		CommitNow: true,
+		SetJson: js,
 	}
 
-	return nil
+	_, err = txn.Mutate(ctx, mu)
+
+	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) RemoveApplication(appId uuid.UUID) error {
-	app, err := dg.getApplicationInternal(appId)
+func (dg DGraph) RemoveApplication(ctx context.Context, appId uuid.UUID) error {
+	app, err := dg.getApplication(ctx, appId)
 	if err != nil {
 		return errors.Wrap(err, "get user (internal)")
 	}
@@ -269,12 +254,12 @@ func (dg DGraph) RemoveApplication(appId uuid.UUID) error {
 		DeleteJson: js,
 	}
 
-	_, err = dg.NewTxn().Mutate(dg.ctx, mu)
+	_, err = dg.NewTxn().Mutate(ctx, mu)
 
 	return errors.Wrap(err, "delete")
 }
 
-func (dg DGraph) getApplicationInternal(appId uuid.UUID) (*DGraphApplication, error) {
+func (dg DGraph) getApplication(ctx context.Context, appId uuid.UUID) (*DGraphApplication, error) {
 	query := `
 		query q($aid: string) {
 		  q(func:eq(appID, $aid)) {
@@ -288,16 +273,15 @@ func (dg DGraph) getApplicationInternal(appId uuid.UUID) (*DGraphApplication, er
 	variables := map[string]string{"$aid": appId.String()}
 
 	txn := dg.NewReadOnlyTxn().BestEffort()
-	resp, err := txn.QueryWithVars(dg.ctx, query, variables)
+	resp, err := txn.QueryWithVars(ctx, query, variables)
 	if err != nil {
 		return nil, errors.Wrap(err, "query")
 	}
 
-	type Root struct {
+	var r struct {
 		Q []DGraphApplication `json:"q"`
 	}
 
-	var r Root
 	err = json.Unmarshal(resp.Json, &r)
 	if err != nil {
 		return nil, errors.Wrap(err, "json unmarshal")
@@ -312,8 +296,8 @@ func (dg DGraph) getApplicationInternal(appId uuid.UUID) (*DGraphApplication, er
 	return &r.Q[0], nil
 }
 
-func (dg DGraph) GetApplication(appId uuid.UUID) (*models.Application, error) {
-	app, err := dg.getApplicationInternal(appId)
+func (dg DGraph) GetApplication(ctx context.Context, appId uuid.UUID) (*models.Application, error) {
+	app, err := dg.getApplication(ctx, appId)
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +305,7 @@ func (dg DGraph) GetApplication(appId uuid.UUID) (*models.Application, error) {
 	return &app.Application, nil
 }
 
-func (dg DGraph) GetApplications() ([]models.Application, error) {
+func (dg DGraph) GetApplications(ctx context.Context) ([]models.Application, error) {
 	query := `
 		{
 			q(func: type(Application)) {
@@ -332,16 +316,15 @@ func (dg DGraph) GetApplications() ([]models.Application, error) {
 	`
 
 	txn := dg.NewReadOnlyTxn().BestEffort()
-	resp, err := txn.Query(dg.ctx, query)
+	resp, err := txn.Query(ctx, query)
 	if err != nil {
 		return nil, errors.Wrap(err, "query")
 	}
 
-	type Root struct {
+	var r struct {
 		Q []models.Application `json:"q"`
 	}
 
-	var r Root
 	err = json.Unmarshal(resp.Json, &r)
 	if err != nil {
 		return nil, errors.Wrap(err, "json unmarshal")

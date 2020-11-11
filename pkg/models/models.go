@@ -8,7 +8,6 @@ type Application struct {
 }
 
 type User struct {
-	UserId   uuid.UUID `json:"userID"`
 	Username string    `json:"username"`
 	Password string    `json:"password"`
 	Email    string    `json:"email"`

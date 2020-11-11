@@ -9,7 +9,6 @@ import (
 
 type DGraph struct {
 	*dgo.Dgraph
-	ctx context.Context
 }
 
 func (dg DGraph) ClearAllImSure(ctx context.Context) error {
@@ -29,10 +28,10 @@ func NewDGraph(ctx context.Context, address string) (*DGraph, error) {
 	err = dg.Alter(ctx, &api.Operation{
 		Schema: `
 			type User {
-				userID
 				username
 				password
 				email
+				applications
 			}
 
 			type Application {
@@ -40,10 +39,10 @@ func NewDGraph(ctx context.Context, address string) (*DGraph, error) {
 				name
 			}
 
-			userID: string  @index(hash) .
-			username: string  @index(hash) .
+			username: string @index(hash) .
 			password: string .
 			email: string .
+			applications: [uid] .
 
 			appID: string @index(hash) .
 			name: string @index(hash) .
@@ -54,8 +53,5 @@ func NewDGraph(ctx context.Context, address string) (*DGraph, error) {
 		return nil, err
 	}
 
-	return &DGraph{
-		dg,
-		ctx,
-	}, nil
+	return &DGraph{dg }, nil
 }

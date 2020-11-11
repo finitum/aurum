@@ -10,7 +10,6 @@ type DGraphUser struct {
 
 func NewDGraphUser(user *models.User) *DGraphUser {
 	return &DGraphUser{User: user, DType: []string{"User"}}
-
 }
 
 type DGraphApplication struct {
