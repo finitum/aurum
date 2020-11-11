@@ -20,6 +20,8 @@ type EnvConfig struct {
 
 	PublicKeyPath string `env:"PUBLIC_KEY_PATH"`
 	SecretKeyPath string `env:"SECRET_KEY_PATH"`
+
+	DgraphUrl string `env:"DGRAPH_URL"`
 }
 
 type Config struct {
@@ -28,6 +30,8 @@ type Config struct {
 
 	PublicKey ecc.PublicKey
 	SecretKey ecc.SecretKey
+
+	DgraphUrl string
 }
 
 func defaultEnvConfig() EnvConfig {
@@ -40,6 +44,7 @@ func defaultEnvConfig() EnvConfig {
 		PublicKey:     "",
 		NoKeyGen:      false,
 		NoKeyWrite:    false,
+		DgraphUrl:     "localhost:9080",
 	}
 }
 
@@ -66,6 +71,8 @@ func GetConfig(e ...env.Env) *Config {
 		BasePath:  ec.BasePath,
 		PublicKey: pk,
 		SecretKey: sk,
+
+		DgraphUrl: ec.DgraphUrl,
 	}
 }
 
