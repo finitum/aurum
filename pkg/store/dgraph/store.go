@@ -1,4 +1,4 @@
-package store
+package dgraph
 
 import (
 	"context"
@@ -58,17 +58,17 @@ func (dg DGraph) CreateUser(ctx context.Context, user *models.User) error {
 
 	mu := &api.Mutation{
 		CommitNow: true,
-		SetJson: js,
+		SetJson:   js,
 	}
 
 	_, err = txn.Mutate(ctx, mu)
 	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) getUser(ctx context.Context, user string) (*DGraphUser, error) {
+func (dg DGraph) getUser(ctx context.Context, user string) (*User, error) {
 	query := `
 		query q($uname: string) {
-		  q(func:eq(userID, $uname)) {
+		  q(func:eq(username, $uname)) {
 			uid
 			username
 			password
@@ -86,7 +86,7 @@ func (dg DGraph) getUser(ctx context.Context, user string) (*DGraphUser, error) 
 	}
 
 	var r struct {
-		Q []DGraphUser `json:"q"`
+		Q []User `json:"q"`
 	}
 
 	err = json.Unmarshal(resp.Json, &r)
@@ -163,7 +163,63 @@ func (dg DGraph) GetUsers(ctx context.Context) ([]models.User, error) {
 }
 
 func (dg DGraph) AddUserToApplication(ctx context.Context, name string, appId uuid.UUID, role models.Role) error {
-	panic("implement me")
+	// start a new transaction
+	txn := dg.NewTxn()
+	defer txn.Discard(ctx)
+
+	q := `
+query q($uname: string, $aid: string) {
+  User(func:eq(username, $uname)) {
+    uid
+  }
+    
+  App(func:eq(appID, $aid)) {
+  	uid
+  }
+}
+`
+	var r struct {
+		User []User
+		App  []Application
+	}
+
+	vars := map[string]string{
+		"$uname": name,
+		"$aid":   appId.String(),
+	}
+
+	resp, err := txn.QueryWithVars(ctx, q, vars)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(resp.Json, &r); err != nil {
+		return err
+	}
+
+	if len(r.User) != 1 || len(r.App) != 1 {
+		return errors.New("Couldn't find user or application")
+	}
+
+	r.User[0].Applications = []Application{
+		{Uid: r.App[0].Uid, Role: role},
+	}
+
+	js, err := json.Marshal(&r.User[0])
+	if err != nil {
+		return nil
+	}
+
+	mu := &api.Mutation{
+		CommitNow: true,
+		SetJson:   js,
+	}
+
+	if _, err := txn.Mutate(ctx, mu); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (dg DGraph) RemoveUserFromApplication(ctx context.Context, name string, appId uuid.UUID) error {
@@ -221,7 +277,6 @@ func (dg DGraph) CreateApplication(ctx context.Context, application *models.Appl
 	// Add the new user to the database
 	dApplication := NewDGraphApplication(application)
 
-
 	js, err := json.Marshal(dApplication)
 	if err != nil {
 		return err
@@ -229,7 +284,7 @@ func (dg DGraph) CreateApplication(ctx context.Context, application *models.Appl
 
 	mu := &api.Mutation{
 		CommitNow: true,
-		SetJson: js,
+		SetJson:   js,
 	}
 
 	_, err = txn.Mutate(ctx, mu)
@@ -259,7 +314,7 @@ func (dg DGraph) RemoveApplication(ctx context.Context, appId uuid.UUID) error {
 	return errors.Wrap(err, "delete")
 }
 
-func (dg DGraph) getApplication(ctx context.Context, appId uuid.UUID) (*DGraphApplication, error) {
+func (dg DGraph) getApplication(ctx context.Context, appId uuid.UUID) (*Application, error) {
 	query := `
 		query q($aid: string) {
 		  q(func:eq(appID, $aid)) {
@@ -279,7 +334,7 @@ func (dg DGraph) getApplication(ctx context.Context, appId uuid.UUID) (*DGraphAp
 	}
 
 	var r struct {
-		Q []DGraphApplication `json:"q"`
+		Q []Application `json:"q"`
 	}
 
 	err = json.Unmarshal(resp.Json, &r)
