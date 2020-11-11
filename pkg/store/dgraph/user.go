@@ -7,7 +7,6 @@ import (
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -47,18 +46,18 @@ query q($uname: string) {
 	return r.Q[0], nil
 }
 
-func (dg DGraph) getUserWithApplications(ctx context.Context, txn *dgo.Txn, name string, appid uuid.UUID) (User, error) {
+func (dg DGraph) getUserWithApplications(ctx context.Context, txn *dgo.Txn, user string, name string) (User, error) {
 	query := `
-query q($uname: string, $aid: string) {
+query q($uname: string, $aname: string) {
 	User(func:eq(username, $uname)) {
 		uid
-		applications @facets @filter(eq(appID, $aid)) {
+		applications @facets @filter(eq(name, $aname)) {
 			uid
 		}
 	}
 }
 `
-	variables := map[string]string{"$uname": name, "$aid": appid.String()}
+	variables := map[string]string{"$uname": user, "$aname": name}
 
 	resp, err := txn.QueryWithVars(ctx, query, variables)
 	if err != nil {
@@ -84,7 +83,7 @@ query q($uname: string, $aid: string) {
 func (dg DGraph) GetUser(ctx context.Context, name string) (models.User, error) {
 	txn := dg.NewReadOnlyTxn().BestEffort()
 
-	user, err := dg.getUser(ctx,txn, name)
+	user, err := dg.getUser(ctx, txn, name)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -121,7 +120,7 @@ func (dg DGraph) GetUsers(ctx context.Context) ([]models.User, error) {
 	return r.Q, nil
 }
 
-func (dg DGraph) CreateUser(ctx context.Context, user *models.User) error {
+func (dg DGraph) CreateUser(ctx context.Context, user models.User) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
@@ -161,7 +160,7 @@ func (dg DGraph) CreateUser(ctx context.Context, user *models.User) error {
 	}
 
 	// Add the new user to the database
-	dUser := NewDGraphUser(*user)
+	dUser := NewDGraphUser(user)
 
 	js, err := json.Marshal(dUser)
 	if err != nil {
@@ -177,7 +176,7 @@ func (dg DGraph) CreateUser(ctx context.Context, user *models.User) error {
 	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) SetUser(ctx context.Context, user *models.User) error {
+func (dg DGraph) SetUser(ctx context.Context, user models.User) error {
 	txn := dg.NewTxn()
 
 	currUser, err := dg.getUser(ctx, txn, user.Username)
@@ -196,8 +195,8 @@ func (dg DGraph) SetUser(ctx context.Context, user *models.User) error {
 	js, err := json.Marshal(&currUser)
 
 	_, err = txn.Mutate(ctx, &api.Mutation{
-		SetJson:              js,
-		CommitNow:            true,
+		SetJson:   js,
+		CommitNow: true,
 	})
 
 	return errors.Wrap(err, "mutate")
@@ -226,31 +225,30 @@ func (dg DGraph) RemoveUser(ctx context.Context, username string) error {
 	return errors.Wrap(err, "delete")
 }
 
-func (dg DGraph) GetApplicationRole(ctx context.Context, name string, appId uuid.UUID) (models.Role, error) {
+func (dg DGraph) GetApplicationRole(ctx context.Context, user string, name string) (models.Role, error) {
 	txn := dg.NewReadOnlyTxn().BestEffort()
 
-	user, err := dg.getUserWithApplications(ctx, txn, name, appId)
+	u, err := dg.getUserWithApplications(ctx, txn, user, name)
 	if err != nil {
 		return 0, err
 	}
 
-	return user.Applications[0].Role, nil
+	return u.Applications[0].Role, nil
 }
 
-func (dg DGraph) AddApplicationToUser(ctx context.Context, name string, appId uuid.UUID, role models.Role) error {
+func (dg DGraph) AddApplicationToUser(ctx context.Context, user string, name string, role models.Role) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
 
 	q := `
-query q($uname: string, $aid: string) {
+query q($uname: string, $aname: string) {
   User(func:eq(username, $uname)) {
     uid
   }
 
-  App(func:eq(appID, $aid)) {
+  App(func:eq(name, $aname)) {
   	uid
-	appID
   }
 }
 `
@@ -260,8 +258,8 @@ query q($uname: string, $aid: string) {
 	}
 
 	vars := map[string]string{
-		"$uname": name,
-		"$aid":   appId.String(),
+		"$uname": user,
+		"$aname": name,
 	}
 
 	resp, err := txn.QueryWithVars(ctx, q, vars)
@@ -278,7 +276,7 @@ query q($uname: string, $aid: string) {
 	}
 
 	r.App[0].Role = role
-	r.User[0].Applications = []Application{ r.App[0] }
+	r.User[0].Applications = []Application{r.App[0]}
 
 	js, err := json.Marshal(&r.User[0])
 	if err != nil {
@@ -297,27 +295,61 @@ query q($uname: string, $aid: string) {
 	return nil
 }
 
-func (dg DGraph) SetApplicationRole(ctx context.Context, name string, appId uuid.UUID, role models.Role) error {
-	return dg.AddApplicationToUser(ctx, name, appId, role)
+func (dg DGraph) SetApplicationRole(ctx context.Context, user string, name string, role models.Role) error {
+	return dg.AddApplicationToUser(ctx, name, name, role)
 }
 
-
-func (dg DGraph) RemoveApplicationFromUser(ctx context.Context, name string, appid uuid.UUID) error {
+func (dg DGraph) RemoveApplicationFromUser(ctx context.Context, user string, name string) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
 
-	user, err := dg.getUserWithApplications(ctx, txn, name, appid)
+	u, err := dg.getUserWithApplications(ctx, txn, user, name)
 
-	js, err := json.Marshal(&user)
+	js, err := json.Marshal(&u)
 	if err != nil {
 		return err
 	}
 
 	_, err = txn.Mutate(ctx, &api.Mutation{
-		DeleteJson:           js,
-		CommitNow:            true,
+		DeleteJson: js,
+		CommitNow:  true,
 	})
 
 	return errors.Wrap(err, "mutate")
+}
+
+func (dg DGraph) CountUsers(ctx context.Context) (int, error) {
+	query := `
+{
+	Q(func: type(User)) {
+		count(uid)
+	}
+}
+	`
+
+	txn := dg.NewReadOnlyTxn().BestEffort()
+	defer txn.Discard(ctx)
+
+	resp, err := txn.Query(ctx, query)
+	if err != nil {
+		return -1, errors.Wrap(err, "query")
+	}
+
+	var r struct {
+		Q []struct {
+			Count int `json:"count"`
+		}
+	}
+
+	err = json.Unmarshal(resp.Json, &r)
+	if err != nil {
+		return -1, errors.Wrap(err, "json unmarshal")
+	}
+
+	if len(r.Q) != 1 {
+		return -1, errors.New("unexpected multiple results in count")
+	}
+
+	return r.Q[0].Count, nil
 }

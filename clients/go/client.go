@@ -6,11 +6,9 @@ import (
 	"github.com/finitum/aurum/pkg/models"
 )
 
-
 type Client interface {
 	Login(ctx context.Context, username, password string) (*jwt.TokenPair, error)
 	Register(ctx context.Context, username, password, email string) error
 	Verify(ctx context.Context, token string) (*jwt.Claims, error)
 	GetUserInfo(ctx context.Context, tp *jwt.TokenPair) (*models.User, error)
 }
-

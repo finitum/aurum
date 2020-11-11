@@ -49,7 +49,6 @@ func (rs Routes) Login(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(&tp)
 }
 
-
 func (rs Routes) Refresh(w http.ResponseWriter, r *http.Request) {
 	var tp jwt.TokenPair
 

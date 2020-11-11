@@ -15,12 +15,11 @@ import (
 
 const url = "http://localhost:8042"
 
-
 func VerifyLogin(assert *assert.Assertions, client *http.Client, u models.User) jwt.TokenPair {
 	body, err := json.Marshal(u)
 	assert.NoError(err)
 
-	req, err := http.NewRequest("POST", url + "/login", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url+"/login", bytes.NewBuffer(body))
 	assert.NoError(err)
 
 	resp, err := client.Do(req)
@@ -42,7 +41,7 @@ func VerifySignupLogin(assert *assert.Assertions, client *http.Client, u models.
 	assert.NoError(err)
 
 	// Signup
-	req, err := http.NewRequest("POST", url + "/signup", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url+"/signup", bytes.NewBuffer(body))
 	assert.NoError(err)
 
 	resp, err := client.Do(req)
@@ -59,7 +58,7 @@ func VerifySignupLogin(assert *assert.Assertions, client *http.Client, u models.
 func VerifyGetUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User) {
 
 	// get user
-	req, err := http.NewRequest("GET", url + "/user", nil)
+	req, err := http.NewRequest("GET", url+"/user", nil)
 	assert.NoError(err)
 	req.Header.Add("Authorization", "Bearer "+tp.LoginToken)
 
@@ -86,7 +85,7 @@ func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenP
 	time.Sleep(2 * time.Second)
 
 	// Refresh
-	req, err := http.NewRequest("POST", url + "/refresh", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url+"/refresh", bytes.NewBuffer(body))
 	assert.NoError(err)
 
 	resp, err := client.Do(req)
@@ -116,7 +115,7 @@ func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Clien
 	body, err := json.Marshal(newuser)
 	assert.NoError(err)
 
-	req, err := http.NewRequest("POST", url + "/user", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url+"/user", bytes.NewBuffer(body))
 	assert.NoError(err)
 	req.Header.Add("Authorization", "Bearer "+tp.LoginToken)
 
@@ -142,7 +141,7 @@ func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Clien
 }
 
 func VerifyOptionsHeaders(assert *assert.Assertions, client *http.Client) {
-	req, err := http.NewRequest("OPTIONS", url + "/user", nil)
+	req, err := http.NewRequest("OPTIONS", url+"/user", nil)
 	assert.NoError(err)
 
 	resp, err := client.Do(req)
@@ -182,7 +181,6 @@ func TestSystemIntegration(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 	assert := assert.New(t)
-
 
 	assert.NoError(os.Setenv("NO_KEY_WRITE", "true"))
 	assert.NoError(os.Setenv("WEB_ADDRESS", url))

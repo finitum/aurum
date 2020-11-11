@@ -13,9 +13,8 @@ import (
 
 type RemoteClient struct {
 	url string
-	pk ecc.PublicKey
+	pk  ecc.PublicKey
 }
-
 
 func NewRemoteClient(url string) (Client, error) {
 	if !strings.HasPrefix(url, "https") {
@@ -39,7 +38,6 @@ func NewRemoteClient(url string) (Client, error) {
 
 	return &RemoteClient{url, pk}, nil
 }
-
 
 func (a *RemoteClient) Login(_ context.Context, username, password string) (*jwt.TokenPair, error) {
 	tp, err := api.Login(a.url, models.User{
@@ -74,4 +72,3 @@ func (a *RemoteClient) GetUserInfo(_ context.Context, tp *jwt.TokenPair) (*model
 	user, err := api.GetUser(a.url, tp)
 	return user, errors.Wrap(err, "get user api request failed")
 }
-

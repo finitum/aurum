@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/finitum/aurum/clients/go"
 	"github.com/finitum/aurum/pkg/jwt"
@@ -14,7 +15,7 @@ type errMsg struct {
 func (e errMsg) Error() string { return e.err.Error() }
 
 type connectMsg struct {
-	au *aurum.Aurum
+	au aurum.Client
 }
 
 type loginMsg struct {
@@ -32,7 +33,7 @@ type getMeMsg struct {
 }
 
 func connect() tea.Msg {
-	au, err := aurum.Connect(*host)
+	au, err := aurum.NewRemoteClient(*host)
 	if err != nil {
 		return errMsg{err}
 	}
@@ -40,9 +41,9 @@ func connect() tea.Msg {
 	return connectMsg{au}
 }
 
-func getme(au *aurum.Aurum, tp *jwt.TokenPair) tea.Cmd {
+func getme(au aurum.Client, tp *jwt.TokenPair) tea.Cmd {
 	return func() tea.Msg {
-		user, err := au.GetUserInfo(tp)
+		user, err := au.GetUserInfo(context.Background(), tp)
 		if err != nil {
 			return errMsg{err}
 		}
@@ -51,9 +52,9 @@ func getme(au *aurum.Aurum, tp *jwt.TokenPair) tea.Cmd {
 	}
 }
 
-func login(au *aurum.Aurum, username, password string) tea.Cmd {
+func login(au aurum.Client, username, password string) tea.Cmd {
 	return func() tea.Msg {
-		tp, err := au.Login(username, password)
+		tp, err := au.Login(context.Background(), username, password)
 		if err != nil {
 			return loginErrMsg{err}
 		}
@@ -62,9 +63,9 @@ func login(au *aurum.Aurum, username, password string) tea.Cmd {
 	}
 }
 
-func register(au *aurum.Aurum, username, email, password string) tea.Cmd {
+func register(au aurum.Client, username, email, password string) tea.Cmd {
 	return func() tea.Msg {
-		err := au.Register(username, password, email)
+		err := au.Register(context.Background(), username, password, email)
 		if err != nil {
 			return loginErrMsg{err}
 		}

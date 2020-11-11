@@ -33,7 +33,6 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 			}
 
 			type Application {
-				appID
 				name
 			}
 
@@ -42,12 +41,11 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 			email: string .
 			applications: [uid] .
 
-			appID: string @index(hash) .
 			name: string @index(hash) .
 		`,
 	}); err != nil {
 		return nil, err
 	}
 
-	return &DGraph{dg }, nil
+	return &DGraph{dg}, nil
 }

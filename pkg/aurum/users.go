@@ -8,7 +8,6 @@ import (
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -31,7 +30,7 @@ func SignUp(ctx context.Context, db store.AurumStore, user models.User) error {
 
 	user.Password = hashed
 
-	if err := db.CreateUser(ctx, &user); err != nil {
+	if err := db.CreateUser(ctx, user); err != nil {
 		if err == store.ErrExists {
 			return err
 		}
@@ -55,14 +54,14 @@ func Login(ctx context.Context, db store.AurumStore, user models.User, key ecc.S
 	return jwt.GenerateJWTPair(dbu.Username, key)
 }
 
-func Access(ctx context.Context, db store.AurumStore, user string, appid uuid.UUID) (models.AccessResponse, error) {
-	role, err := db.GetApplicationRole(ctx, user, appid);
+func Access(ctx context.Context, db store.AurumStore, user, name string) (models.AccessResponse, error) {
+	role, err := db.GetApplicationRole(ctx, user, name)
 
 	if err == store.ErrNotExists {
 		return models.AccessResponse{
-			ApplicationID: appid,
-			Username:      user,
-			AllowedAccess: false,
+			ApplicationName: name,
+			Username:        user,
+			AllowedAccess:   false,
 		}, nil
 
 	} else if err != nil {
@@ -70,10 +69,10 @@ func Access(ctx context.Context, db store.AurumStore, user string, appid uuid.UU
 	}
 
 	return models.AccessResponse{
-		ApplicationID: appid,
-		Username:      user,
-		AllowedAccess: true,
-		Role:          role,
+		ApplicationName: name,
+		Username:        user,
+		AllowedAccess:   true,
+		Role:            role,
 	}, nil
 }
 
@@ -81,12 +80,12 @@ func RefreshToken(tp *jwt.TokenPair, pk ecc.PublicKey, sk ecc.SecretKey) error {
 	if tp.RefreshToken == "" {
 		return ErrInvalidInput
 	}
-	
+
 	claims, err := jwt.VerifyJWT(tp.RefreshToken, pk)
 	if err != nil {
 		return errors.Wrap(err, "verification error")
 	}
-	
+
 	newtoken, err := jwt.GenerateJWT(claims.Username, false, sk)
 	if err != nil {
 		return errors.Wrap(err, "jwt generation error")
@@ -114,5 +113,5 @@ func UpdateUser(ctx context.Context, db store.AurumStore, user models.User) erro
 
 	user.Password = hashed
 
-	return db.SetUser(ctx, &user)
+	return db.SetUser(ctx, user)
 }
