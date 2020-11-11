@@ -175,6 +175,7 @@ query q($uname: string, $aid: string) {
     
   App(func:eq(appID, $aid)) {
   	uid
+	appID
   }
 }
 `
@@ -201,9 +202,9 @@ query q($uname: string, $aid: string) {
 		return errors.New("Couldn't find user or application")
 	}
 
-	r.User[0].Applications = []Application{
-		{Uid: r.App[0].Uid, Role: role},
-	}
+	r.App[0].Role = role
+
+	r.User[0].Applications = []Application{ r.App[0] }
 
 	js, err := json.Marshal(&r.User[0])
 	if err != nil {
