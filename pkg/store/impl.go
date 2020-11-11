@@ -2,7 +2,7 @@ package store
 
 import (
 	"encoding/json"
-	"github.com/dgraph-io/dgo/v2/protos/api"
+	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -174,7 +174,7 @@ func (dg DGraph) GetUsers() ([]models.User, error) {
 }
 
 func (dg DGraph) AddUserToApplication(userId uuid.UUID, appId uuid.UUID, role models.Role) error {
-
+	panic("implement me")
 }
 
 func (dg DGraph) RemoveUserFromApplication(userId uuid.UUID, appId uuid.UUID) error {
