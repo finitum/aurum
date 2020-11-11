@@ -4,7 +4,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"github.com/finitum/aurum/pkg/oldmodels"
+	"github.com/finitum/aurum/pkg/models"
 	tassert "github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -14,12 +14,11 @@ func TestGenerateJWTSimple(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := oldmodels.User{
+	testUser := models.User{
 		Username: "User",
-		Role:     oldmodels.UserRoleID,
 	}
 
-	token, err := GenerateJWT(&testUser, false, cfg.SecretKey)
+	token, err := GenerateJWT(testUser.Username, false, cfg.SecretKey)
 	assert.Nil(err)
 	assert.NotNil(token)
 
@@ -39,7 +38,6 @@ func TestGenerateJWTSimple(t *testing.T) {
 
 	// Assert token contains what we expect it to
 	assert.Equal(claims.Username, testUser.Username)
-	assert.Equal(claims.Role, testUser.Role)
 	assert.WithinDuration(time.Now().Add(time.Minute*15), time.Unix(claims.ExpiresAt, 0), time.Minute)
 	assert.WithinDuration(time.Now(), time.Unix(claims.IssuedAt, 0), time.Minute)
 }
@@ -48,12 +46,11 @@ func TestVerifyTokenSimple(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := oldmodels.User{
+	testUser := models.User{
 		Username: "User",
-		Role:     oldmodels.UserRoleID,
 	}
 
-	token, err := GenerateJWT(&testUser, false, cfg.SecretKey)
+	token, err := GenerateJWT(testUser.Username, false, cfg.SecretKey)
 	assert.Nil(err)
 	assert.NotNil(token)
 
@@ -62,18 +59,16 @@ func TestVerifyTokenSimple(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(claims)
 	assert.Equal(claims.Username, testUser.Username)
-	assert.Equal(claims.Role, testUser.Role)
 }
 
 func TestTokenPair(t *testing.T) {
 	assert := tassert.New(t)
 	cfg := config.EphemeralConfig()
 
-	testUser := oldmodels.User{
+	testUser := models.User{
 		Username: "User",
-		Role:     oldmodels.UserRoleID,
 	}
-	tp, err := GenerateJWTPair(&testUser, cfg.SecretKey)
+	tp, err := GenerateJWTPair(testUser.Username, cfg.SecretKey)
 	assert.NotNil(tp)
 	assert.Nil(err)
 

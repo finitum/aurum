@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
-	"github.com/finitum/aurum/core/db"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
 	"github.com/google/uuid"
@@ -158,7 +157,7 @@ func (dg DGraph) CreateUser(ctx context.Context, user *models.User) error {
 
 	// If there exists 1 or more users with this username, fail
 	if len(r.Q) != 1 || r.Q[0].Count > 0 {
-		return db.ErrExists
+		return store.ErrExists
 	}
 
 	// Add the new user to the database

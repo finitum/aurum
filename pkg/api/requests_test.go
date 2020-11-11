@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/oldmodels"
+	"github.com/finitum/aurum/pkg/models"
 	"github.com/test-go/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetPublicKey(t *testing.T) {
-	pkrsp := oldmodels.PublicKeyResponse{PublicKey: "apublickey"}
+	pkrsp := models.PublicKeyResponse{PublicKey: "apublickey"}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/pk", r.URL.Path)
@@ -29,7 +29,7 @@ func TestGetPublicKey(t *testing.T) {
 }
 
 func TestSignUp(t *testing.T) {
-	u := oldmodels.User{
+	u := models.User{
 		Username: "user",
 		Password: "pass",
 		Email:    "email",
@@ -39,7 +39,7 @@ func TestSignUp(t *testing.T) {
 		assert.Equal(t, "/signup", r.URL.Path)
 		assert.Equal(t, http.MethodPost, r.Method)
 
-		var recv oldmodels.User
+		var recv models.User
 		err := json.NewDecoder(r.Body).Decode(&recv)
 		assert.NoError(t, err)
 
@@ -54,7 +54,7 @@ func TestSignUp(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	u := oldmodels.User{
+	u := models.User{
 		Username: "user",
 		Password: "pass",
 	}
@@ -68,7 +68,7 @@ func TestLogin(t *testing.T) {
 		assert.Equal(t, "/login", r.URL.Path)
 		assert.Equal(t, http.MethodPost, r.Method)
 
-		var recv oldmodels.User
+		var recv models.User
 		err := json.NewDecoder(r.Body).Decode(&recv)
 		assert.NoError(t, err)
 
@@ -124,12 +124,10 @@ func TestGetUser(t *testing.T) {
 		RefreshToken: "refresh",
 	}
 
-	u := oldmodels.User{
+	u := models.User{
 		Username: "user",
 		Password: "pass",
 		Email:    "mail",
-		Role:     oldmodels.AdminRoleID,
-		Blocked:  false,
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -157,12 +155,10 @@ func TestUpdateUser(t *testing.T) {
 		RefreshToken: "refresh",
 	}
 
-	u := oldmodels.User{
+	u := models.User{
 		Username: "user",
 		Password: "pass",
 		Email:    "mail",
-		Role:     oldmodels.AdminRoleID,
-		Blocked:  false,
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -196,12 +192,10 @@ func TestUpdateUserRefreshNeeded(t *testing.T) {
 		LoginToken: refreshLogin,
 	}
 
-	u := oldmodels.User{
+	u := models.User{
 		Username: "user",
 		Password: "pass",
 		Email:    "mail",
-		Role:     oldmodels.AdminRoleID,
-		Blocked:  false,
 	}
 	upd := u
 
@@ -236,7 +230,7 @@ func TestUpdateUserRefreshNeeded(t *testing.T) {
 				assert.False(t, hasGot)
 				assert.True(t, hasRefreshed)
 
-				var recv oldmodels.User
+				var recv models.User
 				err := json.NewDecoder(r.Body).Decode(&recv)
 				assert.NoError(t, err)
 				assert.Equal(t, upd, recv)
@@ -270,12 +264,10 @@ func TestGetUserRefreshNeeded(t *testing.T) {
 		LoginToken: refreshLogin,
 	}
 
-	u := oldmodels.User{
+	u := models.User{
 		Username: "user",
 		Password: "pass",
 		Email:    "mail",
-		Role:     oldmodels.AdminRoleID,
-		Blocked:  false,
 	}
 
 	hasRefreshed := false
