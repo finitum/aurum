@@ -55,14 +55,14 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
 
-      - name: Build and push core
-        id: docker_build_core
+      - name: Build and push aurum
+        id: docker_build_aurum
         uses: docker/build-push-action@v2
         with:
           context: ./
           push: true
-          file: core/Dockerfile
-          tags: ghcr.io/finitum/aurum-core:${{ steps.prep.outputs.version }}
+          file: services/aurum/Dockerfile
+          tags: ghcr.io/finitum/aurum:${{ steps.prep.outputs.version }}
           labels: |
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
