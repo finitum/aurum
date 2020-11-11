@@ -16,6 +16,8 @@ type User struct {
 type Role int
 
 const (
-	RoleUser Role = iota
+	RoleUser Role = iota+1
 	RoleAdmin
 )
+
+

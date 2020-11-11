@@ -2,10 +2,13 @@ package store
 
 import (
 	"context"
+	"errors"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/google/uuid"
 )
 
+var ErrExists = errors.New("already exists")
+var ErrNotExists = errors.New("doesn't exist")
 
 type AurumStore interface {
 	// CreateApplication creates a new application in the database.
@@ -38,15 +41,15 @@ type AurumStore interface {
 
 	// AddUserToApplication links a user to an application with a given role.
 	// This role is the role the user has within this application.
-	AddUserToApplication(ctx context.Context, user string, appId uuid.UUID, role models.Role) error
+	AddApplicationToUser(ctx context.Context, user string, appId uuid.UUID, role models.Role) error
 
 	// RemoveUserFromApplication removes the link between a user and an application.
-	RemoveUserFromApplication(ctx context.Context, user string, appId uuid.UUID) error
-
-	// SetApplicationRole changes the role of a user within an application.
-	SetApplicationRole(ctx context.Context, user string, appId uuid.UUID, role models.Role) error
+	RemoveApplicationFromUser(ctx context.Context, user string, appId uuid.UUID) error
 
 	// GetApplicationRole retrieves the role a user has within an application
 	GetApplicationRole(ctx context.Context, user string, appId uuid.UUID) (models.Role, error)
+
+	// SetApplicationRole changes the role of a user within an application.
+	SetApplicationRole(ctx context.Context, user string, appId uuid.UUID, role models.Role) error
 }
 

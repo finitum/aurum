@@ -206,7 +206,7 @@ func (e *Endpoints) UpdateUser(w http.ResponseWriter, r *http.Request) {
 			body.Username,
 			body.Email,
 		}
-		if !passwords.VerifyPassword(body.Password, userinput) {
+		if !passwords.CheckStrength(body.Password, userinput) {
 			http.Error(w, "Please pick a stronger password", http.StatusUnprocessableEntity)
 			return
 		}

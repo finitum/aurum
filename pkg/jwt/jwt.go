@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"github.com/finitum/aurum/pkg/oldmodels"
+	"github.com/finitum/aurum/pkg/models"
 	"time"
 )
 
@@ -20,7 +20,7 @@ type TokenPair struct {
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
-func GenerateJWT(user *oldmodels.User, refresh bool, key ecc.SecretKey) (string, error) {
+func GenerateJWT(username string, refresh bool, key ecc.SecretKey) (string, error) {
 	// expirationTime := time.Now().Add(time.Hour)
 	var expirationTime time.Time
 
@@ -33,8 +33,7 @@ func GenerateJWT(user *oldmodels.User, refresh bool, key ecc.SecretKey) (string,
 	now := time.Now()
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &Claims{
-		Username: user.Username,
-		Role:     user.Role,
+		Username: username,
 		Refresh:  refresh,
 		StandardClaims: jwt.StandardClaims{
 			// In JWT, the expiry time is expressed as unix milliseconds
@@ -49,7 +48,7 @@ func GenerateJWT(user *oldmodels.User, refresh bool, key ecc.SecretKey) (string,
 	return token.SignedString(key)
 }
 
-func GenerateJWTPair(user *oldmodels.User, key ecc.SecretKey) (TokenPair, error) {
+func GenerateJWTPair(user *models.User, key ecc.SecretKey) (TokenPair, error) {
 	login, err := GenerateJWT(user, false, key)
 	if err != nil {
 		return TokenPair{}, err

@@ -9,6 +9,7 @@ require (
 	github.com/dgraph-io/dgo/v200 v200.0.0-20201023081658-a9ad93fe6ebd
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dlclark/regexp2 v1.4.0 // indirect
+	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/jinzhu/gorm v1.9.12

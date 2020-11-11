@@ -45,7 +45,7 @@ func (e *Endpoints) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !passwords.VerifyPassword(u.Password, []string{u.Username, u.Email}) {
+	if !passwords.CheckStrength(u.Password, []string{u.Username, u.Email}) {
 		http.Error(w, "Password not acceptable", http.StatusUnprocessableEntity)
 		return
 	}
