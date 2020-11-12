@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"github.com/finitum/aurum/internal/cors"
 	"github.com/finitum/aurum/pkg/aurum"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store/dgraph"
 	"github.com/finitum/aurum/services/aurum/routes"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -30,6 +32,11 @@ func main() {
 	}
 
 	r := chi.NewRouter()
+	r.Use(middleware.StripSlashes)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(cors.AllowAll)
+
 
 	cfg := config.GetConfig()
 

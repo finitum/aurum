@@ -65,10 +65,10 @@ func (a *RemoteClient) Verify(_ context.Context, token string) (*jwt.Claims, err
 
 // TODO: Should automatically be called when token needs refresh
 func (a *RemoteClient) refresh(tp *jwt.TokenPair) error {
-	return errors.Wrap(api.Refresh(a.url, tp), "refresh api request failed")
+	return errors.Wrap(api.Refresh(a.url, tp), "refresh client request failed")
 }
 
 func (a *RemoteClient) GetUserInfo(_ context.Context, tp *jwt.TokenPair) (*models.User, error) {
 	user, err := api.GetUser(a.url, tp)
-	return user, errors.Wrap(err, "get user api request failed")
+	return user, errors.Wrap(err, "get user client request failed")
 }
