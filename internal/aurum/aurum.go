@@ -28,13 +28,13 @@ type Aurum struct {
 }
 
 func New(ctx context.Context, db store.AurumStore, cfg *config.Config) (Aurum, error) {
-	if err := Initialize(ctx, db); err != nil {
+	if err := setup(ctx, db); err != nil {
 		return Aurum{}, err
 	}
 	return Aurum{db, cfg.PublicKey, cfg.SecretKey}, nil
 }
 
-func Initialize(ctx context.Context, db store.AurumStore) error {
+func setup(ctx context.Context, db store.AurumStore) error {
 	nu, err := db.CountUsers(ctx)
 	if err != nil {
 		return errors.Wrap(err, "count users")

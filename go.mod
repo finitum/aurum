@@ -9,6 +9,8 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible
+	github.com/golang/mock v1.4.4
+	github.com/google/uuid v1.1.2
 	github.com/muesli/termenv v0.7.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0

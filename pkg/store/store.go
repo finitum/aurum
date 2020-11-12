@@ -9,6 +9,8 @@ import (
 var ErrExists = errors.New("already exists")
 var ErrNotExists = errors.New("doesn't exist")
 
+//go:generate mockgen -destination mock_store/mock_store.go . AurumStore
+
 type AurumStore interface {
 	// CreateApplication creates a new application in the database.
 	// Application names and ids must be unique.

@@ -76,7 +76,14 @@ func (au Aurum) GetUser(ctx context.Context, token string) (models.User, error) 
 		return models.User{}, err
 	}
 
-	return au.db.GetUser(ctx, claims.Username)
+	user, err := au.db.GetUser(ctx, claims.Username)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user.Password = ""
+
+	return user, nil
 }
 
 func (au Aurum) UpdateUser(ctx context.Context, token string, user models.User) (models.User, error) {
