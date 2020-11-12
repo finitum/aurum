@@ -12,6 +12,7 @@ import (
 	"github.com/finitum/aurum/pkg/store"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 var ErrInvalidInput = errors.New("password is too weak")
@@ -104,6 +105,7 @@ func (au Aurum) checkTokenAndRole(ctx context.Context, token, app string) (model
 		return 0, nil, err
 	}
 
+	app = strings.ToLower(app)
 	role, err := au.db.GetApplicationRole(ctx, app, claims.Username)
 	if err != nil {
 		return 0, nil, err
