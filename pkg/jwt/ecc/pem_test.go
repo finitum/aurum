@@ -3,7 +3,7 @@ package ecc
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/test-go/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -34,6 +35,7 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 
 			type Application {
 				name
+				allow_registration
 			}
 
 			username: string @index(hash) .
@@ -42,9 +44,10 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 			applications: [uid] .
 
 			name: string @index(hash) .
+			allow_registration: bool .
 		`,
 	}); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "applying schema")
 	}
 
 	return &DGraph{dg}, nil

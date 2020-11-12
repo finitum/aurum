@@ -3,14 +3,15 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"github.com/finitum/aurum/pkg/models"
-	"github.com/test-go/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/finitum/aurum/pkg/jwt"
+	"github.com/finitum/aurum/pkg/jwt/ecc"
+	"github.com/finitum/aurum/pkg/models"
 )
 
 const url = "http://localhost:8042"
@@ -123,18 +124,17 @@ func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Clien
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
 
-	// TODO: fix
-	//var respuser models.User
-	//err = json.NewDecoder(resp.Body).Decode(&respuser)
-	//
-	//assert.Equal(u.Username, respuser.Username)
-	//assert.Equal(newuser.Email, respuser.Email)
-	//assert.Empty(respuser.Password)
+	var respuser models.User
+	err = json.NewDecoder(resp.Body).Decode(&respuser)
+
+	assert.Equal(u.Username, respuser.Username)
+	assert.Equal(newuser.Email, respuser.Email)
+	assert.Empty(respuser.Password)
 
 	u.Password = newuser.Password
 	u.Email = newuser.Email
 
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 
 	VerifyLogin(assert, client, u)
 	VerifyGetUser(assert, client, tp, u)
@@ -190,7 +190,7 @@ func TestSystemIntegration(t *testing.T) {
 
 	// totally not flaky or something
 	// Wait for the server  to start up
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	admin := models.User{
 		Username: "TestAdmin",
