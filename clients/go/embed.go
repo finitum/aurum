@@ -21,7 +21,7 @@ func NewEmbeddedClient(ctx context.Context, db store.AurumStore, cfg *config.Con
 		return EmbeddedClient{}, errors.Wrap(err, "failed creating aurum client")
 	}
 
-	return EmbeddedClient{ au }, nil
+	return EmbeddedClient{au}, nil
 }
 
 func (e *EmbeddedClient) Login(ctx context.Context, username, password string) (*jwt.TokenPair, error) {
