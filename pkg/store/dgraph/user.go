@@ -176,12 +176,12 @@ func (dg DGraph) CreateUser(ctx context.Context, user models.User) error {
 	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) SetUser(ctx context.Context, user models.User) error {
+func (dg DGraph) SetUser(ctx context.Context, user models.User) (models.User, error) {
 	txn := dg.NewTxn()
 
 	currUser, err := dg.getUser(ctx, txn, user.Username)
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
 
 	if user.Password != "" {
@@ -193,13 +193,19 @@ func (dg DGraph) SetUser(ctx context.Context, user models.User) error {
 	}
 
 	js, err := json.Marshal(&currUser)
+	if err != nil {
+		return models.User{}, err
+	}
 
 	_, err = txn.Mutate(ctx, &api.Mutation{
 		SetJson:   js,
 		CommitNow: true,
 	})
+	if err != nil {
+		return models.User{}, err
+	}
 
-	return errors.Wrap(err, "mutate")
+	return currUser.User, nil
 }
 
 func (dg DGraph) RemoveUser(ctx context.Context, username string) error {

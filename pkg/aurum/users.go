@@ -100,18 +100,25 @@ func GetUser(ctx context.Context, db store.AurumStore, user string) (models.User
 	return db.GetUser(ctx, user)
 }
 
-func UpdateUser(ctx context.Context, db store.AurumStore, user models.User) error {
+func UpdateUser(ctx context.Context, db store.AurumStore, user models.User) (models.User, error) {
 
 	if !passwords.CheckStrength(user.Password, []string{user.Username, user.Email}) {
-		return ErrWeakPassword
+		return models.User{}, ErrWeakPassword
 	}
 
 	hashed, err := hash.HashPassword(user.Password)
 	if err != nil {
-		return errors.Wrap(err, "hashing failed")
+		return models.User{}, err
 	}
 
 	user.Password = hashed
 
-	return db.SetUser(ctx, user)
+	user, err = db.SetUser(ctx, user)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user.Password = ""
+
+	return user, nil
 }

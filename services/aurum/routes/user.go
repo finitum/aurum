@@ -103,9 +103,11 @@ func (rs Routes) SetUser(w http.ResponseWriter, r *http.Request) {
 
 	u.Username = claims.Username
 
-	err = aurum.UpdateUser(r.Context(), rs.store, u)
+	user, err := aurum.UpdateUser(r.Context(), rs.store, u)
 	if err != nil {
 		_ = RenderError(w, err, ServerError)
 		return
 	}
+
+	_ = json.NewEncoder(w).Encode(&user)
 }

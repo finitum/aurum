@@ -40,7 +40,7 @@ type AurumStore interface {
 
 	// SetUser updates a users info in the database.
 	// User names and ids must be the same
-	SetUser(ctx context.Context, user models.User) error
+	SetUser(ctx context.Context, user models.User) (models.User, error)
 
 	// AddUserToApplication links a user to an application with a given role.
 	// This role is the role the user has within this application.
