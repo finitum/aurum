@@ -36,15 +36,10 @@ func RemoveApplication(host string, tp *jwt.TokenPair, app string) error {
 
 const applicationUserFmtUrl = "%s/application/%s/%s"
 
-func GetAccess(host string, tp *jwt.TokenPair, app, user string) (models.AccessStatus, error) {
+func GetAccess(host string, app, user string) (models.AccessStatus, error) {
 	url := fmt.Sprintf(applicationUserFmtUrl, host, app, user)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return models.AccessStatus{}, err
-	}
-
-	resp, err := authenticatedRequest(req, tp)
+	resp, err := http.Get(url)
 	if err != nil {
 		return models.AccessStatus{}, err
 	}
