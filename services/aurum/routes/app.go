@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-
 // POST /application (Authenticated)
 func (rs Routes) AddApplication(w http.ResponseWriter, r *http.Request) {
 	var app models.Application
