@@ -176,12 +176,12 @@ func (dg DGraph) CreateUser(ctx context.Context, user models.User) error {
 	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) SetUser(ctx context.Context, user models.User) error {
+func (dg DGraph) SetUser(ctx context.Context, user models.User) (models.User, error) {
 	txn := dg.NewTxn()
 
 	currUser, err := dg.getUser(ctx, txn, user.Username)
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
 
 	if user.Password != "" {
@@ -193,13 +193,19 @@ func (dg DGraph) SetUser(ctx context.Context, user models.User) error {
 	}
 
 	js, err := json.Marshal(&currUser)
+	if err != nil {
+		return models.User{}, err
+	}
 
 	_, err = txn.Mutate(ctx, &api.Mutation{
 		SetJson:   js,
 		CommitNow: true,
 	})
+	if err != nil {
+		return models.User{}, err
+	}
 
-	return errors.Wrap(err, "mutate")
+	return currUser.User, nil
 }
 
 func (dg DGraph) RemoveUser(ctx context.Context, username string) error {
@@ -225,10 +231,10 @@ func (dg DGraph) RemoveUser(ctx context.Context, username string) error {
 	return errors.Wrap(err, "delete")
 }
 
-func (dg DGraph) GetApplicationRole(ctx context.Context, user string, name string) (models.Role, error) {
+func (dg DGraph) GetApplicationRole(ctx context.Context, app string, user string) (models.Role, error) {
 	txn := dg.NewReadOnlyTxn().BestEffort()
 
-	u, err := dg.getUserWithApplications(ctx, txn, user, name)
+	u, err := dg.getUserWithApplications(ctx, txn, user, app)
 	if err != nil {
 		return 0, err
 	}
@@ -295,16 +301,16 @@ query q($uname: string, $aname: string) {
 	return nil
 }
 
-func (dg DGraph) SetApplicationRole(ctx context.Context, user string, name string, role models.Role) error {
-	return dg.AddApplicationToUser(ctx, name, name, role)
+func (dg DGraph) SetApplicationRole(ctx context.Context, app string, user string, role models.Role) error {
+	return dg.AddApplicationToUser(ctx, app, app, role)
 }
 
-func (dg DGraph) RemoveApplicationFromUser(ctx context.Context, user string, name string) error {
+func (dg DGraph) RemoveApplicationFromUser(ctx context.Context, app string, user string) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
 
-	u, err := dg.getUserWithApplications(ctx, txn, user, name)
+	u, err := dg.getUserWithApplications(ctx, txn, user, app)
 
 	js, err := json.Marshal(&u)
 	if err != nil {

@@ -2,8 +2,7 @@ package routes
 
 import (
 	"encoding/json"
-	"errors"
-	"github.com/finitum/aurum/pkg/aurum"
+	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"net/http"
@@ -17,15 +16,9 @@ func (rs Routes) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := aurum.SignUp(r.Context(), rs.store, u)
-	if err == aurum.ErrWeakPassword {
-		_ = RenderError(w, err, WeakPassword)
-		return
-	} else if err == aurum.ErrInvalidInput {
-		_ = RenderError(w, err, InvalidRequest)
-		return
-	} else if err != nil {
-		_ = RenderError(w, err, ServerError)
+	err := rs.au.SignUp(r.Context(), u)
+	if err != nil {
+		_ = AutomaticRenderError(w, err)
 		return
 	}
 
@@ -40,7 +33,7 @@ func (rs Routes) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tp, err := aurum.Login(r.Context(), rs.store, u, rs.cfg.SecretKey)
+	tp, err := rs.au.Login(r.Context(), u)
 	if err != nil {
 		_ = RenderError(w, err, Unauthorized)
 		return
@@ -57,12 +50,9 @@ func (rs Routes) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := aurum.RefreshToken(&tp, rs.cfg.PublicKey, rs.cfg.SecretKey)
+	err := rs.au.RefreshToken(&tp)
 	if err == aurum.ErrInvalidInput {
-		_ = RenderError(w, err, InvalidRequest)
-		return
-	} else if err != nil {
-		_ = RenderError(w, err, Unauthorized)
+		_ = AutomaticRenderError(w, err)
 		return
 	}
 
@@ -72,15 +62,11 @@ func (rs Routes) Refresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs Routes) GetMe(w http.ResponseWriter, r *http.Request) {
-	claims := ClaimsFromContext(r.Context())
-	if claims == nil {
-		_ = RenderError(w, errors.New("token claims got lost"), ServerError)
-		return
-	}
+	token := TokenFromContext(r.Context())
 
-	user, err := aurum.GetUser(r.Context(), rs.store, claims.Username)
+	user, err := rs.au.GetUser(r.Context(), token)
 	if err != nil {
-		_ = RenderError(w, err, ServerError)
+		_ = AutomaticRenderError(w, err)
 		return
 	}
 
@@ -88,11 +74,7 @@ func (rs Routes) GetMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs Routes) SetUser(w http.ResponseWriter, r *http.Request) {
-	claims := ClaimsFromContext(r.Context())
-	if claims == nil {
-		_ = RenderError(w, errors.New("token claims got lost"), ServerError)
-		return
-	}
+	token := TokenFromContext(r.Context())
 
 	var u models.User
 	err := json.NewDecoder(r.Body).Decode(&u)
@@ -101,11 +83,11 @@ func (rs Routes) SetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u.Username = claims.Username
-
-	err = aurum.UpdateUser(r.Context(), rs.store, u)
+	user, err := rs.au.UpdateUser(r.Context(), token, u)
 	if err != nil {
-		_ = RenderError(w, err, ServerError)
+		_ = AutomaticRenderError(w, err)
 		return
 	}
+
+	_ = json.NewEncoder(w).Encode(&user)
 }

@@ -9,6 +9,8 @@ import (
 var ErrExists = errors.New("already exists")
 var ErrNotExists = errors.New("doesn't exist")
 
+//go:generate mockgen -destination mock_store/mock_store.go . AurumStore
+
 type AurumStore interface {
 	// CreateApplication creates a new application in the database.
 	// Application names and ids must be unique.
@@ -40,20 +42,20 @@ type AurumStore interface {
 
 	// SetUser updates a users info in the database.
 	// User names and ids must be the same
-	SetUser(ctx context.Context, user models.User) error
+	SetUser(ctx context.Context, user models.User) (models.User, error)
 
 	// AddUserToApplication links a user to an application with a given role.
 	// This role is the role the user has within this application.
 	AddApplicationToUser(ctx context.Context, user string, name string, role models.Role) error
 
 	// RemoveUserFromApplication removes the link between a user and an application.
-	RemoveApplicationFromUser(ctx context.Context, user string, name string) error
+	RemoveApplicationFromUser(ctx context.Context, app string, user string) error
 
 	// GetApplicationRole retrieves the role a user has within an application
-	GetApplicationRole(ctx context.Context, user string, name string) (models.Role, error)
+	GetApplicationRole(ctx context.Context, app string, user string) (models.Role, error)
 
 	// SetApplicationRole changes the role of a user within an application.
-	SetApplicationRole(ctx context.Context, user string, name string, role models.Role) error
+	SetApplicationRole(ctx context.Context, app string, user string, role models.Role) error
 
 	// CountUsers counts the number of users currently in the database
 	CountUsers(ctx context.Context) (int, error)

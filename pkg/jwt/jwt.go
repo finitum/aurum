@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
+	"github.com/google/uuid"
 	"time"
 )
 
 type Claims struct {
 	Username string
-	Role     int
 	Refresh  bool
 	jwt.StandardClaims
 }
@@ -35,10 +35,11 @@ func GenerateJWT(username string, refresh bool, key ecc.SecretKey) (string, erro
 		Username: username,
 		Refresh:  refresh,
 		StandardClaims: jwt.StandardClaims{
-			// In JWT, the expiry time is expressed as unix milliseconds
+			// In JWT, the expiry time is expressed as unix seconds
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  now.Unix(),
 			NotBefore: now.Unix(),
+			Id:        uuid.New().String(),
 		},
 	}
 

@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/deanishe/go-env"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	log "github.com/sirupsen/logrus"
+	"go.deanishe.net/env"
 )
 
 // TODO: Add options to configure the database
