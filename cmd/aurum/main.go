@@ -38,7 +38,7 @@ const (
 )
 
 type model struct {
-	au     *aurum.Aurum
+	au     aurum.Client
 	tp     *jwt.TokenPair
 	screen Screen
 	err    error

@@ -3,24 +3,24 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"github.com/finitum/aurum/pkg/models"
-	"github.com/test-go/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/finitum/aurum/pkg/jwt"
+	"github.com/finitum/aurum/pkg/jwt/ecc"
+	"github.com/finitum/aurum/pkg/models"
 )
 
 const url = "http://localhost:8042"
-
 
 func VerifyLogin(assert *assert.Assertions, client *http.Client, u models.User) jwt.TokenPair {
 	body, err := json.Marshal(u)
 	assert.NoError(err)
 
-	req, err := http.NewRequest("POST", url + "/login", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url+"/login", bytes.NewBuffer(body))
 	assert.NoError(err)
 
 	resp, err := client.Do(req)
@@ -42,7 +42,7 @@ func VerifySignupLogin(assert *assert.Assertions, client *http.Client, u models.
 	assert.NoError(err)
 
 	// Signup
-	req, err := http.NewRequest("POST", url + "/signup", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url+"/signup", bytes.NewBuffer(body))
 	assert.NoError(err)
 
 	resp, err := client.Do(req)
@@ -59,7 +59,7 @@ func VerifySignupLogin(assert *assert.Assertions, client *http.Client, u models.
 func VerifyGetUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User) {
 
 	// get user
-	req, err := http.NewRequest("GET", url + "/user", nil)
+	req, err := http.NewRequest("GET", url+"/user", nil)
 	assert.NoError(err)
 	req.Header.Add("Authorization", "Bearer "+tp.LoginToken)
 
@@ -86,7 +86,7 @@ func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenP
 	time.Sleep(2 * time.Second)
 
 	// Refresh
-	req, err := http.NewRequest("POST", url + "/refresh", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url+"/refresh", bytes.NewBuffer(body))
 	assert.NoError(err)
 
 	resp, err := client.Do(req)
@@ -116,7 +116,7 @@ func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Clien
 	body, err := json.Marshal(newuser)
 	assert.NoError(err)
 
-	req, err := http.NewRequest("POST", url + "/user", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url+"/user", bytes.NewBuffer(body))
 	assert.NoError(err)
 	req.Header.Add("Authorization", "Bearer "+tp.LoginToken)
 
@@ -124,25 +124,24 @@ func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Clien
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
 
-	// TODO: fix
-	//var respuser models.User
-	//err = json.NewDecoder(resp.Body).Decode(&respuser)
-	//
-	//assert.Equal(u.Username, respuser.Username)
-	//assert.Equal(newuser.Email, respuser.Email)
-	//assert.Empty(respuser.Password)
+	var respuser models.User
+	err = json.NewDecoder(resp.Body).Decode(&respuser)
+
+	assert.Equal(u.Username, respuser.Username)
+	assert.Equal(newuser.Email, respuser.Email)
+	assert.Empty(respuser.Password)
 
 	u.Password = newuser.Password
 	u.Email = newuser.Email
 
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 
 	VerifyLogin(assert, client, u)
 	VerifyGetUser(assert, client, tp, u)
 }
 
 func VerifyOptionsHeaders(assert *assert.Assertions, client *http.Client) {
-	req, err := http.NewRequest("OPTIONS", url + "/user", nil)
+	req, err := http.NewRequest("OPTIONS", url+"/user", nil)
 	assert.NoError(err)
 
 	resp, err := client.Do(req)
@@ -183,7 +182,6 @@ func TestSystemIntegration(t *testing.T) {
 	}
 	assert := assert.New(t)
 
-
 	assert.NoError(os.Setenv("NO_KEY_WRITE", "true"))
 	assert.NoError(os.Setenv("WEB_ADDRESS", url))
 
@@ -192,7 +190,7 @@ func TestSystemIntegration(t *testing.T) {
 
 	// totally not flaky or something
 	// Wait for the server  to start up
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	admin := models.User{
 		Username: "TestAdmin",

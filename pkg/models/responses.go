@@ -1,12 +1,10 @@
 package models
 
-import "github.com/google/uuid"
-
-type AccessResponse struct {
-	ApplicationID uuid.UUID
-	Username      string
-	AllowedAccess bool
-	Role          Role
+type AccessStatus struct {
+	ApplicationName string
+	Username        string
+	AllowedAccess   bool
+	Role            Role
 }
 
 type PublicKeyResponse struct {

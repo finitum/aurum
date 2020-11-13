@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/store/dgraph"
 	"github.com/finitum/aurum/services/aurum/routes"
@@ -19,14 +20,19 @@ func main() {
 
 	dg, err := dgraph.New(ctx, "localhost:9080")
 	if err != nil {
-		log.Fatalf("Couldn't create dgraph client (%v)", err)
+		log.Fatalf("Couldn't create Dgraph client: %v", err)
+	}
+
+	cfg := config.GetConfig()
+
+	au, err := aurum.New(ctx, dg, cfg)
+	if err != nil {
+		log.Fatalf("Couldn't create Aurum client: %v", err)
 	}
 
 	r := chi.NewRouter()
 
-	cfg := config.GetConfig()
-
-	rs := routes.NewRoutes(dg, cfg)
+	rs := routes.NewRoutes(au, cfg)
 
 	r.Get("/pk", rs.PublicKey)
 
@@ -34,13 +40,21 @@ func main() {
 	r.Post("/login", rs.Login)
 	r.Post("/refresh", rs.Refresh)
 
-	r.Get("/access/{app}/{user}", rs.Access)
+	r.Get("/application/{app}/{user}", rs.GetAccess)
 
 	r.Group(func(r chi.Router) {
-		r.Use(rs.AuthenticationMiddleware)
+		r.Use(rs.TokenExtractionMiddleware)
 
 		r.Get("/user", rs.GetMe)
 		r.Post("/user", rs.SetUser)
+
+		// Application
+		r.Post("/application", rs.AddApplication)
+		r.Delete("/application", rs.RemoveApplication)
+
+		r.Put("/application/{app}/{user}", rs.SetAccess)
+		r.Post("/application/{app}/{user}", rs.AddUserToApplication)
+		r.Delete("/application/{app}/{user}", rs.RemoveUserFromApplication)
 	})
 
 	log.Fatal(http.ListenAndServe(":8042", r))

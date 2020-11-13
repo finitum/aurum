@@ -24,8 +24,6 @@ func NewDGraphUser(user models.User) *User {
 	return &User{User: user, DType: []string{"User"}}
 }
 
-
-
 func NewDGraphApplication(application models.Application) *Application {
 	return &Application{Application: application, DType: []string{"Application"}}
 }

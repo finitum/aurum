@@ -3,8 +3,8 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/config"
-	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
 	"net/http"
@@ -12,29 +12,49 @@ import (
 )
 
 type Routes struct {
-	store store.AurumStore
+	au  aurum.Aurum
 	cfg *config.Config
 }
 
-func NewRoutes(s store.AurumStore, cfg *config.Config) Routes {
-	return Routes{s, cfg }
+func NewRoutes(au aurum.Aurum, cfg *config.Config) Routes {
+	return Routes{au, cfg}
 }
 
 type ErrorCode int
+
 const (
 	ServerError ErrorCode = iota
 	InvalidRequest
+	Duplicate
 	WeakPassword
 	Unauthorized
 )
 
 type ErrorResponse struct {
 	Message string
-	Code ErrorCode
+	Code    ErrorCode
+}
+
+func AutomaticRenderError(w http.ResponseWriter, err error) error {
+	code := ServerError
+	switch err {
+	case store.ErrExists:
+		code = Duplicate
+	case store.ErrNotExists, aurum.ErrInvalidInput:
+		code = InvalidRequest
+	case aurum.ErrWeakPassword:
+		code = WeakPassword
+	case aurum.ErrUnauthorized:
+		code = Unauthorized
+	}
+
+	return RenderError(w, err, code)
 }
 
 func RenderError(w http.ResponseWriter, err error, code ErrorCode) error {
 	switch code {
+	case Duplicate:
+		w.WriteHeader(http.StatusConflict)
 	case Unauthorized:
 		w.WriteHeader(http.StatusUnauthorized)
 	case InvalidRequest, WeakPassword:
@@ -67,10 +87,12 @@ func (rs Routes) PublicKey(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	contextKeyClaims = "aurum web context key claims"
+	contextKeyToken = "aurum web context key token"
 )
 
-func (rs Routes) AuthenticationMiddleware(next http.Handler) http.Handler  {
+// TokenExtractionMiddleware extracts the Authorization token from the http request and stores it in the request context
+// you can access this token using the TokenFromContext helper
+func (rs Routes) TokenExtractionMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		if !strings.HasPrefix(token, "Bearer ") {
@@ -79,30 +101,17 @@ func (rs Routes) AuthenticationMiddleware(next http.Handler) http.Handler  {
 		}
 		token = strings.TrimPrefix(token, "Bearer ")
 
-		claims, err := jwt.VerifyJWT(token, rs.cfg.PublicKey)
-		if err != nil {
-			http.Error(w, "Invalid JWT Token", http.StatusUnauthorized)
-			return
-		}
-
-		// Refresh tokens are not allowed to be used as authentication
-		if claims.Refresh {
-			http.Error(w, "Please provide Login Token", http.StatusBadRequest)
-			return
-		}
-
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, contextKeyClaims, claims)
+		ctx = context.WithValue(ctx, contextKeyToken, token)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func ClaimsFromContext(ctx context.Context) *jwt.Claims {
-	val, ok := ctx.Value(contextKeyClaims).(*jwt.Claims)
+func TokenFromContext(ctx context.Context) string {
+	val, ok := ctx.Value(contextKeyToken).(string)
 	if !ok {
-		return nil
+		return ""
 	}
 	return val
 }
-

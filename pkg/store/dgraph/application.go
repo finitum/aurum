@@ -6,21 +6,21 @@ import (
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/finitum/aurum/pkg/models"
-	"github.com/google/uuid"
+	"github.com/finitum/aurum/pkg/store"
 	"github.com/pkg/errors"
 )
 
-func (dg DGraph) getApplication(ctx context.Context, txn *dgo.Txn, appId uuid.UUID) (*Application, error) {
+func (dg DGraph) getApplication(ctx context.Context, txn *dgo.Txn, name string) (*Application, error) {
 	query := `
-		query q($aid: string) {
-		  q(func:eq(appID, $aid)) {
+		query q($aname: string) {
+		  q(func:eq(name, $aname)) {
 			uid
-			appID
+			allow_registration
 			name
 		  }
 		}
 	`
-	variables := map[string]string{"$aid": appId.String()}
+	variables := map[string]string{"$aname": name}
 
 	resp, err := txn.QueryWithVars(ctx, query, variables)
 	if err != nil {
@@ -37,17 +37,17 @@ func (dg DGraph) getApplication(ctx context.Context, txn *dgo.Txn, appId uuid.UU
 	}
 
 	if len(r.Q) == 0 {
-		return nil, errors.Errorf("application with app id %s wasn't found", appId)
+		return nil, errors.Errorf("application %s wasn't found", name)
 	} else if len(r.Q) != 1 {
-		return nil, errors.Errorf("expected unique (one) application id %s, but found %d", appId, len(r.Q))
+		return nil, errors.Errorf("expected unique (one) application with name %s, but found %d", name, len(r.Q))
 	}
 
 	return &r.Q[0], nil
 }
 
-func (dg DGraph) GetApplication(ctx context.Context, appId uuid.UUID) (*models.Application, error) {
+func (dg DGraph) GetApplication(ctx context.Context, name string) (*models.Application, error) {
 	txn := dg.NewReadOnlyTxn().BestEffort()
-	app, err := dg.getApplication(ctx, txn, appId)
+	app, err := dg.getApplication(ctx, txn, name)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +59,8 @@ func (dg DGraph) GetApplications(ctx context.Context) ([]models.Application, err
 	query := `
 		{
 			q(func: type(Application)) {
-				appID
 				name
+				allow_registration
 			}
 		}
 	`
@@ -83,7 +83,7 @@ func (dg DGraph) GetApplications(ctx context.Context) ([]models.Application, err
 	return r.Q, nil
 }
 
-func (dg DGraph) CreateApplication(ctx context.Context, application *models.Application) error {
+func (dg DGraph) CreateApplication(ctx context.Context, application models.Application) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
@@ -91,14 +91,13 @@ func (dg DGraph) CreateApplication(ctx context.Context, application *models.Appl
 	// query the database for the number of applications that exist with either the same application id
 	// or the same application name
 	query := `
-		query q($aid: string, $aname: string) {
-		  q(func:type(Application)) @filter( eq(appID, $aid) OR eq(name, $aname)) {
-				count(uid)
+		query q($aname: string) {
+		  q(func:eq(name, $aname)) {
+			count(uid)
 		  }
 		}`
 
 	variables := map[string]string{
-		"$aid":   application.AppId.String(),
 		"$aname": application.Name,
 	}
 
@@ -118,13 +117,13 @@ func (dg DGraph) CreateApplication(ctx context.Context, application *models.Appl
 		return errors.Wrap(err, "json unmarshal")
 	}
 
-	// If there exists 1 or more users with this username, fail
+	// If there exists 1 or more applications with this username, fail
 	if len(r.Q) != 1 || r.Q[0].Count > 0 {
-		return errors.Errorf("application %s exists", application.Name)
+		return store.ErrExists
 	}
 
-	// Add the new user to the database
-	dApplication := NewDGraphApplication(*application)
+	// Add the new application to the database
+	dApplication := NewDGraphApplication(application)
 
 	js, err := json.Marshal(dApplication)
 	if err != nil {
@@ -141,10 +140,10 @@ func (dg DGraph) CreateApplication(ctx context.Context, application *models.Appl
 	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) RemoveApplication(ctx context.Context, appId uuid.UUID) error {
+func (dg DGraph) RemoveApplication(ctx context.Context, name string) error {
 	txn := dg.NewTxn()
 
-	app, err := dg.getApplication(ctx, txn, appId)
+	app, err := dg.getApplication(ctx, txn, name)
 	if err != nil {
 		return errors.Wrap(err, "get user (internal)")
 	}
@@ -164,4 +163,3 @@ func (dg DGraph) RemoveApplication(ctx context.Context, appId uuid.UUID) error {
 
 	return errors.Wrap(err, "delete")
 }
-

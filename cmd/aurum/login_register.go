@@ -84,7 +84,7 @@ func (m LoginRegisterModel) View() string {
 	return s
 }
 
-func (m LoginRegisterModel) Update(au *aurum.Aurum, msg tea.Msg) (LoginRegisterModel, tea.Cmd) {
+func (m LoginRegisterModel) Update(au aurum.Client, msg tea.Msg) (LoginRegisterModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case loginErrMsg:
 		m.err = msg.err
