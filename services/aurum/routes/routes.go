@@ -6,6 +6,7 @@ import (
 	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/models"
+	"github.com/finitum/aurum/pkg/store"
 	"net/http"
 	"strings"
 )
@@ -32,6 +33,22 @@ const (
 type ErrorResponse struct {
 	Message string
 	Code    ErrorCode
+}
+
+func AutomaticRenderError(w http.ResponseWriter, err error) error {
+	code := ServerError
+	switch err {
+	case store.ErrExists:
+		code = Duplicate
+	case store.ErrNotExists, aurum.ErrInvalidInput:
+		code = InvalidRequest
+	case aurum.ErrWeakPassword:
+		code = WeakPassword
+	case aurum.ErrUnauthorized:
+		code = Unauthorized
+	}
+
+	return RenderError(w, err, code)
 }
 
 func RenderError(w http.ResponseWriter, err error, code ErrorCode) error {

@@ -48,7 +48,13 @@ func main() {
 		r.Get("/user", rs.GetMe)
 		r.Post("/user", rs.SetUser)
 
+		// Application
+		r.Post("/application", rs.AddApplication)
+		r.Delete("/application", rs.RemoveApplication)
+
 		r.Put("/application/{app}/{user}", rs.SetAccess)
+		r.Post("/application/{app}/{user}", rs.AddUserToApplication)
+		r.Delete("/application/{app}/{user}", rs.RemoveUserFromApplication)
 	})
 
 	log.Fatal(http.ListenAndServe(":8042", r))

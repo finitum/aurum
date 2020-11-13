@@ -199,7 +199,7 @@ func TestAurum_RemoveUserFromApplication(t *testing.T) {
 	ms.EXPECT().RemoveApplicationFromUser(gomock.Any(), appL, target)
 
 	// SUT
-	err = au.RemoveUserFromApplication(ctx, token, app, target)
+	err = au.RemoveUserFromApplication(ctx, token, target, app)
 	assert.NoError(t, err)
 
 }

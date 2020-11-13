@@ -41,37 +41,6 @@ func (au Aurum) RemoveApplication(ctx context.Context, token, app string) error 
 	return au.db.RemoveApplication(ctx, app)
 }
 
-func (au Aurum) AddUserToApplication(ctx context.Context, token, username, appName string, role models.Role) error {
-	appName = strings.ToLower(appName)
-
-	app, err := au.db.GetApplication(ctx, appName)
-	if err != nil {
-		return errors.Wrap(err, "getting application")
-	}
-
-	if !app.AllowRegistration {
-		role, _, err := au.checkTokenAndRole(ctx, token, appName)
-		if err != nil {
-			return err
-		}
-
-		if role < models.RoleAdmin {
-			return ErrUnauthorized
-		}
-
-	} else {
-		claims, err := au.checkToken(token)
-		if err != nil {
-			return err
-		}
-
-		username = claims.Username
-		role = models.RoleUser
-	}
-
-	return au.db.AddApplicationToUser(ctx, username, appName, role)
-}
-
 // GetAccess determines if a user is allowed access to a certain application
 func (au Aurum) GetAccess(ctx context.Context, user, app string) (models.AccessStatus, error) {
 	app = strings.ToLower(app)
@@ -110,15 +79,46 @@ func (au Aurum) SetAccess(ctx context.Context, token, app, username string, targ
 	return au.db.SetApplicationRole(ctx, app, username, targetRole)
 }
 
-func (au Aurum) RemoveUserFromApplication(ctx context.Context, token, app, target string) error {
+func (au Aurum) AddUserToApplication(ctx context.Context, token, username, appName string, role models.Role) error {
+	appName = strings.ToLower(appName)
+
+	app, err := au.db.GetApplication(ctx, appName)
+	if err != nil {
+		return errors.Wrap(err, "getting application")
+	}
+
+	if !app.AllowRegistration {
+		role, _, err := au.checkTokenAndRole(ctx, token, appName)
+		if err != nil {
+			return err
+		}
+
+		if role < models.RoleAdmin {
+			return ErrUnauthorized
+		}
+
+	} else {
+		claims, err := au.checkToken(token)
+		if err != nil {
+			return err
+		}
+
+		username = claims.Username
+		role = models.RoleUser
+	}
+
+	return au.db.AddApplicationToUser(ctx, username, appName, role)
+}
+
+func (au Aurum) RemoveUserFromApplication(ctx context.Context, token, target, app string) error {
 	app = strings.ToLower(app)
 
-	role, _, err := au.checkTokenAndRole(ctx, token, app)
+	role, claims, err := au.checkTokenAndRole(ctx, token, app)
 	if err != nil {
 		return err
 	}
 
-	if role < models.RoleAdmin {
+	if role < models.RoleAdmin && target != claims.Username {
 		return ErrUnauthorized
 	}
 
