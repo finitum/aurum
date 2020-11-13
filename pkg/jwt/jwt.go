@@ -39,7 +39,7 @@ func GenerateJWT(username string, refresh bool, key ecc.SecretKey) (string, erro
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  now.Unix(),
 			NotBefore: now.Unix(),
-			Id: uuid.New().String(),
+			Id:        uuid.New().String(),
 		},
 	}
 

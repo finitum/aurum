@@ -49,13 +49,13 @@ type AurumStore interface {
 	AddApplicationToUser(ctx context.Context, user string, name string, role models.Role) error
 
 	// RemoveUserFromApplication removes the link between a user and an application.
-	RemoveApplicationFromUser(ctx context.Context, user string, name string) error
+	RemoveApplicationFromUser(ctx context.Context, app string, user string) error
 
 	// GetApplicationRole retrieves the role a user has within an application
 	GetApplicationRole(ctx context.Context, app string, user string) (models.Role, error)
 
 	// SetApplicationRole changes the role of a user within an application.
-	SetApplicationRole(ctx context.Context, user string, name string, role models.Role) error
+	SetApplicationRole(ctx context.Context, app string, user string, role models.Role) error
 
 	// CountUsers counts the number of users currently in the database
 	CountUsers(ctx context.Context) (int, error)

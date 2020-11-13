@@ -301,16 +301,16 @@ query q($uname: string, $aname: string) {
 	return nil
 }
 
-func (dg DGraph) SetApplicationRole(ctx context.Context, user string, name string, role models.Role) error {
-	return dg.AddApplicationToUser(ctx, name, name, role)
+func (dg DGraph) SetApplicationRole(ctx context.Context, app string, user string, role models.Role) error {
+	return dg.AddApplicationToUser(ctx, app, app, role)
 }
 
-func (dg DGraph) RemoveApplicationFromUser(ctx context.Context, user string, name string) error {
+func (dg DGraph) RemoveApplicationFromUser(ctx context.Context, app string, user string) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
 
-	u, err := dg.getUserWithApplications(ctx, txn, user, name)
+	u, err := dg.getUserWithApplications(ctx, txn, user, app)
 
 	js, err := json.Marshal(&u)
 	if err != nil {

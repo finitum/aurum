@@ -66,38 +66,39 @@ func (au Aurum) AddUserToApplication(ctx context.Context, token, username, appNa
 		}
 
 		username = claims.Username
+		role = models.RoleUser
 	}
 
 	return au.db.AddApplicationToUser(ctx, username, appName, role)
 }
 
 // GetAccess determines if a user is allowed access to a certain application
-func (au Aurum) GetAccess(ctx context.Context, user, name string) (models.AccessStatus, error) {
-	role, err := au.db.GetApplicationRole(ctx, name, user)
+func (au Aurum) GetAccess(ctx context.Context, user, app string) (models.AccessStatus, error) {
+	app = strings.ToLower(app)
+	role, err := au.db.GetApplicationRole(ctx, app, user)
 
 	if err == store.ErrNotExists {
 		return models.AccessStatus{
-			ApplicationName: name,
+			ApplicationName: app,
 			Username:        user,
 			AllowedAccess:   false,
 		}, nil
-
 	} else if err != nil {
 		return models.AccessStatus{}, err
 	}
 
 	return models.AccessStatus{
-		ApplicationName: name,
+		ApplicationName: app,
 		Username:        user,
 		AllowedAccess:   true,
 		Role:            role,
 	}, nil
 }
 
-func (au Aurum) SetAccess(ctx context.Context, token, app string, role models.Role) error {
+func (au Aurum) SetAccess(ctx context.Context, token, app, username string, targetRole models.Role) error {
 	app = strings.ToLower(app)
 
-	role, claims, err := au.checkTokenAndRole(ctx, token, app)
+	role, _, err := au.checkTokenAndRole(ctx, token, app)
 	if err != nil {
 		return err
 	}
@@ -106,13 +107,13 @@ func (au Aurum) SetAccess(ctx context.Context, token, app string, role models.Ro
 		return ErrUnauthorized
 	}
 
-	return au.db.SetApplicationRole(ctx, claims.Username, app, role)
+	return au.db.SetApplicationRole(ctx, app, username, targetRole)
 }
 
-func (au Aurum) RemoveUserFromApplication(ctx context.Context, token, app string) error {
+func (au Aurum) RemoveUserFromApplication(ctx context.Context, token, app, target string) error {
 	app = strings.ToLower(app)
 
-	role, claims, err := au.checkTokenAndRole(ctx, token, app)
+	role, _, err := au.checkTokenAndRole(ctx, token, app)
 	if err != nil {
 		return err
 	}
@@ -121,5 +122,5 @@ func (au Aurum) RemoveUserFromApplication(ctx context.Context, token, app string
 		return ErrUnauthorized
 	}
 
-	return au.db.RemoveApplicationFromUser(ctx, claims.Username, app)
+	return au.db.RemoveApplicationFromUser(ctx, app, target)
 }
