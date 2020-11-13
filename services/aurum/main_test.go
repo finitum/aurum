@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -183,7 +184,7 @@ func TestSystemIntegration(t *testing.T) {
 	assert := assert.New(t)
 
 	assert.NoError(os.Setenv("NO_KEY_WRITE", "true"))
-	assert.NoError(os.Setenv("WEB_ADDRESS", url))
+	assert.NoError(os.Setenv("WEB_ADDRESS", strings.TrimPrefix(url, "http://")))
 
 	// Startup the server
 	go main()
