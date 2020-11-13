@@ -1,6 +1,6 @@
 package models
 
-type AccessResponse struct {
+type AccessStatus struct {
 	ApplicationName string
 	Username        string
 	AllowedAccess   bool

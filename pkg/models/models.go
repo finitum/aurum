@@ -1,7 +1,8 @@
 package models
 
 type Application struct {
-	Name string `json:"name,omitempty"`
+	Name              string `json:"name,omitempty"`
+	AllowRegistration bool   `json:"allow_registration,omitempty"`
 }
 
 type User struct {

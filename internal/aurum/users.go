@@ -5,16 +5,12 @@ import (
 	"github.com/finitum/aurum/internal/hash"
 	"github.com/finitum/aurum/internal/passwords"
 	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
 	"github.com/pkg/errors"
 )
 
-var ErrInvalidInput = errors.New("password is too weak")
-var ErrWeakPassword = errors.New("password is too weak")
-
-func SignUp(ctx context.Context, db store.AurumStore, user models.User) error {
+func (au Aurum) SignUp(ctx context.Context, user models.User) error {
 	if user.Username == "" {
 		return ErrInvalidInput
 	}
@@ -30,7 +26,7 @@ func SignUp(ctx context.Context, db store.AurumStore, user models.User) error {
 
 	user.Password = hashed
 
-	if err := db.CreateUser(ctx, user); err != nil {
+	if err := au.db.CreateUser(ctx, user); err != nil {
 		if err == store.ErrExists {
 			return err
 		}
@@ -41,8 +37,8 @@ func SignUp(ctx context.Context, db store.AurumStore, user models.User) error {
 	return nil
 }
 
-func Login(ctx context.Context, db store.AurumStore, user models.User, key ecc.SecretKey) (jwt.TokenPair, error) {
-	dbu, err := db.GetUser(ctx, user.Username)
+func (au Aurum) Login(ctx context.Context, user models.User) (jwt.TokenPair, error) {
+	dbu, err := au.db.GetUser(ctx, user.Username)
 	if err != nil {
 		return jwt.TokenPair{}, errors.Wrap(err, "getting user from db failed")
 	}
@@ -51,42 +47,20 @@ func Login(ctx context.Context, db store.AurumStore, user models.User, key ecc.S
 		return jwt.TokenPair{}, errors.New("invalid password")
 	}
 
-	return jwt.GenerateJWTPair(dbu.Username, key)
+	return jwt.GenerateJWTPair(dbu.Username, au.sk)
 }
 
-func Access(ctx context.Context, db store.AurumStore, user, name string) (models.AccessResponse, error) {
-	role, err := db.GetApplicationRole(ctx, user, name)
-
-	if err == store.ErrNotExists {
-		return models.AccessResponse{
-			ApplicationName: name,
-			Username:        user,
-			AllowedAccess:   false,
-		}, nil
-
-	} else if err != nil {
-		return models.AccessResponse{}, err
-	}
-
-	return models.AccessResponse{
-		ApplicationName: name,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            role,
-	}, nil
-}
-
-func RefreshToken(tp *jwt.TokenPair, pk ecc.PublicKey, sk ecc.SecretKey) error {
+func (au Aurum) RefreshToken(tp *jwt.TokenPair) error {
 	if tp.RefreshToken == "" {
 		return ErrInvalidInput
 	}
 
-	claims, err := jwt.VerifyJWT(tp.RefreshToken, pk)
+	claims, err := jwt.VerifyJWT(tp.RefreshToken, au.pk)
 	if err != nil {
 		return errors.Wrap(err, "verification error")
 	}
 
-	newtoken, err := jwt.GenerateJWT(claims.Username, false, sk)
+	newtoken, err := jwt.GenerateJWT(claims.Username, false, au.sk)
 	if err != nil {
 		return errors.Wrap(err, "jwt generation error")
 	}
@@ -96,11 +70,30 @@ func RefreshToken(tp *jwt.TokenPair, pk ecc.PublicKey, sk ecc.SecretKey) error {
 	return nil
 }
 
-func GetUser(ctx context.Context, db store.AurumStore, user string) (models.User, error) {
-	return db.GetUser(ctx, user)
+func (au Aurum) GetUser(ctx context.Context, token string) (models.User, error) {
+	claims, err := au.checkToken(token)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user, err := au.db.GetUser(ctx, claims.Username)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user.Password = ""
+
+	return user, nil
 }
 
-func UpdateUser(ctx context.Context, db store.AurumStore, user models.User) (models.User, error) {
+func (au Aurum) UpdateUser(ctx context.Context, token string, user models.User) (models.User, error) {
+
+	claims, err := au.checkToken(token)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user.Username = claims.Username
 
 	if !passwords.CheckStrength(user.Password, []string{user.Username, user.Email}) {
 		return models.User{}, ErrWeakPassword
@@ -113,7 +106,7 @@ func UpdateUser(ctx context.Context, db store.AurumStore, user models.User) (mod
 
 	user.Password = hashed
 
-	user, err = db.SetUser(ctx, user)
+	user, err = au.db.SetUser(ctx, user)
 	if err != nil {
 		return models.User{}, err
 	}

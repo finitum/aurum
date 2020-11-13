@@ -6,6 +6,7 @@ import (
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/finitum/aurum/pkg/models"
+	"github.com/finitum/aurum/pkg/store"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +15,7 @@ func (dg DGraph) getApplication(ctx context.Context, txn *dgo.Txn, name string) 
 		query q($aname: string) {
 		  q(func:eq(name, $aname)) {
 			uid
-			appID
+			allow_registration
 			name
 		  }
 		}
@@ -59,6 +60,7 @@ func (dg DGraph) GetApplications(ctx context.Context) ([]models.Application, err
 		{
 			q(func: type(Application)) {
 				name
+				allow_registration
 			}
 		}
 	`
@@ -115,12 +117,12 @@ func (dg DGraph) CreateApplication(ctx context.Context, application models.Appli
 		return errors.Wrap(err, "json unmarshal")
 	}
 
-	// If there exists 1 or more users with this username, fail
+	// If there exists 1 or more applications with this username, fail
 	if len(r.Q) != 1 || r.Q[0].Count > 0 {
-		return errors.Errorf("application %s exists", application.Name)
+		return store.ErrExists
 	}
 
-	// Add the new user to the database
+	// Add the new application to the database
 	dApplication := NewDGraphApplication(application)
 
 	js, err := json.Marshal(dApplication)

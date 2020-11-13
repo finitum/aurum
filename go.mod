@@ -9,11 +9,12 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible
+	github.com/golang/mock v1.4.4
+	github.com/google/uuid v1.1.2
 	github.com/muesli/termenv v0.7.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
-	github.com/test-go/testify v1.1.4
 	github.com/trustelem/zxcvbn v1.0.1
 	go.deanishe.net/env v0.5.1
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
