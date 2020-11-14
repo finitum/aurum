@@ -26,7 +26,7 @@ func GenerateJWT(username string, refresh bool, key ecc.SecretKey) (string, erro
 	if refresh {
 		expirationTime = time.Now().AddDate(0, 3, 0)
 	} else {
-		expirationTime = time.Now().Add(time.Minute * 1)
+		expirationTime = time.Now().Add(time.Minute * 15)
 	}
 
 	now := time.Now()

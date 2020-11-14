@@ -20,7 +20,7 @@ var ErrWeakPassword = errors.New("password is too weak")
 var ErrUnauthorized = errors.New("unauthorized")
 
 const adminUsername = "admin"
-const AurumName = "Aurum"
+const AurumName = "aurum"
 
 type Aurum struct {
 	db store.AurumStore
@@ -70,6 +70,7 @@ func setup(ctx context.Context, db store.AurumStore) error {
 
 	if err := db.CreateApplication(ctx, models.Application{
 		Name: AurumName,
+		AllowRegistration: true,
 	}); err != nil {
 		return errors.Wrap(err, "create initial application")
 	}
@@ -105,11 +106,20 @@ func (au Aurum) checkTokenAndRole(ctx context.Context, token, app string) (model
 		return 0, nil, err
 	}
 
-	app = strings.ToLower(app)
-	role, err := au.db.GetApplicationRole(ctx, app, claims.Username)
+	role, err := au.checkRole(ctx, claims, app)
 	if err != nil {
 		return 0, nil, err
 	}
 
 	return role, claims, nil
+}
+
+func (au Aurum) checkRole(ctx context.Context, claims *jwt.Claims, app string) (models.Role, error) {
+	app = strings.ToLower(app)
+	role, err := au.db.GetApplicationRole(ctx, app, claims.Username)
+	if err != nil {
+		return 0, err
+	}
+
+	return role, nil
 }

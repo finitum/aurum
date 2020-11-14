@@ -1,16 +1,20 @@
 <template>
-  <div class="w-full bg-gray-300 rounded py-8 px-10 ">
+  <div
+    class="w-full bg-gray-200 rounded py-8 px-10 shadow shadow-md border-1 border-gray-800"
+  >
     <form @submit.prevent="" class="grid grid-cols-5 gap-2">
-      <h1 class="col-span-full text-center font-semibold text-3xl mb-4">User Information</h1>
+      <h1 class="col-span-full text-center font-semibold text-3xl mb-4">
+        User Information
+      </h1>
 
       <label class="col-start-1 mr-3 font-semibold ml-auto" for="username"
-      >Username:</label
+        >Username:</label
       >
       <input
-              class="col-start-2 col-span-3"
-              id="username"
-              v-model="user.username"
-              disabled
+        class="col-start-2 col-span-3"
+        id="username"
+        v-model="user.username"
+        disabled
       />
 
       <label class="col-start-1 mr-3 font-semibold ml-auto" for="email"
@@ -22,8 +26,9 @@
         v-model="user.email"
         :disabled="!changeEmail"
         :class="{ inputEnabled: changeEmail }"
+        tabindex=4
       />
-      <button class="col-start-5" @click="doChangeEmail()">
+      <button class="col-start-5" @click="doChangeEmail()" tabindex=1>
         <span v-if="!changeEmail">Change</span>
         <span v-if="changeEmail">Update</span>
       </button>
@@ -38,22 +43,24 @@
         placeholder="********"
         :disabled="!changePassword"
         :class="{ inputEnabled: changePassword }"
+        type="password"
+
+        tabindex=1
       />
-      <button
-        class="col-start-5"
-        @click="doChangePassword()"
-      >
+      <button class="col-start-5" @click="doChangePassword()" tabindex=3>
         <span v-if="!changePassword">Change</span>
         <span v-if="changePassword">Update</span>
       </button>
 
       <input
-              class="col-start-2 col-span-3"
-              id="repeat"
-              v-model="passwordRepeat"
-              placeholder="Repeat password"
-              v-if="changePassword"
-              :class="{ inputEnabled: changePassword }"
+        class="col-start-2 col-span-3"
+        id="repeat"
+        v-model="passwordRepeat"
+        placeholder="Repeat password"
+        v-if="changePassword"
+        :class="{ inputEnabled: changePassword }"
+        type="password"
+        tabindex=2
       />
     </form>
   </div>
@@ -119,7 +126,7 @@ export default defineComponent({
 
     async function doChangePassword() {
       if (changePassword.value) {
-        if (user.value.password === passwordRepeat.value){
+        if (user.value.password === passwordRepeat.value) {
           const updateUser: User = {
             password: user.value.password
           } as User;

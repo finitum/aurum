@@ -59,6 +59,8 @@ func main() {
 		r.Post("/application", rs.AddApplication)
 		r.Delete("/application", rs.RemoveApplication)
 
+		r.Get("/application/{user}", rs.GetApplicationsForUser)
+
 		r.Put("/application/{app}/{user}", rs.SetAccess)
 		r.Post("/application/{app}/{user}", rs.AddUserToApplication)
 		r.Delete("/application/{app}/{user}", rs.RemoveUserFromApplication)

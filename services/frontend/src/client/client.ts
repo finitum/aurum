@@ -5,5 +5,5 @@ import router from "@/router";
 export const client = new SingleUserClient("http://localhost:8042");
 
 client.AddUnauthorizedHandler(async () => {
-    await router.push("/login")
-})
+  await router.push("/login");
+});

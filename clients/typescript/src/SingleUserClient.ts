@@ -1,6 +1,6 @@
 import {Client} from "./Client";
 import {LocalstorageAvailable} from "./LocalstorageAvailable";
-import {AurumError, ErrorCode, TokenPair, User} from "./Models";
+import {ApplicationWithRole, AurumError, ErrorCode, TokenPair, User} from "./Models";
 import {err, ok, Result} from "neverthrow";
 
 const LocalStorageRefreshTokenKey = "REFRESH_TOKEN";
@@ -45,15 +45,22 @@ export class SingleUserClient {
 
             if (LocalstorageAvailable() && this.tokenpair !== null) {
                 localStorage.setItem(LocalStorageLoginTokenKey, this.tokenpair.login_token)
-                if (this.tokenpair.refresh_token !== null) {
-                    localStorage.setItem(LocalStorageRefreshTokenKey, this.tokenpair.refresh_token)
-                }
+                localStorage.setItem(LocalStorageRefreshTokenKey, this.tokenpair.refresh_token)
             }
 
             return ok(null);
         } else {
             return err(tp.error);
         }
+    }
+
+    async Register(user: User): Promise<Result<null, AurumError>> {
+        const error = await this.client.Register(user);
+        if (error.isErr()) {
+            return err(error.error)
+        }
+
+        return await this.Login(user);
     }
 
     async GetUserInfo(): Promise<Result<User, AurumError>> {
@@ -114,8 +121,32 @@ export class SingleUserClient {
         }
     }
 
+    async GetApplicationsForUser(user?: User): Promise<Result<ApplicationWithRole[], AurumError>> {
+        let checkedUser: User;
+
+        if (typeof user === "undefined") {
+            const userOrErr = await this.GetUserInfo()
+            if (userOrErr.isOk()) {
+                checkedUser = userOrErr.value;
+            } else {
+                return err(userOrErr.error);
+            }
+        } else {
+            checkedUser = user
+        }
+
+        return await this.RetryOnUnauthorized((v) => this.client.GetApplicationsForUser(v, checkedUser));
+    }
+
     Logout() {
         this.tokenpair = null;
+        this.user = null;
+
+        if (LocalstorageAvailable()) {
+            localStorage.removeItem(LocalStorageLoginTokenKey)
+            localStorage.removeItem(LocalStorageRefreshTokenKey)
+        }
+
         for (const h of this.unAuthorizedHandlers) {
             h(null)
         }

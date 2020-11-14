@@ -108,6 +108,7 @@ func (rs Routes) TokenExtractionMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+
 func TokenFromContext(ctx context.Context) string {
 	val, ok := ctx.Value(contextKeyToken).(string)
 	if !ok {

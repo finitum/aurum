@@ -1,19 +1,17 @@
 <template>
-  <Header @login="showLogin = true" />
+  <Header />
   <router-view />
-  <Login v-if="showLogin" @close="showLogin = false" />
   <Notification />
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 import Header from "@/components/Header.vue";
 import Notification from "@/components/modals/Notification.vue";
-import Login from "@/views/Login.vue";
 
 export default defineComponent({
   name: "App",
-  components: { Header, Notification, Login },
+  components: { Header, Notification },
   setup() {
     return {};
   }
