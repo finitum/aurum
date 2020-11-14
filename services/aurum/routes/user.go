@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"net/http"
@@ -51,7 +50,7 @@ func (rs Routes) Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := rs.au.RefreshToken(&tp)
-	if err == aurum.ErrInvalidInput {
+	if err != nil {
 		_ = AutomaticRenderError(w, err)
 		return
 	}

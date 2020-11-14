@@ -3,58 +3,9 @@
     <form @submit.prevent="" class="grid grid-cols-5 gap-2">
       <h1 class="col-span-full text-center font-semibold text-3xl mb-4">User Information</h1>
 
-      <label class="col-start-1 mr-3 font-semibold ml-auto" for="username"
-      >Username:</label
-      >
-      <input
-              class="col-start-2 col-span-3"
-              id="username"
-              v-model="user.username"
-              disabled
-      />
 
-      <label class="col-start-1 mr-3 font-semibold ml-auto" for="email"
-        >Email:</label
-      >
-      <input
-        class="col-start-2 col-span-3"
-        id="email"
-        v-model="user.email"
-        :disabled="!changeEmail"
-        :class="{ inputEnabled: changeEmail }"
-      />
-      <button class="col-start-5" @click="doChangeEmail()">
-        <span v-if="!changeEmail">Change</span>
-        <span v-if="changeEmail">Update</span>
-      </button>
 
-      <label class="mr-3 font-semibold col-start-1 ml-auto" for="password"
-        >Password:</label
-      >
-      <input
-        class="col-start-2 col-span-3"
-        id="password"
-        v-model="user.password"
-        placeholder="********"
-        :disabled="!changePassword"
-        :class="{ inputEnabled: changePassword }"
-      />
-      <button
-        class="col-start-5"
-        @click="doChangePassword()"
-      >
-        <span v-if="!changePassword">Change</span>
-        <span v-if="changePassword">Update</span>
-      </button>
 
-      <input
-              class="col-start-2 col-span-3"
-              id="repeat"
-              v-model="passwordRepeat"
-              placeholder="Repeat password"
-              v-if="changePassword"
-              :class="{ inputEnabled: changePassword }"
-      />
     </form>
   </div>
 </template>
@@ -75,12 +26,12 @@ export default defineComponent({
 
     onMounted(async () => {
       const userOrError = await client.GetUserInfo();
-      if (userOrError.isErr()) {
-        const error = userOrError.error;
+      if (userOrError.IsError()) {
+        const error = userOrError.GetError() as AurumError;
         CreateNotification(error.Message);
         return;
       } else {
-        user.value = userOrError.value;
+        user.value = userOrError.GetOk() as User;
         user.value.password = "";
       }
     });
@@ -107,10 +58,10 @@ export default defineComponent({
         } as User;
 
         const resp = await client.UpdateUser(updateUser);
-        if (resp.isOk()) {
-          user.value = resp.value;
+        if (resp.IsOk()) {
+          user.value = resp.GetOk() as User;
         } else {
-          return CreateNotification(resp.error.Message);
+          return CreateNotification((resp.GetError() as AurumError).Message);
         }
       }
 
@@ -125,10 +76,10 @@ export default defineComponent({
           } as User;
 
           const resp = await client.UpdateUser(updateUser);
-          if (resp.isOk()) {
-            user.value = resp.value;
+          if (resp.IsOk()) {
+            user.value = resp.GetOk() as User;
           } else {
-            return CreateNotification(resp.error.Message);
+            return CreateNotification((resp.GetError() as AurumError).Message);
           }
         } else {
           return CreateNotification("Passwords don't match");

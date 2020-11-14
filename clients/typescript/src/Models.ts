@@ -10,7 +10,7 @@ export interface Application {
 
 
 export enum ErrorCode {
-    ServerError,
+    ServerError = 1,
     InvalidRequest,
     WeakPassword,
     Unauthorized,
