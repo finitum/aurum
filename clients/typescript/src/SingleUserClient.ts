@@ -2,6 +2,7 @@ import {Client} from "./Client";
 import {LocalstorageAvailable} from "./LocalstorageAvailable";
 import {ApplicationWithRole, AurumError, ErrorCode, TokenPair, User} from "./Models";
 import {err, ok, Result} from "neverthrow";
+import {Claims} from "aurum-crypto/index";
 
 const LocalStorageRefreshTokenKey = "REFRESH_TOKEN";
 const LocalStorageLoginTokenKey = "LOGIN_TOKEN";
@@ -150,6 +151,17 @@ export class SingleUserClient {
         for (const h of this.unAuthorizedHandlers) {
             h(null)
         }
+    }
+
+    async Verify(): Promise<Result<Claims, AurumError>> {
+        if (this.tokenpair === null) {
+            return err({
+                Message: "No token stored",
+                Code: ErrorCode.Unauthorized,
+            })
+        }
+
+        return await this.client.Verify(this.tokenpair.login_token)
     }
 
     IsLoggedIn(): boolean {

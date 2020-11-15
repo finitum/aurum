@@ -36,3 +36,7 @@ export interface TokenPair {
     login_token: string,
     refresh_token: string,
 }
+
+export interface PublicKey {
+    public_key: string
+}

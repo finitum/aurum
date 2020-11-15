@@ -15,7 +15,6 @@
     "@fortawesome/vue-fontawesome": "^3.0.0-2",
     "aurum-client": "file:../../clients/typescript",
     "autoprefixer": "^9",
-    "axios": "^0.21.0",
     "postcss-import": "^12",
     "postcss-loader": "^3",
     "postcss-nested": "^4",

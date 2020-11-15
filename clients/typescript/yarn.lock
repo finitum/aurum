@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"aurum-crypto@file:../wasm":
+  version "1.0.0"
+  dependencies:
+    neverthrow "^2.7.1"
+
 axios@^0.21.0:
   version "0.21.0"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.0.tgz#26df088803a2350dff2c27f96fef99fe49442aca"

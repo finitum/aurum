@@ -1,16 +1,17 @@
 {
-  "name": "client",
+  "name": "aurum-crypto",
   "version": "1.0.0",
-  "description": "Typescript client for Aurum",
+  "description": "Verification of signatures in go (wasm)",
   "main": "index.ts",
+  "scripts": {
+    "build": "bash ./build.sh"
+  },
   "repository": "https://github.com/finitum/Aurum",
   "license": "MIT",
   "devDependencies": {
     "typescript": "^4.0.5"
   },
   "dependencies": {
-    "aurum-crypto": "file:../wasm",
-    "axios": "^0.21.0",
     "neverthrow": "^2.7.1"
   }
 }

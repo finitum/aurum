@@ -1524,7 +1524,13 @@ atob@^2.1.2:
 "aurum-client@file:../../clients/typescript":
   version "1.0.0"
   dependencies:
+    aurum-crypto "file:../../../../.cache/yarn/v6/npm-aurum-client-1.0.0-7d3596b9-46ce-4286-85b3-0a6c03b08d18-1605456700535/node_modules/wasm"
     axios "^0.21.0"
+    neverthrow "^2.7.1"
+
+"aurum-crypto@file:../../clients/wasm":
+  version "1.0.0"
+  dependencies:
     neverthrow "^2.7.1"
 
 autoprefixer@^9, autoprefixer@^9.4.5, autoprefixer@^9.8.6:

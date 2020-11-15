@@ -65,6 +65,8 @@ export default defineComponent({
       } else {
         const error = await client.Login(user);
         if (error.isOk()) {
+          console.log(client.Verify())
+
           await router.push("/");
         } else if (error.error.Code === ErrorCode.Unauthorized) {
           CreateNotification("Username or password incorrect");
