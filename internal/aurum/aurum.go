@@ -1,3 +1,5 @@
+// Package aurum is the main business logic of Aurum and it contains the methods which connect the endpoints and
+// the database
 package aurum
 
 import (

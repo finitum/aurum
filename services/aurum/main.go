@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 func init() {
@@ -20,12 +21,12 @@ func init() {
 func main() {
 	ctx := context.Background()
 
-	dg, err := dgraph.New(ctx, "localhost:9080")
+	cfg := config.GetConfig()
+
+	dg, err := dgraph.New(ctx, cfg.DgraphUrl)
 	if err != nil {
 		log.Fatalf("Couldn't create Dgraph client: %v", err)
 	}
-
-	cfg := config.GetConfig()
 
 	au, err := aurum.New(ctx, dg, cfg)
 	if err != nil {
@@ -66,5 +67,13 @@ func main() {
 		r.Delete("/application/{app}/{user}", rs.RemoveUserFromApplication)
 	})
 
-	log.Fatal(http.ListenAndServe(":8042", r))
+	srv := http.Server{
+		Addr:         cfg.WebAddr,
+		Handler:      r,
+		ReadTimeout:  time.Second * 15,
+		WriteTimeout: time.Second * 15,
+	}
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
 }
