@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { client } from "@/client/client";
+import { client } from "../client/client";
 
 export default defineComponent({
   name: "Header",

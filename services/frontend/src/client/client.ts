@@ -1,5 +1,5 @@
 import { SingleUserClient } from "aurum-client";
-import router from "@/router";
+import router from "../router";
 
 // TODO: Change baseurl
 export const client = new SingleUserClient("http://localhost:8042");

@@ -67,9 +67,9 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from "vue";
 import router from "../router";
-import { client } from "@/client/client";
+import { client } from "../client/client";
 import { User, ErrorCode } from "aurum-client";
-import { CreateNotification } from "@/components/modals/NotificationState";
+import { CreateNotification } from "../components/modals/NotificationState";
 
 export default defineComponent({
   name: "Login",

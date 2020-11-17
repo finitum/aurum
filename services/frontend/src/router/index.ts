@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import {client} from "@/client/client";
+import {client} from "../client/client";
 
 const routes: Array<RouteRecordRaw> = [
   {

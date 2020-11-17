@@ -68,8 +68,8 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from "vue";
-import { client } from "@/client/client";
-import { AurumError, ErrorCode, User } from "aurum-client";
+import { client } from "../client/client";
+import { User } from "aurum-client";
 import { CreateNotification } from "./modals/NotificationState";
 
 export default defineComponent({

@@ -9,10 +9,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, onMounted } from "vue";
+import { defineComponent, reactive } from "vue";
 import { ApplicationWithRole } from "aurum-client";
-import { client } from "@/client/client";
-import { CreateNotification } from "@/components/modals/NotificationState";
+import { client } from "../client/client";
+import { CreateNotification } from "./modals/NotificationState";
 import Application from "./Application.vue";
 
 export default defineComponent({

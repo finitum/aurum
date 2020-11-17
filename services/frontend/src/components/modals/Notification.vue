@@ -25,7 +25,7 @@
 
 <script lang="typescript">
 import { defineComponent } from "vue";
-import { notificationState } from "@/components/modals/NotificationState";
+import { notificationState } from "./NotificationState";
 
 export default defineComponent({
   name: "Notification",

@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, onMounted } from "vue";
+import { defineComponent, PropType } from "vue";
 import { ApplicationWithRole, Role } from "aurum-client";
 
 export default defineComponent({

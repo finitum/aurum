@@ -24,8 +24,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import ModifyUser from "@/components/ModifiyUser.vue";
-import ApplicationList from "@/components/ApplicationList.vue";
+import ModifyUser from "../components/ModifiyUser.vue";
+import ApplicationList from "../components/ApplicationList.vue";
 
 export default defineComponent({
   name: "Home",

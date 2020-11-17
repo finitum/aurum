@@ -48,9 +48,9 @@
 <script lang="ts">
 import { defineComponent, reactive } from "vue";
 import router from "../router";
-import { client } from "@/client/client";
+import { client } from "../client/client";
 import { ErrorCode, User } from "aurum-client";
-import { CreateNotification } from "@/components/modals/NotificationState";
+import { CreateNotification } from "../components/modals/NotificationState";
 
 export default defineComponent({
   name: "Login",
@@ -65,8 +65,6 @@ export default defineComponent({
       } else {
         const error = await client.Login(user);
         if (error.isOk()) {
-          console.log(client.Verify())
-
           await router.push("/");
         } else if (error.error.Code === ErrorCode.Unauthorized) {
           CreateNotification("Username or password incorrect");
