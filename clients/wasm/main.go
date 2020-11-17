@@ -6,8 +6,6 @@ import (
 	"syscall/js"
 )
 
-//go:generate sh -c "cp $(go env GOROOT)/misc/wasm/wasm_exec.js ."
-
 func main() {
 	js.Global().Set("ZZZ_AurumWasm_VerifyToken", VerifyTokenWrapper())
 	select {}

@@ -168,13 +168,13 @@ func (dg DGraph) GetApplicationsForUser(ctx context.Context, name string) ([]mod
 	query := `
 query q($uname: string) {
   q(func: type(User)) @filter(eq(username, $uname)) {
-   	applications @facets(role:role) {
+	username
+   	applications @facets(role) {
       name
 	  allow_registration
   	} 
   }
-}
-	`
+}`
 
 	variables := map[string]string{
 		"$uname": name,
@@ -185,6 +185,7 @@ query q($uname: string) {
 		return nil, errors.Wrap(err, "query")
 	}
 
+	// TODO: explain dafuq is going on
 	var r struct {
 		Q []struct{
 			Applications []models.ApplicationWithRole `json:"applications"`
@@ -196,6 +197,8 @@ query q($uname: string) {
 		return nil, errors.Wrap(err, "json unmarshal")
 	} else if len(r.Q) != 1 {
 		return nil, errors.Wrap(err, "how the hell did this happen???")
+	} else if len(r.Q[0].Applications) == 0 {
+		return nil, store.ErrNotExists
 	}
 
 
