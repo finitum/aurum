@@ -5,12 +5,12 @@ export interface User {
     email: string
 }
 
-export interface Application {
+export interface Group {
     name: string
     allow_registration: string
 }
 
-export interface ApplicationWithRole extends Application {
+export interface GroupWithRole extends Group {
     role: Role
 }
 

@@ -92,16 +92,16 @@ func (rs Routes) SetUser(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(&user)
 }
 
-func (rs Routes) GetApplicationsForUser(w http.ResponseWriter, r *http.Request) {
+func (rs Routes) GetGroupsForUser(w http.ResponseWriter, r *http.Request) {
 	user := chi.URLParam(r, "user")
 
 	token := TokenFromContext(r.Context())
 
-	approles, err := rs.au.GetApplicationsForUser(r.Context(), token, user)
+	grouproles, err := rs.au.GetGroupsForUser(r.Context(), token, user)
 	if err != nil {
 		_ = AutomaticRenderError(w, err)
 		return
 	}
 
-	_ = json.NewEncoder(w).Encode(&approles)
+	_ = json.NewEncoder(w).Encode(&grouproles)
 }

@@ -8,13 +8,13 @@ type User struct {
 	DType []string `json:"dgraph.type,omitempty"`
 	Uid   string   `json:"uid,omitempty"`
 
-	Applications []Application `json:"applications,omitempty"`
+	Groups []Group `json:"groups,omitempty"`
 }
 
-type Application struct {
-	models.Application
+type Group struct {
+	models.Group
 
-	Role models.Role `json:"applications|role,omitempty"`
+	Role models.Role `json:"groups|role,omitempty"`
 
 	DType []string `json:"dgraph.type,omitempty"`
 	Uid   string   `json:"uid,omitempty"`
@@ -24,6 +24,6 @@ func NewDGraphUser(user models.User) *User {
 	return &User{User: user, DType: []string{"User"}}
 }
 
-func NewDGraphApplication(application models.Application) *Application {
-	return &Application{Application: application, DType: []string{"Application"}}
+func NewDGraphGroup(group models.Group) *Group {
+	return &Group{Group: group, DType: []string{"Group"}}
 }

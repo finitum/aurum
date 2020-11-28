@@ -1,6 +1,6 @@
 package models
 
-type Application struct {
+type Group struct {
 	Name              string `json:"name,omitempty"`
 	AllowRegistration bool   `json:"allow_registration,omitempty"`
 }
@@ -18,7 +18,7 @@ const (
 	RoleAdmin
 )
 
-type ApplicationWithRole struct {
-	Application
+type GroupWithRole struct {
+	Group
 	Role Role `json:"role,omitempty"`
 }

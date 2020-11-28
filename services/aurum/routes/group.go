@@ -11,10 +11,10 @@ import (
 	"strings"
 )
 
-// POST /application (Authenticated)
-func (rs Routes) AddApplication(w http.ResponseWriter, r *http.Request) {
-	var app models.Application
-	err := json.NewDecoder(r.Body).Decode(&app)
+// POST /group (Authenticated)
+func (rs Routes) AddGroup(w http.ResponseWriter, r *http.Request) {
+	var group models.Group
+	err := json.NewDecoder(r.Body).Decode(&group)
 	if err != nil {
 		_ = RenderError(w, err, InvalidRequest)
 		return
@@ -22,7 +22,7 @@ func (rs Routes) AddApplication(w http.ResponseWriter, r *http.Request) {
 
 	token := TokenFromContext(r.Context())
 
-	if err := rs.au.AddApplication(r.Context(), token, app); err != nil {
+	if err := rs.au.AddGroup(r.Context(), token, group); err != nil {
 		if err == store.ErrExists {
 			_ = RenderError(w, err, Duplicate)
 			return
@@ -31,23 +31,23 @@ func (rs Routes) AddApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.Name = strings.ToLower(app.Name)
+	group.Name = strings.ToLower(group.Name)
 
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(&app)
+	_ = json.NewEncoder(w).Encode(&group)
 }
 
-// DELETE /application/{name} (Authenticated)
-func (rs Routes) RemoveApplication(w http.ResponseWriter, r *http.Request) {
-	app := chi.URLParam(r, "name")
-	if app == "" {
+// DELETE /group/{name} (Authenticated)
+func (rs Routes) RemoveGroup(w http.ResponseWriter, r *http.Request) {
+	group := chi.URLParam(r, "name")
+	if group == "" {
 		_ = RenderError(w, aurum.ErrUnauthorized, Unauthorized)
 		return
 	}
 
 	token := TokenFromContext(r.Context())
 
-	if err := rs.au.RemoveApplication(r.Context(), token, app); err != nil {
+	if err := rs.au.RemoveGroup(r.Context(), token, group); err != nil {
 		if err == store.ErrExists {
 			_ = RenderError(w, err, Duplicate)
 			return
@@ -61,10 +61,10 @@ func (rs Routes) RemoveApplication(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GET /application/{app}/{user}
+// GET /group/{group}/{user}
 func (rs Routes) GetAccess(w http.ResponseWriter, r *http.Request) {
 	user := chi.URLParam(r, "user")
-	name := chi.URLParam(r, "app")
+	name := chi.URLParam(r, "group")
 
 	if name == "" || user == "" {
 		_ = RenderError(w, errors.New("name empty"), InvalidRequest)
@@ -80,14 +80,14 @@ func (rs Routes) GetAccess(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(&resp)
 }
 
-// PUT /application/{app}/{user}
+// PUT /group/{group}/{user}
 func (rs Routes) SetAccess(w http.ResponseWriter, r *http.Request) {
 	user := chi.URLParam(r, "user")
-	app := chi.URLParam(r, "app")
+	group := chi.URLParam(r, "group")
 	ctx := r.Context()
 
-	if app == "" || user == "" {
-		_ = RenderError(w, errors.New("app empty"), InvalidRequest)
+	if group == "" || user == "" {
+		_ = RenderError(w, errors.New("group empty"), InvalidRequest)
 		return
 	}
 
@@ -98,7 +98,7 @@ func (rs Routes) SetAccess(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if app != access.ApplicationName || user != access.Username {
+	if group != access.GroupName || user != access.Username {
 		_ = RenderError(w, errors.New("body doesn't match path"), InvalidRequest)
 		return
 	}
@@ -106,9 +106,9 @@ func (rs Routes) SetAccess(w http.ResponseWriter, r *http.Request) {
 	token := TokenFromContext(ctx)
 
 	if access.AllowedAccess {
-		err = rs.au.SetAccess(ctx, token, app, user, access.Role)
+		err = rs.au.SetAccess(ctx, token, group, user, access.Role)
 	} else {
-		err = rs.au.RemoveUserFromApplication(ctx, token, user, app)
+		err = rs.au.RemoveUserFromGroup(ctx, token, user, group)
 	}
 	if err != nil {
 		_ = AutomaticRenderError(w, err)
@@ -116,19 +116,19 @@ func (rs Routes) SetAccess(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// POST /application/{app}/{user}
-func (rs Routes) AddUserToApplication(w http.ResponseWriter, r *http.Request) {
+// POST /group/{group}/{user}
+func (rs Routes) AddUserToGroup(w http.ResponseWriter, r *http.Request) {
 	user := chi.URLParam(r, "user")
-	app := chi.URLParam(r, "app")
+	group := chi.URLParam(r, "group")
 	ctx := r.Context()
 
-	if app == "" || user == "" {
-		_ = RenderError(w, errors.New("app empty"), InvalidRequest)
+	if group == "" || user == "" {
+		_ = RenderError(w, errors.New("group empty"), InvalidRequest)
 		return
 	}
 
 	token := TokenFromContext(ctx)
-	err := rs.au.AddUserToApplication(ctx, token, user, app, models.RoleUser)
+	err := rs.au.AddUserToGroup(ctx, token, user, group, models.RoleUser)
 	if err != nil {
 		_ = AutomaticRenderError(w, err)
 		return
@@ -137,19 +137,19 @@ func (rs Routes) AddUserToApplication(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// DELETE /application/{app}/{user}
-func (rs Routes) RemoveUserFromApplication(w http.ResponseWriter, r *http.Request) {
+// DELETE /group/{group}/{user}
+func (rs Routes) RemoveUserFromGroup(w http.ResponseWriter, r *http.Request) {
 	user := chi.URLParam(r, "user")
-	app := chi.URLParam(r, "app")
+	group := chi.URLParam(r, "group")
 	ctx := r.Context()
 
-	if app == "" || user == "" {
-		_ = RenderError(w, errors.New("app empty"), InvalidRequest)
+	if group == "" || user == "" {
+		_ = RenderError(w, errors.New("group empty"), InvalidRequest)
 		return
 	}
 
 	token := TokenFromContext(ctx)
-	err := rs.au.RemoveUserFromApplication(ctx, token, app, user)
+	err := rs.au.RemoveUserFromGroup(ctx, token, group, user)
 	if err != nil {
 		_ = AutomaticRenderError(w, err)
 		return
