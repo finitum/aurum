@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/finitum/aurum/clients/go"
 	"github.com/finitum/aurum/pkg/jwt"
