@@ -1,18 +1,10 @@
-
 export interface User {
     username: string
     password: string
     email: string
-}
-
-export interface Application {
-    name: string
-    allow_registration: string
-}
-
-export interface ApplicationWithRole extends Application {
     role: Role
 }
+
 
 export enum Role {
     User = 1,

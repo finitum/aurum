@@ -64,6 +64,7 @@ func setup(ctx context.Context, db store.AurumStore) error {
 	if err := db.CreateUser(ctx, models.User{
 		Username: adminUsername,
 		Password: hashed,
+		Role:     models.RoleAdmin,
 	}); err != nil {
 		return errors.Wrap(err, "create initial user")
 	}

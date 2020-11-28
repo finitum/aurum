@@ -9,15 +9,6 @@
           <div>Loading...</div>
         </template>
       </Suspense>
-
-      <Suspense>
-        <template #default>
-          <ApplicationList />
-        </template>
-        <template #fallback>
-          <div>Loading...</div>
-        </template>
-      </Suspense>
     </div>
   </div>
 </template>
@@ -25,11 +16,10 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import ModifyUser from "../components/ModifiyUser.vue";
-import ApplicationList from "../components/ApplicationList.vue";
 
 export default defineComponent({
   name: "Home",
-  components: { ModifyUser, ApplicationList },
+  components: { ModifyUser },
   setup() {
     return {};
   }

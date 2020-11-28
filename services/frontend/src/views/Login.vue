@@ -77,7 +77,7 @@ export default defineComponent({
     return {
       user,
       ClickLogin,
-      router,
+      router
     };
   }
 });

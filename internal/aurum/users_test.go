@@ -80,9 +80,13 @@ func TestAurum_RefreshToken(t *testing.T) {
 	cfg := config.EphemeralConfig()
 
 	au := Aurum{pk: cfg.PublicKey, sk: cfg.SecretKey}
+	testUser := models.User{
+		Username: "jeff",
+		Role:     models.RoleUser,
+	}
 
 	// SUT
-	tp, err := jwt.GenerateJWTPair("jeff", cfg.SecretKey)
+	tp, err := jwt.GenerateJWTPair(testUser, cfg.SecretKey)
 	assert.NoError(t, err)
 
 	old := tp
@@ -117,7 +121,7 @@ func TestAurum_GetUser(t *testing.T) {
 
 	ms.EXPECT().GetUser(gomock.Any(), u.Username).Return(u, nil)
 
-	tp, err := jwt.GenerateJWTPair(u.Username, cfg.SecretKey)
+	tp, err := jwt.GenerateJWTPair(u, cfg.SecretKey)
 	assert.NoError(t, err)
 	// SUT
 	gu, err := au.GetUser(ctx, tp.LoginToken)
@@ -149,7 +153,7 @@ func TestAurum_UpdateUser(t *testing.T) {
 		assert.True(t, hash.CheckPasswordHash(u.Password, user.Password))
 	}).Return(u, nil)
 
-	tp, err := jwt.GenerateJWTPair(u.Username, cfg.SecretKey)
+	tp, err := jwt.GenerateJWTPair(u, cfg.SecretKey)
 	assert.NoError(t, err)
 	// SUT
 	gu, err := au.UpdateUser(ctx, tp.LoginToken, u)

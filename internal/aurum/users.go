@@ -47,7 +47,7 @@ func (au Aurum) Login(ctx context.Context, user models.User) (jwt.TokenPair, err
 		return jwt.TokenPair{}, errors.New("invalid password")
 	}
 
-	return jwt.GenerateJWTPair(dbu.Username, au.sk)
+	return jwt.GenerateJWTPair(user, au.sk)
 }
 
 func (au Aurum) RefreshToken(tp *jwt.TokenPair) error {
@@ -60,7 +60,12 @@ func (au Aurum) RefreshToken(tp *jwt.TokenPair) error {
 		return errors.Wrap(err, "verification error")
 	}
 
-	newtoken, err := jwt.GenerateJWT(claims.Username, false, au.sk)
+	user := models.User{
+		Username: claims.Username,
+		Role:     claims.Role,
+	}
+
+	newtoken, err := jwt.GenerateJWT(user, false, au.sk)
 	if err != nil {
 		return errors.Wrap(err, "jwt generation error")
 	}

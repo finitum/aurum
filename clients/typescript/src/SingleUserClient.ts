@@ -1,6 +1,6 @@
 import {Client} from "./Client";
 import {LocalstorageAvailable} from "./LocalstorageAvailable";
-import {ApplicationWithRole, AurumError, ErrorCode, TokenPair, User} from "./Models";
+import {AurumError, ErrorCode, TokenPair, User} from "./Models";
 import {err, ok, Result} from "neverthrow";
 import {Claims} from "aurum-crypto/index";
 
@@ -12,7 +12,7 @@ export class SingleUserClient {
     private tokenpair: TokenPair | null;
     private user: User | null;
     private client: Client;
-    private unAuthorizedHandlers: ((err: AurumError | null) => void)[];
+    private readonly unAuthorizedHandlers: ((err: AurumError | null) => void)[];
 
     constructor(baseurl: string) {
         this.tokenpair = null;
@@ -120,23 +120,6 @@ export class SingleUserClient {
         } else {
             return first
         }
-    }
-
-    async GetApplicationsForUser(user?: User): Promise<Result<ApplicationWithRole[], AurumError>> {
-        let checkedUser: User;
-
-        if (typeof user === "undefined") {
-            const userOrErr = await this.GetUserInfo()
-            if (userOrErr.isOk()) {
-                checkedUser = userOrErr.value;
-            } else {
-                return err(userOrErr.error);
-            }
-        } else {
-            checkedUser = user
-        }
-
-        return await this.RetryOnUnauthorized((v) => this.client.GetApplicationsForUser(v, checkedUser));
     }
 
     Logout() {

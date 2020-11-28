@@ -18,7 +18,7 @@ func TestGenerateJWTSimple(t *testing.T) {
 		Username: "User",
 	}
 
-	token, err := GenerateJWT(testUser.Username, false, cfg.SecretKey)
+	token, err := GenerateJWT(testUser, false, cfg.SecretKey)
 	assert.Nil(err)
 	assert.NotNil(token)
 
@@ -50,7 +50,7 @@ func TestVerifyTokenSimple(t *testing.T) {
 		Username: "User",
 	}
 
-	token, err := GenerateJWT(testUser.Username, false, cfg.SecretKey)
+	token, err := GenerateJWT(testUser, false, cfg.SecretKey)
 	assert.Nil(err)
 	assert.NotNil(token)
 
@@ -68,7 +68,7 @@ func TestTokenPair(t *testing.T) {
 	testUser := models.User{
 		Username: "User",
 	}
-	tp, err := GenerateJWTPair(testUser.Username, cfg.SecretKey)
+	tp, err := GenerateJWTPair(testUser, cfg.SecretKey)
 	assert.NotNil(tp)
 	assert.Nil(err)
 

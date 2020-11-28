@@ -1,5 +1,5 @@
 import axios, {AxiosInstance, AxiosRequestConfig} from "axios";
-import {ApplicationWithRole, AurumError, ErrorCode, PublicKey, TokenPair, User} from "./Models";
+import {AurumError, ErrorCode, PublicKey, TokenPair, User} from "./Models";
 import {err, ok, Result, ResultAsync} from "neverthrow";
 import {Claims, verifyJwt} from "aurum-crypto";
 
@@ -53,7 +53,6 @@ export class Client {
 
         return ok(res.value)
     }
-
 
     // Login makes a request to log in a user. It returns either an error or null.
     // In the null case login was succesful and the Aurum client succesfully saved the token.
@@ -109,21 +108,6 @@ export class Client {
         try {
             const resp = await this.axios.post("/user", user, config)
             return ok(resp.data as User)
-        } catch (error) {
-            return err(error.response.data as AurumError)
-        }
-    }
-
-    async GetApplicationsForUser(tokenpair: TokenPair, user: User): Promise<Result<ApplicationWithRole[], AurumError>> {
-        const config: AxiosRequestConfig = {
-            headers: {
-                Authorization: "Bearer " + tokenpair.login_token
-            }
-        };
-
-        try {
-            const resp = await this.axios.get("/application/" + user.username, config)
-            return ok(resp.data as ApplicationWithRole[])
         } catch (error) {
             return err(error.response.data as AurumError)
         }
