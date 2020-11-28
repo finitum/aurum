@@ -1,6 +1,6 @@
 import {Client} from "./Client";
 import {LocalstorageAvailable} from "./LocalstorageAvailable";
-import {ApplicationWithRole, AurumError, ErrorCode, TokenPair, User} from "./Models";
+import {GroupWithRole, AurumError, ErrorCode, TokenPair, User} from "./Models";
 import {err, ok, Result} from "neverthrow";
 import {Claims} from "aurum-crypto/index";
 
@@ -122,7 +122,7 @@ export class SingleUserClient {
         }
     }
 
-    async GetApplicationsForUser(user?: User): Promise<Result<ApplicationWithRole[], AurumError>> {
+    async GetApplicationsForUser(user?: User): Promise<Result<GroupWithRole[], AurumError>> {
         let checkedUser: User;
 
         if (typeof user === "undefined") {

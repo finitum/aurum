@@ -70,15 +70,15 @@ func setup(ctx context.Context, db store.AurumStore) error {
 		return errors.Wrap(err, "create initial user")
 	}
 
-	if err := db.CreateApplication(ctx, models.Application{
+	if err := db.CreateGroup(ctx, models.Group{
 		Name: AurumName,
 		AllowRegistration: true,
 	}); err != nil {
-		return errors.Wrap(err, "create initial application")
+		return errors.Wrap(err, "create initial group")
 	}
 
-	if err := db.AddApplicationToUser(ctx, adminUsername, AurumName, models.RoleAdmin); err != nil {
-		return errors.Wrap(err, "add initial user to Aurum application")
+	if err := db.AddGroupToUser(ctx, adminUsername, AurumName, models.RoleAdmin); err != nil {
+		return errors.Wrap(err, "add initial user to Aurum group")
 	}
 
 	return nil
@@ -102,13 +102,13 @@ func (au Aurum) checkToken(token string) (*jwt.Claims, error) {
 	return claims, nil
 }
 
-func (au Aurum) checkTokenAndRole(ctx context.Context, token, app string) (models.Role, *jwt.Claims, error) {
+func (au Aurum) checkTokenAndRole(ctx context.Context, token, group string) (models.Role, *jwt.Claims, error) {
 	claims, err := au.checkToken(token)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	role, err := au.checkRole(ctx, claims, app)
+	role, err := au.checkRole(ctx, claims, group)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -116,9 +116,9 @@ func (au Aurum) checkTokenAndRole(ctx context.Context, token, app string) (model
 	return role, claims, nil
 }
 
-func (au Aurum) checkRole(ctx context.Context, claims *jwt.Claims, app string) (models.Role, error) {
-	app = strings.ToLower(app)
-	role, err := au.db.GetApplicationRole(ctx, app, claims.Username)
+func (au Aurum) checkRole(ctx context.Context, claims *jwt.Claims, group string) (models.Role, error) {
+	group = strings.ToLower(group)
+	role, err := au.db.GetGroupRole(ctx, group, claims.Username)
 	if err != nil {
 		return 0, err
 	}

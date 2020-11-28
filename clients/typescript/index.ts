@@ -1,5 +1,5 @@
 import {Client} from "./src/Client";
-import {AurumError, ErrorCode, Application, User, ApplicationWithRole, Role} from "./src/Models";
+import {AurumError, ErrorCode, Group, User, GroupWithRole, Role} from "./src/Models";
 import {SingleUserClient} from "./src/SingleUserClient"
 import {Claims} from "aurum-crypto";
 
@@ -12,8 +12,8 @@ export {
 
 export type {
     User,
-    Application,
+    Group,
     AurumError,
-    ApplicationWithRole,
+    GroupWithRole,
     Claims
 }

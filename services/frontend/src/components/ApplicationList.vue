@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive } from "vue";
-import { ApplicationWithRole } from "aurum-client";
+import { GroupWithRole } from "aurum-client";
 import { client } from "../client/client";
 import { CreateNotification } from "./modals/NotificationState";
 import Application from "./Application.vue";
@@ -19,7 +19,7 @@ export default defineComponent({
   name: "ApplicationList",
   components: { Application },
   async setup() {
-    const applications = reactive<ApplicationWithRole[]>([]);
+    const applications = reactive<GroupWithRole[]>([]);
 
     const apps = await client.GetApplicationsForUser();
     if (apps.isOk()) {

@@ -1,7 +1,7 @@
 package models
 
 type AccessStatus struct {
-	ApplicationName string
+	GroupName string
 	Username        string
 	AllowedAccess   bool
 	Role            Role

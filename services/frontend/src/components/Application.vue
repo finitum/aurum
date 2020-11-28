@@ -13,18 +13,18 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-import { ApplicationWithRole, Role } from "aurum-client";
+import { GroupWithRole, Role } from "aurum-client";
 
 export default defineComponent({
   name: "Application",
   props: {
     application: {
-      type: Object as PropType<ApplicationWithRole>,
+      type: Object as PropType<GroupWithRole>,
       required: true
     }
   },
   setup() {
-    function isAdmin(app: ApplicationWithRole): boolean {
+    function isAdmin(app: GroupWithRole): boolean {
       return app.role === Role.Admin;
     }
 

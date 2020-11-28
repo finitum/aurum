@@ -1,5 +1,5 @@
 import axios, {AxiosInstance, AxiosRequestConfig} from "axios";
-import {ApplicationWithRole, AurumError, ErrorCode, PublicKey, TokenPair, User} from "./Models";
+import {GroupWithRole, AurumError, ErrorCode, PublicKey, TokenPair, User} from "./Models";
 import {err, ok, Result, ResultAsync} from "neverthrow";
 import {Claims, verifyJwt} from "aurum-crypto";
 
@@ -114,7 +114,7 @@ export class Client {
         }
     }
 
-    async GetApplicationsForUser(tokenpair: TokenPair, user: User): Promise<Result<ApplicationWithRole[], AurumError>> {
+    async GetApplicationsForUser(tokenpair: TokenPair, user: User): Promise<Result<GroupWithRole[], AurumError>> {
         const config: AxiosRequestConfig = {
             headers: {
                 Authorization: "Bearer " + tokenpair.login_token
@@ -122,8 +122,8 @@ export class Client {
         };
 
         try {
-            const resp = await this.axios.get("/application/" + user.username, config)
-            return ok(resp.data as ApplicationWithRole[])
+            const resp = await this.axios.get("/user/" + user.username + "/groups", config)
+            return ok(resp.data as GroupWithRole[])
         } catch (error) {
             return err(error.response.data as AurumError)
         }

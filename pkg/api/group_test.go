@@ -11,9 +11,9 @@ import (
 	"testing"
 )
 
-func TestAddApplication(t *testing.T) {
-	app := models.Application{
-		Name:              "app",
+func TestAddGroup(t *testing.T) {
+	group := models.Group{
+		Name:              "group",
 		AllowRegistration: false,
 	}
 
@@ -23,28 +23,28 @@ func TestAddApplication(t *testing.T) {
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/application", r.URL.Path)
+		assert.Equal(t, "/group", r.URL.Path)
 		assert.Equal(t, http.MethodPost, r.Method)
 
 		token := r.Header.Get("Authorization")
 		assert.Equal(t, "Bearer "+tp.LoginToken, token)
 
-		var resp models.Application
+		var resp models.Group
 		err := json.NewDecoder(r.Body).Decode(&resp)
 		assert.NoError(t, err)
 
-		assert.Equal(t, app, resp)
+		assert.Equal(t, group, resp)
 
 		w.WriteHeader(http.StatusCreated)
 	}))
 	defer ts.Close()
 
-	err := AddApplication(ts.URL, &tp, &app)
+	err := AddGroup(ts.URL, &tp, &group)
 	assert.NoError(t, err)
 }
 
-func TestRemoveApplication(t *testing.T) {
-	app := "app"
+func TestRemoveGroup(t *testing.T) {
+	group := "group"
 
 	tp := jwt.TokenPair{
 		LoginToken:   "login",
@@ -52,7 +52,7 @@ func TestRemoveApplication(t *testing.T) {
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/application/"+app, r.URL.Path)
+		assert.Equal(t, "/group/"+group, r.URL.Path)
 		assert.Equal(t, http.MethodDelete, r.Method)
 
 		token := r.Header.Get("Authorization")
@@ -60,17 +60,17 @@ func TestRemoveApplication(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	err := RemoveApplication(ts.URL, &tp, app)
+	err := RemoveGroup(ts.URL, &tp, group)
 	assert.NoError(t, err)
 }
 
 func TestGetAccess(t *testing.T) {
 	user := "user"
-	app := "app"
-	url := fmt.Sprintf("/application/%s/%s", app, user)
+	group := "group"
+	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	access := models.AccessStatus{
-		ApplicationName: app,
+		GroupName: group,
 		Username:        user,
 		AllowedAccess:   true,
 		Role:            models.RoleAdmin,
@@ -85,7 +85,7 @@ func TestGetAccess(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	res, err := GetAccess(ts.URL, app, user)
+	res, err := GetAccess(ts.URL, group, user)
 	assert.NoError(t, err)
 
 	assert.Equal(t, access, res)
@@ -93,11 +93,11 @@ func TestGetAccess(t *testing.T) {
 
 func TestSetAccess(t *testing.T) {
 	user := "user"
-	app := "app"
-	url := fmt.Sprintf("/application/%s/%s", app, user)
+	group := "group"
+	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	access := models.AccessStatus{
-		ApplicationName: app,
+		GroupName: group,
 		Username:        user,
 		AllowedAccess:   true,
 		Role:            models.RoleAdmin,
@@ -127,10 +127,10 @@ func TestSetAccess(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAddUserToApplication(t *testing.T) {
+func TestAddUserToGroup(t *testing.T) {
 	user := "user"
-	app := "app"
-	url := fmt.Sprintf("/application/%s/%s", app, user)
+	group := "group"
+	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	tp := jwt.TokenPair{
 		LoginToken:   "login",
@@ -146,14 +146,14 @@ func TestAddUserToApplication(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	err := AddUserToApplication(ts.URL, &tp, user, app)
+	err := AddUserToGroup(ts.URL, &tp, user, group)
 	assert.NoError(t, err)
 }
 
-func TestRemoveUserFromApplication(t *testing.T) {
+func TestRemoveUserFromGroup(t *testing.T) {
 	user := "user"
-	app := "app"
-	url := fmt.Sprintf("/application/%s/%s", app, user)
+	group := "group"
+	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	tp := jwt.TokenPair{
 		LoginToken:   "login",
@@ -169,6 +169,6 @@ func TestRemoveUserFromApplication(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	err := RemoveUserFromApplication(ts.URL, &tp, user, app)
+	err := RemoveUserFromGroup(ts.URL, &tp, user, group)
 	assert.NoError(t, err)
 }
