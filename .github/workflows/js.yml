@@ -20,7 +20,7 @@ jobs:
     steps:
         # Setup Node
       - name: Setup Node.js environment
-        uses: actions/setup-node@v1.4.3
+        uses: actions/setup-node@v1.4.4
       # Checkout
       - uses: actions/checkout@v2
       - name: Install Dependencies
