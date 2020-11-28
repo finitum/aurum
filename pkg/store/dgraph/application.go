@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (dg DGraph) getApplication(ctx context.Context, txn *dgo.Txn, name string) (*Application, error) {
+func (dg DGraph) getGroup(ctx context.Context, txn *dgo.Txn, name string) (*Group, error) {
 	query := `
 		query q($aname: string) {
 		  q(func:eq(name, $aname)) {
@@ -28,7 +28,7 @@ func (dg DGraph) getApplication(ctx context.Context, txn *dgo.Txn, name string) 
 	}
 
 	var r struct {
-		Q []Application `json:"q"`
+		Q []Group `json:"q"`
 	}
 
 	err = json.Unmarshal(resp.Json, &r)
@@ -37,28 +37,28 @@ func (dg DGraph) getApplication(ctx context.Context, txn *dgo.Txn, name string) 
 	}
 
 	if len(r.Q) == 0 {
-		return nil, errors.Errorf("application %s wasn't found", name)
+		return nil, errors.Errorf("group %s wasn't found", name)
 	} else if len(r.Q) != 1 {
-		return nil, errors.Errorf("expected unique (one) application with name %s, but found %d", name, len(r.Q))
+		return nil, errors.Errorf("expected unique (one) group with name %s, but found %d", name, len(r.Q))
 	}
 
 	return &r.Q[0], nil
 }
 
-func (dg DGraph) GetApplication(ctx context.Context, name string) (*models.Application, error) {
+func (dg DGraph) GetGroup(ctx context.Context, name string) (*models.Group, error) {
 	txn := dg.NewReadOnlyTxn().BestEffort()
-	app, err := dg.getApplication(ctx, txn, name)
+	group, err := dg.getGroup(ctx, txn, name)
 	if err != nil {
 		return nil, err
 	}
 
-	return &app.Application, nil
+	return &group.Group, nil
 }
 
-func (dg DGraph) GetApplications(ctx context.Context) ([]models.Application, error) {
+func (dg DGraph) GetGroups(ctx context.Context) ([]models.Group, error) {
 	query := `
 		{
-			q(func: type(Application)) {
+			q(func: type(Group)) {
 				name
 				allow_registration
 			}
@@ -72,7 +72,7 @@ func (dg DGraph) GetApplications(ctx context.Context) ([]models.Application, err
 	}
 
 	var r struct {
-		Q []models.Application `json:"q"`
+		Q []models.Group `json:"q"`
 	}
 
 	err = json.Unmarshal(resp.Json, &r)
@@ -83,13 +83,13 @@ func (dg DGraph) GetApplications(ctx context.Context) ([]models.Application, err
 	return r.Q, nil
 }
 
-func (dg DGraph) CreateApplication(ctx context.Context, application models.Application) error {
+func (dg DGraph) CreateGroup(ctx context.Context, group models.Group) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
 
-	// query the database for the number of applications that exist with either the same application id
-	// or the same application name
+	// query the database for the number of groups that exist with either the same group id
+	// or the same group name
 	query := `
 		query q($aname: string) {
 		  q(func:eq(name, $aname)) {
@@ -98,7 +98,7 @@ func (dg DGraph) CreateApplication(ctx context.Context, application models.Appli
 		}`
 
 	variables := map[string]string{
-		"$aname": application.Name,
+		"$aname": group.Name,
 	}
 
 	resp, err := txn.QueryWithVars(ctx, query, variables)
@@ -117,15 +117,15 @@ func (dg DGraph) CreateApplication(ctx context.Context, application models.Appli
 		return errors.Wrap(err, "json unmarshal")
 	}
 
-	// If there exists 1 or more applications with this username, fail
+	// If there exists 1 or more groups with this username, fail
 	if len(r.Q) != 1 || r.Q[0].Count > 0 {
 		return store.ErrExists
 	}
 
-	// Add the new application to the database
-	dApplication := NewDGraphApplication(application)
+	// Add the new group to the database
+	dGroup := NewDGraphGroup(group)
 
-	js, err := json.Marshal(dApplication)
+	js, err := json.Marshal(dGroup)
 	if err != nil {
 		return err
 	}
@@ -140,15 +140,15 @@ func (dg DGraph) CreateApplication(ctx context.Context, application models.Appli
 	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) RemoveApplication(ctx context.Context, name string) error {
+func (dg DGraph) RemoveGroup(ctx context.Context, name string) error {
 	txn := dg.NewTxn()
 
-	app, err := dg.getApplication(ctx, txn, name)
+	group, err := dg.getGroup(ctx, txn, name)
 	if err != nil {
 		return errors.Wrap(err, "get user (internal)")
 	}
 
-	d := map[string]string{"uid": app.Uid}
+	d := map[string]string{"uid": group.Uid}
 	js, err := json.Marshal(d)
 	if err != nil {
 		return errors.Wrap(err, "json marshal")
@@ -164,12 +164,12 @@ func (dg DGraph) RemoveApplication(ctx context.Context, name string) error {
 	return errors.Wrap(err, "delete")
 }
 
-func (dg DGraph) GetApplicationsForUser(ctx context.Context, name string) ([]models.ApplicationWithRole, error) {
+func (dg DGraph) GetGroupsForUser(ctx context.Context, name string) ([]models.GroupWithRole, error) {
 	query := `
 query q($uname: string) {
   q(func: type(User)) @filter(eq(username, $uname)) {
 	username
-   	applications @facets(role) {
+   	groups @facets(role) {
       name
 	  allow_registration
   	} 
@@ -188,7 +188,7 @@ query q($uname: string) {
 	// TODO: explain dafuq is going on
 	var r struct {
 		Q []struct{
-			Applications []models.ApplicationWithRole `json:"applications"`
+			Groups []models.GroupWithRole `json:"groups"`
 		} `json:"q"`
 	}
 
@@ -197,10 +197,10 @@ query q($uname: string) {
 		return nil, errors.Wrap(err, "json unmarshal")
 	} else if len(r.Q) != 1 {
 		return nil, errors.Wrap(err, "how the hell did this happen???")
-	} else if len(r.Q[0].Applications) == 0 {
+	} else if len(r.Q[0].Groups) == 0 {
 		return nil, store.ErrNotExists
 	}
 
 
-	return r.Q[0].Applications, nil
+	return r.Q[0].Groups, nil
 }

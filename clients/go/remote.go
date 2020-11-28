@@ -1,7 +1,6 @@
 package aurum
 
 import (
-	"context"
 	"github.com/finitum/aurum/pkg/api"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
@@ -39,7 +38,7 @@ func NewRemoteClient(url string) (*RemoteClient, error) {
 	return &RemoteClient{url, pk}, nil
 }
 
-func (a *RemoteClient) Login(_ context.Context, username, password string) (*jwt.TokenPair, error) {
+func (a *RemoteClient) Login(username, password string) (*jwt.TokenPair, error) {
 	tp, err := api.Login(a.url, models.User{
 		Username: username,
 		Password: password,
@@ -51,7 +50,7 @@ func (a *RemoteClient) Login(_ context.Context, username, password string) (*jwt
 	return tp, nil
 }
 
-func (a *RemoteClient) Register(_ context.Context, username, password, email string) error {
+func (a *RemoteClient) Register(username, password, email string) error {
 	return errors.Wrap(api.SignUp(a.url, models.User{
 		Username: username,
 		Password: password,
@@ -59,7 +58,7 @@ func (a *RemoteClient) Register(_ context.Context, username, password, email str
 	}), "signup request failed")
 }
 
-func (a *RemoteClient) Verify(_ context.Context, token string) (*jwt.Claims, error) {
+func (a *RemoteClient) Verify(token string) (*jwt.Claims, error) {
 	return jwt.VerifyJWT(token, a.pk)
 }
 
@@ -67,42 +66,50 @@ func (a *RemoteClient) refresh(tp *jwt.TokenPair) error {
 	return errors.Wrap(api.Refresh(a.url, tp), "refresh client request failed")
 }
 
-func (a *RemoteClient) GetUserInfo(_ context.Context, tp *jwt.TokenPair) (*models.User, error) {
+func (a *RemoteClient) GetUserInfo(tp *jwt.TokenPair) (*models.User, error) {
 	user, err := api.GetUser(a.url, tp)
 	return user, errors.Wrap(err, "get user client request failed")
 }
 
-func (a *RemoteClient) UpdateUser(_ context.Context, tp *jwt.TokenPair, user *models.User) (*models.User, error) {
+func (a *RemoteClient) UpdateUser(tp *jwt.TokenPair, user *models.User) (*models.User, error) {
 	user, err := api.UpdateUser(a.url, tp, user)
 	return user, errors.Wrap(err, "update user api request failed")
 }
 
-func (a *RemoteClient) AddApplication(_ context.Context, tp *jwt.TokenPair, app *models.Application) error {
-	err := api.AddApplication(a.url, tp, app)
-	return errors.Wrap(err, "add application api request failed")
+func (a *RemoteClient) AddGroup(tp *jwt.TokenPair, group *models.Group) error {
+	err := api.AddGroup(a.url, tp, group)
+	return errors.Wrap(err, "add group api request failed")
 }
 
-func (a *RemoteClient) RemoveApplication(_ context.Context, tp *jwt.TokenPair, app string) error {
-	err := api.RemoveApplication(a.url, tp, app)
-	return errors.Wrap(err, "remove application api request failed")
+func (a *RemoteClient) RemoveGroup(tp *jwt.TokenPair, group string) error {
+	err := api.RemoveGroup(a.url, tp, group)
+	return errors.Wrap(err, "remove group api request failed")
 }
 
-func (a *RemoteClient) GetAccess(_ context.Context, app, user string) (models.AccessStatus, error) {
-	access, err := api.GetAccess(a.url, app, user)
+func (a *RemoteClient) GetAccess(group, user string) (models.AccessStatus, error) {
+	access, err := api.GetAccess(a.url, group, user)
 	return access, errors.Wrap(err, "GetAccess api request failed")
 }
 
-func (a *RemoteClient) SetAccess(_ context.Context, tp *jwt.TokenPair, access models.AccessStatus) error {
+func (a *RemoteClient) SetAccess(tp *jwt.TokenPair, access models.AccessStatus) error {
 	err := api.SetAccess(a.url, tp, access)
 	return errors.Wrap(err, "SetAccess api request failed")
 }
 
-func (a *RemoteClient) AddUserToApplication(_ context.Context, tp *jwt.TokenPair, user, app string) error {
-	err := api.AddUserToApplication(a.url, tp, user, app)
-	return errors.Wrap(err, "AddUserToApplication api request failed")
+func (a *RemoteClient) AddUserToGroup(tp *jwt.TokenPair, user, group string) error {
+	err := api.AddUserToGroup(a.url, tp, user, group)
+	return errors.Wrap(err, "AddUserToGroup api request failed")
 }
 
-func (a *RemoteClient) RemoveUserFromApplication(_ context.Context, tp *jwt.TokenPair, user, app string) error {
-	err := api.RemoveUserFromApplication(a.url, tp, user, app)
-	return errors.Wrap(err, "RemoveUserFromApplication api request failed")
+func (a *RemoteClient) RemoveUserFromGroup(tp *jwt.TokenPair, user, group string) error {
+	err := api.RemoveUserFromGroup(a.url, tp, user, group)
+	return errors.Wrap(err, "RemoveUserFromGroup api request failed")
+}
+
+func (a* RemoteClient) GetGroupsForUser(tp *jwt.TokenPair, user string) ([]models.GroupWithRole, error) {
+	groups, err := api.GetGroupsForUser(a.url, tp, user)
+	if err != nil {
+		return nil, errors.Wrap(err, "GetGroupsForUser api request failed")
+	}
+	return groups, nil
 }

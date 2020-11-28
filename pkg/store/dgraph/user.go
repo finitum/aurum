@@ -46,12 +46,12 @@ query q($uname: string) {
 	return r.Q[0], nil
 }
 
-func (dg DGraph) getUserWithApplications(ctx context.Context, txn *dgo.Txn, user string, name string) (User, error) {
+func (dg DGraph) getUserWithGroups(ctx context.Context, txn *dgo.Txn, user string, name string) (User, error) {
 	query := `
 query q($uname: string, $aname: string) {
 	User(func:eq(username, $uname)) {
 		uid
-		applications @facets @filter(eq(name, $aname)) {
+		groups @facets @filter(eq(name, $aname)) {
 			uid
 		}
 	}
@@ -74,7 +74,7 @@ query q($uname: string, $aname: string) {
 		return User{}, errors.Wrap(err, "json unmarshal")
 	}
 
-	if len(r.User) != 1 || len(r.User[0].Applications) != 1 {
+	if len(r.User) != 1 || len(r.User[0].Groups) != 1 {
 		return User{}, store.ErrNotExists
 	}
 
@@ -232,18 +232,18 @@ func (dg DGraph) RemoveUser(ctx context.Context, username string) error {
 	return errors.Wrap(err, "delete")
 }
 
-func (dg DGraph) GetApplicationRole(ctx context.Context, app string, user string) (models.Role, error) {
+func (dg DGraph) GetGroupRole(ctx context.Context, group string, user string) (models.Role, error) {
 	txn := dg.NewReadOnlyTxn().BestEffort()
 
-	u, err := dg.getUserWithApplications(ctx, txn, user, app)
+	u, err := dg.getUserWithGroups(ctx, txn, user, group)
 	if err != nil {
 		return 0, err
 	}
 
-	return u.Applications[0].Role, nil
+	return u.Groups[0].Role, nil
 }
 
-func (dg DGraph) AddApplicationToUser(ctx context.Context, user string, name string, role models.Role) error {
+func (dg DGraph) AddGroupToUser(ctx context.Context, user string, name string, role models.Role) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
@@ -254,14 +254,14 @@ query q($uname: string, $aname: string) {
     uid
   }
 
-  App(func:eq(name, $aname)) {
+  Group(func:eq(name, $aname)) {
   	uid
   }
 }
 `
 	var r struct {
 		User []User
-		App  []Application
+		Group  []Group
 	}
 
 	vars := map[string]string{
@@ -278,12 +278,12 @@ query q($uname: string, $aname: string) {
 		return err
 	}
 
-	if len(r.User) != 1 || len(r.App) != 1 {
-		return errors.New("Couldn't find user or application")
+	if len(r.User) != 1 || len(r.Group) != 1 {
+		return errors.New("Couldn't find user or group")
 	}
 
-	r.App[0].Role = role
-	r.User[0].Applications = []Application{r.App[0]}
+	r.Group[0].Role = role
+	r.User[0].Groups = []Group{r.Group[0]}
 
 	js, err := json.Marshal(&r.User[0])
 	if err != nil {
@@ -302,16 +302,16 @@ query q($uname: string, $aname: string) {
 	return nil
 }
 
-func (dg DGraph) SetApplicationRole(ctx context.Context, app string, user string, role models.Role) error {
-	return dg.AddApplicationToUser(ctx, app, app, role)
+func (dg DGraph) SetGroupRole(ctx context.Context, group string, user string, role models.Role) error {
+	return dg.AddGroupToUser(ctx, group, user, role)
 }
 
-func (dg DGraph) RemoveApplicationFromUser(ctx context.Context, app string, user string) error {
+func (dg DGraph) RemoveGroupFromUser(ctx context.Context, group string, user string) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
 
-	u, err := dg.getUserWithApplications(ctx, txn, user, app)
+	u, err := dg.getUserWithGroups(ctx, txn, user, group)
 
 	js, err := json.Marshal(&u)
 	if err != nil {

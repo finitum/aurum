@@ -12,22 +12,22 @@ var ErrNotExists = errors.New("doesn't exist")
 //go:generate mockgen -destination mock_store/mock_store.go . AurumStore
 
 type AurumStore interface {
-	// CreateApplication creates a new application in the database.
-	// Application names and ids must be unique.
-	CreateApplication(ctx context.Context, app models.Application) error
+	// CreateGroup creates a new group in the database.
+	// Group names and ids must be unique.
+	CreateGroup(ctx context.Context, group models.Group) error
 
-	// RemoveApplication removes an application from the database based
+	// RemoveGroup removes an group from the database based
 	// on it's name.
-	RemoveApplication(ctx context.Context, name string) error
+	RemoveGroup(ctx context.Context, name string) error
 
-	// GetApplication retrieves an application based on it name.
-	GetApplication(ctx context.Context, name string) (*models.Application, error)
+	// GetGroup retrieves an group based on it name.
+	GetGroup(ctx context.Context, name string) (*models.Group, error)
 
-	// GetApplications lists all applications.
-	GetApplications(ctx context.Context) ([]models.Application, error)
+	// GetGroups lists all groups.
+	GetGroups(ctx context.Context) ([]models.Group, error)
 
-	// GetApplicationsForUser lists all applications a user has a specified role in.
-	GetApplicationsForUser(ctx context.Context, name string) ([]models.ApplicationWithRole, error)
+	// GetGroupsForUser lists all groups a user has a specified role in.
+	GetGroupsForUser(ctx context.Context, name string) ([]models.GroupWithRole, error)
 
 	// CreateUser creates a new user in the database.
 	// User names and ids must be unique
@@ -47,18 +47,18 @@ type AurumStore interface {
 	// User names and ids must be the same
 	SetUser(ctx context.Context, user models.User) (models.User, error)
 
-	// AddUserToApplication links a user to an application with a given role.
-	// This role is the role the user has within this application.
-	AddApplicationToUser(ctx context.Context, user string, name string, role models.Role) error
+	// AddUserToGroup links a user to an group with a given role.
+	// This role is the role the user has within this group.
+	AddGroupToUser(ctx context.Context, user string, name string, role models.Role) error
 
-	// RemoveUserFromApplication removes the link between a user and an application.
-	RemoveApplicationFromUser(ctx context.Context, app string, user string) error
+	// RemoveUserFromGroup removes the link between a user and an group.
+	RemoveGroupFromUser(ctx context.Context, group string, user string) error
 
-	// GetApplicationRole retrieves the role a user has within an application
-	GetApplicationRole(ctx context.Context, app string, user string) (models.Role, error)
+	// GetGroupRole retrieves the role a user has within an group
+	GetGroupRole(ctx context.Context, group string, user string) (models.Role, error)
 
-	// SetApplicationRole changes the role of a user within an application.
-	SetApplicationRole(ctx context.Context, app string, user string, role models.Role) error
+	// SetGroupRole changes the role of a user within an group.
+	SetGroupRole(ctx context.Context, group string, user string, role models.Role) error
 
 	// CountUsers counts the number of users currently in the database
 	CountUsers(ctx context.Context) (int, error)

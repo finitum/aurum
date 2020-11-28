@@ -30,10 +30,10 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 				username
 				password
 				email
-				applications
+				groups
 			}
 
-			type Application {
+			type Group {
 				name
 				allow_registration
 			}
@@ -41,7 +41,7 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 			username: string @index(hash) .
 			password: string .
 			email: string .
-			applications: [uid] .
+			groups: [uid] .
 
 			name: string @index(hash) .
 			allow_registration: bool .

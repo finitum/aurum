@@ -48,23 +48,22 @@ func main() {
 	r.Post("/login", rs.Login)
 	r.Post("/refresh", rs.Refresh)
 
-	r.Get("/application/{app}/{user}", rs.GetAccess)
+	r.Get("/group/{group}/{user}", rs.GetAccess)
 
 	r.Group(func(r chi.Router) {
 		r.Use(rs.TokenExtractionMiddleware)
 
 		r.Get("/user", rs.GetMe)
 		r.Post("/user", rs.SetUser)
+		r.Get("/user/{user}/groups", rs.GetGroupsForUser)
 
-		// Application
-		r.Post("/application", rs.AddApplication)
-		r.Delete("/application", rs.RemoveApplication)
+		// Group
+		r.Post("/group", rs.AddGroup)
+		r.Delete("/group", rs.RemoveGroup)
 
-		r.Get("/application/{user}", rs.GetApplicationsForUser)
-
-		r.Put("/application/{app}/{user}", rs.SetAccess)
-		r.Post("/application/{app}/{user}", rs.AddUserToApplication)
-		r.Delete("/application/{app}/{user}", rs.RemoveUserFromApplication)
+		r.Put("/group/{group}/{user}", rs.SetAccess)
+		r.Post("/group/{group}/{user}", rs.AddUserToGroup)
+		r.Delete("/group/{group}/{user}", rs.RemoveUserFromGroup)
 	})
 
 	srv := http.Server{

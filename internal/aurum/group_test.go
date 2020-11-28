@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestAurum_AddApplication(t *testing.T) {
+func TestAurum_AddGroup(t *testing.T) {
 	ctx := context.Background()
 	ctrl, ctx := gomock.WithContext(ctx, t)
 	defer ctrl.Finish()
@@ -21,13 +21,13 @@ func TestAurum_AddApplication(t *testing.T) {
 
 	ms := mock_store.NewMockAurumStore(ctrl)
 
-	app := models.Application{
+	group := models.Group{
 		Name:              "NotAurum",
 		AllowRegistration: true,
 	}
 
-	appL := app
-	appL.Name = strings.ToLower(app.Name)
+	groupL := group
+	groupL.Name = strings.ToLower(group.Name)
 
 	au := Aurum{db: ms, sk: cfg.SecretKey, pk: cfg.PublicKey}
 
@@ -35,15 +35,15 @@ func TestAurum_AddApplication(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Expect
-	ms.EXPECT().GetApplicationRole(gomock.Any(), strings.ToLower(AurumName), "bob").Return(models.RoleAdmin, nil)
-	ms.EXPECT().CreateApplication(gomock.Any(), appL)
+	ms.EXPECT().GetGroupRole(gomock.Any(), strings.ToLower(AurumName), "bob").Return(models.RoleAdmin, nil)
+	ms.EXPECT().CreateGroup(gomock.Any(), groupL)
 
 	// SUT
-	err = au.AddApplication(ctx, token, app)
+	err = au.AddGroup(ctx, token, group)
 	assert.NoError(t, err)
 }
 
-func TestAurum_RemoveApplication(t *testing.T) {
+func TestAurum_RemoveGroup(t *testing.T) {
 	ctx := context.Background()
 	ctrl, ctx := gomock.WithContext(ctx, t)
 	defer ctrl.Finish()
@@ -52,13 +52,13 @@ func TestAurum_RemoveApplication(t *testing.T) {
 
 	ms := mock_store.NewMockAurumStore(ctrl)
 
-	app := models.Application{
+	group := models.Group{
 		Name:              "NotAurum",
 		AllowRegistration: true,
 	}
 
-	appL := app
-	appL.Name = strings.ToLower(app.Name)
+	groupL := group
+	groupL.Name = strings.ToLower(group.Name)
 
 	au := Aurum{db: ms, sk: cfg.SecretKey, pk: cfg.PublicKey}
 
@@ -66,15 +66,15 @@ func TestAurum_RemoveApplication(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Expect
-	ms.EXPECT().GetApplicationRole(gomock.Any(), appL.Name, "bob").Return(models.RoleAdmin, nil)
-	ms.EXPECT().RemoveApplication(gomock.Any(), appL.Name)
+	ms.EXPECT().GetGroupRole(gomock.Any(), groupL.Name, "bob").Return(models.RoleAdmin, nil)
+	ms.EXPECT().RemoveGroup(gomock.Any(), groupL.Name)
 
 	// SUT
-	err = au.RemoveApplication(ctx, token, appL.Name)
+	err = au.RemoveGroup(ctx, token, groupL.Name)
 	assert.NoError(t, err)
 }
 
-func testAddToApplicationHelper(t *testing.T, registration bool) {
+func testAddToGroupHelper(t *testing.T, registration bool) {
 	ctx := context.Background()
 	ctrl, ctx := gomock.WithContext(ctx, t)
 	defer ctrl.Finish()
@@ -83,15 +83,15 @@ func testAddToApplicationHelper(t *testing.T, registration bool) {
 
 	ms := mock_store.NewMockAurumStore(ctrl)
 
-	app := models.Application{
+	group := models.Group{
 		Name:              "NotAurum",
 		AllowRegistration: registration,
 	}
 
 	const username = "bob"
 
-	appL := app
-	appL.Name = strings.ToLower(app.Name)
+	groupL := group
+	groupL.Name = strings.ToLower(group.Name)
 
 	au := Aurum{db: ms, sk: cfg.SecretKey, pk: cfg.PublicKey}
 
@@ -99,22 +99,22 @@ func testAddToApplicationHelper(t *testing.T, registration bool) {
 	assert.NoError(t, err)
 
 	// Expect
-	ms.EXPECT().GetApplication(gomock.Any(), appL.Name).Return(&appL, nil)
+	ms.EXPECT().GetGroup(gomock.Any(), groupL.Name).Return(&groupL, nil)
 	if !registration {
-		ms.EXPECT().GetApplicationRole(gomock.Any(), appL.Name, username).Return(models.RoleAdmin, nil)
-		ms.EXPECT().AddApplicationToUser(gomock.Any(), username, appL.Name, models.RoleAdmin)
+		ms.EXPECT().GetGroupRole(gomock.Any(), groupL.Name, username).Return(models.RoleAdmin, nil)
+		ms.EXPECT().AddGroupToUser(gomock.Any(), username, groupL.Name, models.RoleAdmin)
 	} else {
-		ms.EXPECT().AddApplicationToUser(gomock.Any(), username, appL.Name, models.RoleUser)
+		ms.EXPECT().AddGroupToUser(gomock.Any(), username, groupL.Name, models.RoleUser)
 	}
 
 	// SUT
-	err = au.AddUserToApplication(ctx, token, username, appL.Name, models.RoleAdmin)
+	err = au.AddUserToGroup(ctx, token, username, groupL.Name, models.RoleAdmin)
 	assert.NoError(t, err)
 }
 
-func TestAurum_AddUserToApplication(t *testing.T) {
-	testAddToApplicationHelper(t, true)
-	testAddToApplicationHelper(t, false)
+func TestAurum_AddUserToGroup(t *testing.T) {
+	testAddToGroupHelper(t, true)
+	testAddToGroupHelper(t, false)
 }
 
 func TestAurum_GetAccess(t *testing.T) {
@@ -126,22 +126,22 @@ func TestAurum_GetAccess(t *testing.T) {
 
 	const username = "bob"
 
-	const app = "AnApp"
-	appL := strings.ToLower(app)
+	const group = "Angroup"
+	groupL := strings.ToLower(group)
 
 	// Expect
-	ms.EXPECT().GetApplicationRole(gomock.Any(), appL, username).Return(models.RoleAdmin, nil)
+	ms.EXPECT().GetGroupRole(gomock.Any(), groupL, username).Return(models.RoleAdmin, nil)
 
 	// SUT
 	au := Aurum{db: ms}
-	resp, err := au.GetAccess(ctx, username, app)
+	resp, err := au.GetAccess(ctx, username, group)
 	assert.NoError(t, err)
 
 	assert.Equal(t, models.AccessStatus{
-		ApplicationName: appL,
-		Username:        username,
-		AllowedAccess:   true,
-		Role:            models.RoleAdmin,
+		GroupName:     groupL,
+		Username:      username,
+		AllowedAccess: true,
+		Role:          models.RoleAdmin,
 	}, resp)
 }
 
@@ -157,8 +157,8 @@ func TestAurum_SetAccess(t *testing.T) {
 	const username = "bob"
 	const target = "wooloo"
 
-	const app = "AnApp"
-	appL := strings.ToLower(app)
+	const group = "Angroup"
+	groupL := strings.ToLower(group)
 
 	au := Aurum{db: ms, sk: cfg.SecretKey, pk: cfg.PublicKey}
 
@@ -166,15 +166,15 @@ func TestAurum_SetAccess(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Expect
-	ms.EXPECT().GetApplicationRole(gomock.Any(), appL, username).Return(models.RoleAdmin, nil)
-	ms.EXPECT().SetApplicationRole(gomock.Any(), appL, target, models.RoleUser)
+	ms.EXPECT().GetGroupRole(gomock.Any(), groupL, username).Return(models.RoleAdmin, nil)
+	ms.EXPECT().SetGroupRole(gomock.Any(), groupL, target, models.RoleUser)
 
 	// SUT
-	err = au.SetAccess(ctx, token, app, target, models.RoleUser)
+	err = au.SetAccess(ctx, token, group, target, models.RoleUser)
 	assert.NoError(t, err)
 }
 
-func TestAurum_RemoveUserFromApplication(t *testing.T) {
+func TestAurum_RemoveUserFromGroup(t *testing.T) {
 	ctx := context.Background()
 	ctrl, ctx := gomock.WithContext(ctx, t)
 	defer ctrl.Finish()
@@ -186,8 +186,8 @@ func TestAurum_RemoveUserFromApplication(t *testing.T) {
 	const username = "bob"
 	const target = "wooloo"
 
-	const app = "AnApp"
-	appL := strings.ToLower(app)
+	const group = "Angroup"
+	groupL := strings.ToLower(group)
 
 	au := Aurum{db: ms, sk: cfg.SecretKey, pk: cfg.PublicKey}
 
@@ -195,11 +195,11 @@ func TestAurum_RemoveUserFromApplication(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Expect
-	ms.EXPECT().GetApplicationRole(gomock.Any(), appL, username).Return(models.RoleAdmin, nil)
-	ms.EXPECT().RemoveApplicationFromUser(gomock.Any(), appL, target)
+	ms.EXPECT().GetGroupRole(gomock.Any(), groupL, username).Return(models.RoleAdmin, nil)
+	ms.EXPECT().RemoveGroupFromUser(gomock.Any(), groupL, target)
 
 	// SUT
-	err = au.RemoveUserFromApplication(ctx, token, target, app)
+	err = au.RemoveUserFromGroup(ctx, token, target, group)
 	assert.NoError(t, err)
 
 }
