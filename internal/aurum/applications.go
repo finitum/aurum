@@ -124,3 +124,26 @@ func (au Aurum) RemoveUserFromApplication(ctx context.Context, token, target, ap
 
 	return au.db.RemoveApplicationFromUser(ctx, app, target)
 }
+
+
+func (au Aurum) GetApplicationsForUser(ctx context.Context, token, user string) ([]models.ApplicationWithRole, error) {
+	claims, err := au.checkToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	if user != claims.Username {
+		role, err := au.checkRole(ctx, claims, AurumName)
+		if err != nil {
+			return nil, err
+		}
+
+		if role < models.RoleAdmin {
+			// Only admins may see applications for other users
+			return nil, ErrUnauthorized
+		}
+	}
+
+	return au.db.GetApplicationsForUser(ctx, user)
+}
+

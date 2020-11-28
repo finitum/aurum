@@ -136,6 +136,21 @@ func (mr *MockAurumStoreMockRecorder) GetApplications(arg0 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplications", reflect.TypeOf((*MockAurumStore)(nil).GetApplications), arg0)
 }
 
+// GetApplicationsForUser mocks base method
+func (m *MockAurumStore) GetApplicationsForUser(arg0 context.Context, arg1 string) ([]models.ApplicationWithRole, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApplicationsForUser", arg0, arg1)
+	ret0, _ := ret[0].([]models.ApplicationWithRole)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplicationsForUser indicates an expected call of GetApplicationsForUser
+func (mr *MockAurumStoreMockRecorder) GetApplicationsForUser(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationsForUser", reflect.TypeOf((*MockAurumStore)(nil).GetApplicationsForUser), arg0, arg1)
+}
+
 // GetUser mocks base method
 func (m *MockAurumStore) GetUser(arg0 context.Context, arg1 string) (models.User, error) {
 	m.ctrl.T.Helper()

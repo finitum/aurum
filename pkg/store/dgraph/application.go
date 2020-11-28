@@ -163,3 +163,44 @@ func (dg DGraph) RemoveApplication(ctx context.Context, name string) error {
 
 	return errors.Wrap(err, "delete")
 }
+
+func (dg DGraph) GetApplicationsForUser(ctx context.Context, name string) ([]models.ApplicationWithRole, error) {
+	query := `
+query q($uname: string) {
+  q(func: type(User)) @filter(eq(username, $uname)) {
+	username
+   	applications @facets(role) {
+      name
+	  allow_registration
+  	} 
+  }
+}`
+
+	variables := map[string]string{
+		"$uname": name,
+	}
+	txn := dg.NewReadOnlyTxn().BestEffort()
+	resp, err := txn.QueryWithVars(ctx, query, variables)
+	if err != nil {
+		return nil, errors.Wrap(err, "query")
+	}
+
+	// TODO: explain dafuq is going on
+	var r struct {
+		Q []struct{
+			Applications []models.ApplicationWithRole `json:"applications"`
+		} `json:"q"`
+	}
+
+	err = json.Unmarshal(resp.Json, &r)
+	if err != nil {
+		return nil, errors.Wrap(err, "json unmarshal")
+	} else if len(r.Q) != 1 {
+		return nil, errors.Wrap(err, "how the hell did this happen???")
+	} else if len(r.Q[0].Applications) == 0 {
+		return nil, store.ErrNotExists
+	}
+
+
+	return r.Q[0].Applications, nil
+}

@@ -17,3 +17,8 @@ const (
 	RoleUser Role = iota + 1
 	RoleAdmin
 )
+
+type ApplicationWithRole struct {
+	Application
+	Role Role `json:"role,omitempty"`
+}
