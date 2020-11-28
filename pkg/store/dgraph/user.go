@@ -68,6 +68,7 @@ query q($uname: string, $aname: string) {
 		User []User
 	}
 
+
 	err = json.Unmarshal(resp.Json, &r)
 	if err != nil {
 		return User{}, errors.Wrap(err, "json unmarshal")
@@ -81,7 +82,7 @@ query q($uname: string, $aname: string) {
 }
 
 func (dg DGraph) GetUser(ctx context.Context, name string) (models.User, error) {
-	txn := dg.NewReadOnlyTxn().BestEffort()
+	txn := dg.NewReadOnlyTxn()
 
 	user, err := dg.getUser(ctx, txn, name)
 	if err != nil {

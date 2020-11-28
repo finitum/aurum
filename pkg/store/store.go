@@ -26,6 +26,9 @@ type AurumStore interface {
 	// GetApplications lists all applications.
 	GetApplications(ctx context.Context) ([]models.Application, error)
 
+	// GetApplicationsForUser lists all applications a user has a specified role in.
+	GetApplicationsForUser(ctx context.Context, name string) ([]models.ApplicationWithRole, error)
+
 	// CreateUser creates a new user in the database.
 	// User names and ids must be unique
 	CreateUser(ctx context.Context, user models.User) error

@@ -12,9 +12,6 @@ const (
 	ed25519SecretKeyPemHeader = "ED25519 PRIVATE KEY"
 )
 
-type PublicKey ed25519.PublicKey
-type SecretKey ed25519.PrivateKey
-
 type Key interface {
 	// Converts a key to a Pem string
 	ToPem() (string, error)

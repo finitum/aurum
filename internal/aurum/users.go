@@ -95,16 +95,18 @@ func (au Aurum) UpdateUser(ctx context.Context, token string, user models.User) 
 
 	user.Username = claims.Username
 
-	if !passwords.CheckStrength(user.Password, []string{user.Username, user.Email}) {
-		return models.User{}, ErrWeakPassword
-	}
+	if user.Password != "" {
+		if !passwords.CheckStrength(user.Password, []string{user.Username, user.Email}) {
+			return models.User{}, ErrWeakPassword
+		}
 
-	hashed, err := hash.HashPassword(user.Password)
-	if err != nil {
-		return models.User{}, err
-	}
+		hashed, err := hash.HashPassword(user.Password)
+		if err != nil {
+			return models.User{}, err
+		}
 
-	user.Password = hashed
+		user.Password = hashed
+	}
 
 	user, err = au.db.SetUser(ctx, user)
 	if err != nil {
