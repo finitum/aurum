@@ -14,7 +14,6 @@ import (
 	"github.com/finitum/aurum/pkg/store"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
 var ErrInvalidInput = errors.New("password is too weak")
@@ -22,7 +21,6 @@ var ErrWeakPassword = errors.New("password is too weak")
 var ErrUnauthorized = errors.New("unauthorized")
 
 const adminUsername = "admin"
-const AurumName = "aurum"
 
 type Aurum struct {
 	db store.AurumStore
@@ -70,17 +68,6 @@ func setup(ctx context.Context, db store.AurumStore) error {
 		return errors.Wrap(err, "create initial user")
 	}
 
-	if err := db.CreateApplication(ctx, models.Application{
-		Name: AurumName,
-		AllowRegistration: true,
-	}); err != nil {
-		return errors.Wrap(err, "create initial application")
-	}
-
-	if err := db.AddApplicationToUser(ctx, adminUsername, AurumName, models.RoleAdmin); err != nil {
-		return errors.Wrap(err, "add initial user to Aurum application")
-	}
-
 	return nil
 }
 
@@ -100,28 +87,4 @@ func (au Aurum) checkToken(token string) (*jwt.Claims, error) {
 	}
 
 	return claims, nil
-}
-
-func (au Aurum) checkTokenAndRole(ctx context.Context, token, app string) (models.Role, *jwt.Claims, error) {
-	claims, err := au.checkToken(token)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	role, err := au.checkRole(ctx, claims, app)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	return role, claims, nil
-}
-
-func (au Aurum) checkRole(ctx context.Context, claims *jwt.Claims, app string) (models.Role, error) {
-	app = strings.ToLower(app)
-	role, err := au.db.GetApplicationRole(ctx, app, claims.Username)
-	if err != nil {
-		return 0, err
-	}
-
-	return role, nil
 }

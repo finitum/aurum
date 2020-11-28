@@ -76,33 +76,3 @@ func (a *RemoteClient) UpdateUser(_ context.Context, tp *jwt.TokenPair, user *mo
 	user, err := api.UpdateUser(a.url, tp, user)
 	return user, errors.Wrap(err, "update user api request failed")
 }
-
-func (a *RemoteClient) AddApplication(_ context.Context, tp *jwt.TokenPair, app *models.Application) error {
-	err := api.AddApplication(a.url, tp, app)
-	return errors.Wrap(err, "add application api request failed")
-}
-
-func (a *RemoteClient) RemoveApplication(_ context.Context, tp *jwt.TokenPair, app string) error {
-	err := api.RemoveApplication(a.url, tp, app)
-	return errors.Wrap(err, "remove application api request failed")
-}
-
-func (a *RemoteClient) GetAccess(_ context.Context, app, user string) (models.AccessStatus, error) {
-	access, err := api.GetAccess(a.url, app, user)
-	return access, errors.Wrap(err, "GetAccess api request failed")
-}
-
-func (a *RemoteClient) SetAccess(_ context.Context, tp *jwt.TokenPair, access models.AccessStatus) error {
-	err := api.SetAccess(a.url, tp, access)
-	return errors.Wrap(err, "SetAccess api request failed")
-}
-
-func (a *RemoteClient) AddUserToApplication(_ context.Context, tp *jwt.TokenPair, user, app string) error {
-	err := api.AddUserToApplication(a.url, tp, user, app)
-	return errors.Wrap(err, "AddUserToApplication api request failed")
-}
-
-func (a *RemoteClient) RemoveUserFromApplication(_ context.Context, tp *jwt.TokenPair, user, app string) error {
-	err := api.RemoveUserFromApplication(a.url, tp, user, app)
-	return errors.Wrap(err, "RemoveUserFromApplication api request failed")
-}

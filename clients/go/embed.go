@@ -55,27 +55,3 @@ func (e *EmbeddedClient) GetUserInfo(ctx context.Context, tp *jwt.TokenPair) (*m
 func (e *EmbeddedClient) UpdateUser(ctx context.Context, tp *jwt.TokenPair, user *models.User) (*models.User, error) {
 	panic("implement me")
 }
-
-func (e *EmbeddedClient) AddApplication(ctx context.Context, tp *jwt.TokenPair, app *models.Application) error {
-	panic("implement me")
-}
-
-func (e *EmbeddedClient) RemoveApplication(ctx context.Context, tp *jwt.TokenPair, app string) error {
-	panic("implement me")
-}
-
-func (e *EmbeddedClient) GetAccess(ctx context.Context, app, user string) (models.AccessStatus, error) {
-	panic("implement me")
-}
-
-func (e *EmbeddedClient) SetAccess(ctx context.Context, tp *jwt.TokenPair, access models.AccessStatus) error {
-	panic("implement me")
-}
-
-func (e *EmbeddedClient) AddUserToApplication(ctx context.Context, tp *jwt.TokenPair, user, app string) error {
-	panic("implement me")
-}
-
-func (e *EmbeddedClient) RemoveUserFromApplication(ctx context.Context, tp *jwt.TokenPair, user, app string) error {
-	panic("implement me")
-}

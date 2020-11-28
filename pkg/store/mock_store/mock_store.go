@@ -34,20 +34,6 @@ func (m *MockAurumStore) EXPECT() *MockAurumStoreMockRecorder {
 	return m.recorder
 }
 
-// AddApplicationToUser mocks base method
-func (m *MockAurumStore) AddApplicationToUser(arg0 context.Context, arg1, arg2 string, arg3 models.Role) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddApplicationToUser", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddApplicationToUser indicates an expected call of AddApplicationToUser
-func (mr *MockAurumStoreMockRecorder) AddApplicationToUser(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddApplicationToUser", reflect.TypeOf((*MockAurumStore)(nil).AddApplicationToUser), arg0, arg1, arg2, arg3)
-}
-
 // CountUsers mocks base method
 func (m *MockAurumStore) CountUsers(arg0 context.Context) (int, error) {
 	m.ctrl.T.Helper()
@@ -63,20 +49,6 @@ func (mr *MockAurumStoreMockRecorder) CountUsers(arg0 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountUsers", reflect.TypeOf((*MockAurumStore)(nil).CountUsers), arg0)
 }
 
-// CreateApplication mocks base method
-func (m *MockAurumStore) CreateApplication(arg0 context.Context, arg1 models.Application) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateApplication", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateApplication indicates an expected call of CreateApplication
-func (mr *MockAurumStoreMockRecorder) CreateApplication(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockAurumStore)(nil).CreateApplication), arg0, arg1)
-}
-
 // CreateUser mocks base method
 func (m *MockAurumStore) CreateUser(arg0 context.Context, arg1 models.User) error {
 	m.ctrl.T.Helper()
@@ -89,66 +61,6 @@ func (m *MockAurumStore) CreateUser(arg0 context.Context, arg1 models.User) erro
 func (mr *MockAurumStoreMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockAurumStore)(nil).CreateUser), arg0, arg1)
-}
-
-// GetApplication mocks base method
-func (m *MockAurumStore) GetApplication(arg0 context.Context, arg1 string) (*models.Application, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplication", arg0, arg1)
-	ret0, _ := ret[0].(*models.Application)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetApplication indicates an expected call of GetApplication
-func (mr *MockAurumStoreMockRecorder) GetApplication(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplication", reflect.TypeOf((*MockAurumStore)(nil).GetApplication), arg0, arg1)
-}
-
-// GetApplicationRole mocks base method
-func (m *MockAurumStore) GetApplicationRole(arg0 context.Context, arg1, arg2 string) (models.Role, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplicationRole", arg0, arg1, arg2)
-	ret0, _ := ret[0].(models.Role)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetApplicationRole indicates an expected call of GetApplicationRole
-func (mr *MockAurumStoreMockRecorder) GetApplicationRole(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationRole", reflect.TypeOf((*MockAurumStore)(nil).GetApplicationRole), arg0, arg1, arg2)
-}
-
-// GetApplications mocks base method
-func (m *MockAurumStore) GetApplications(arg0 context.Context) ([]models.Application, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplications", arg0)
-	ret0, _ := ret[0].([]models.Application)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetApplications indicates an expected call of GetApplications
-func (mr *MockAurumStoreMockRecorder) GetApplications(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplications", reflect.TypeOf((*MockAurumStore)(nil).GetApplications), arg0)
-}
-
-// GetApplicationsForUser mocks base method
-func (m *MockAurumStore) GetApplicationsForUser(arg0 context.Context, arg1 string) ([]models.ApplicationWithRole, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplicationsForUser", arg0, arg1)
-	ret0, _ := ret[0].([]models.ApplicationWithRole)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetApplicationsForUser indicates an expected call of GetApplicationsForUser
-func (mr *MockAurumStoreMockRecorder) GetApplicationsForUser(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationsForUser", reflect.TypeOf((*MockAurumStore)(nil).GetApplicationsForUser), arg0, arg1)
 }
 
 // GetUser mocks base method
@@ -181,34 +93,6 @@ func (mr *MockAurumStoreMockRecorder) GetUsers(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockAurumStore)(nil).GetUsers), arg0)
 }
 
-// RemoveApplication mocks base method
-func (m *MockAurumStore) RemoveApplication(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveApplication", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveApplication indicates an expected call of RemoveApplication
-func (mr *MockAurumStoreMockRecorder) RemoveApplication(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveApplication", reflect.TypeOf((*MockAurumStore)(nil).RemoveApplication), arg0, arg1)
-}
-
-// RemoveApplicationFromUser mocks base method
-func (m *MockAurumStore) RemoveApplicationFromUser(arg0 context.Context, arg1, arg2 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveApplicationFromUser", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveApplicationFromUser indicates an expected call of RemoveApplicationFromUser
-func (mr *MockAurumStoreMockRecorder) RemoveApplicationFromUser(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveApplicationFromUser", reflect.TypeOf((*MockAurumStore)(nil).RemoveApplicationFromUser), arg0, arg1, arg2)
-}
-
 // RemoveUser mocks base method
 func (m *MockAurumStore) RemoveUser(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -221,20 +105,6 @@ func (m *MockAurumStore) RemoveUser(arg0 context.Context, arg1 string) error {
 func (mr *MockAurumStoreMockRecorder) RemoveUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUser", reflect.TypeOf((*MockAurumStore)(nil).RemoveUser), arg0, arg1)
-}
-
-// SetApplicationRole mocks base method
-func (m *MockAurumStore) SetApplicationRole(arg0 context.Context, arg1, arg2 string, arg3 models.Role) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetApplicationRole", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetApplicationRole indicates an expected call of SetApplicationRole
-func (mr *MockAurumStoreMockRecorder) SetApplicationRole(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetApplicationRole", reflect.TypeOf((*MockAurumStore)(nil).SetApplicationRole), arg0, arg1, arg2, arg3)
 }
 
 // SetUser mocks base method

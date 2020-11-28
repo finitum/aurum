@@ -1,12 +1,5 @@
 package models
 
-type AccessStatus struct {
-	ApplicationName string
-	Username        string
-	AllowedAccess   bool
-	Role            Role
-}
-
 type PublicKeyResponse struct {
 	PublicKey string `json:"public_key"`
 }

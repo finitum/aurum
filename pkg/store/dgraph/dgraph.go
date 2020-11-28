@@ -30,21 +30,11 @@ func New(ctx context.Context, address string) (*DGraph, error) {
 				username
 				password
 				email
-				applications
-			}
-
-			type Application {
-				name
-				allow_registration
 			}
 
 			username: string @index(hash) .
 			password: string .
 			email: string .
-			applications: [uid] .
-
-			name: string @index(hash) .
-			allow_registration: bool .
 		`,
 	}); err != nil {
 		return nil, errors.Wrap(err, "applying schema")
