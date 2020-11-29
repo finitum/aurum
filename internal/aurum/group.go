@@ -98,7 +98,7 @@ func (au Aurum) AddUserToGroup(ctx context.Context, token, username, groupName s
 
 	if role == models.RoleAdmin {
 		return au.db.AddGroupToUser(ctx, username, group.Name, wanted)
-	} else if wanted > models.RoleUser || username != claims.Username {
+	} else if wanted > models.RoleUser || username != claims.Username || !group.AllowRegistration {
 		return ErrUnauthorized
 	}
 

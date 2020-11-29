@@ -46,18 +46,18 @@ query q($uname: string) {
 	return r.Q[0], nil
 }
 
-func (dg DGraph) getUserWithGroups(ctx context.Context, txn *dgo.Txn, user string, name string) (User, error) {
+func (dg DGraph) getUserWithGroups(ctx context.Context, txn *dgo.Txn, user string, group string) (User, error) {
 	query := `
-query q($uname: string, $aname: string) {
+query q($uname: string, $gname: string) {
 	User(func:eq(username, $uname)) {
 		uid
-		groups @facets @filter(eq(name, $aname)) {
+		groups @facets @filter(eq(name, $gname)) {
 			uid
 		}
 	}
 }
 `
-	variables := map[string]string{"$uname": user, "$aname": name}
+	variables := map[string]string{"$uname": user, "$gname": group}
 
 	resp, err := txn.QueryWithVars(ctx, query, variables)
 	if err != nil {
@@ -80,10 +80,10 @@ query q($uname: string, $aname: string) {
 	return r.User[0], nil
 }
 
-func (dg DGraph) GetUser(ctx context.Context, name string) (models.User, error) {
+func (dg DGraph) GetUser(ctx context.Context, username string) (models.User, error) {
 	txn := dg.NewReadOnlyTxn()
 
-	user, err := dg.getUser(ctx, txn, name)
+	user, err := dg.getUser(ctx, txn, username)
 	if err != nil {
 		return models.User{}, err
 	}

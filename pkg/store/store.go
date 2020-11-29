@@ -18,16 +18,16 @@ type AurumStore interface {
 
 	// RemoveGroup removes an group from the database based
 	// on it's name.
-	RemoveGroup(ctx context.Context, name string) error
+	RemoveGroup(ctx context.Context, group string) error
 
 	// GetGroup retrieves an group based on it name.
-	GetGroup(ctx context.Context, name string) (*models.Group, error)
+	GetGroup(ctx context.Context, group string) (*models.Group, error)
 
 	// GetGroups lists all groups.
 	GetGroups(ctx context.Context) ([]models.Group, error)
 
 	// GetGroupsForUser lists all groups a user has a specified role in.
-	GetGroupsForUser(ctx context.Context, name string) ([]models.GroupWithRole, error)
+	GetGroupsForUser(ctx context.Context, group string) ([]models.GroupWithRole, error)
 
 	// CreateUser creates a new user in the database.
 	// User names and ids must be unique
