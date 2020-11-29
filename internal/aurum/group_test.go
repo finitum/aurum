@@ -37,6 +37,7 @@ func TestAurum_AddGroup(t *testing.T) {
 	// Expect
 	ms.EXPECT().GetGroupRole(gomock.Any(), strings.ToLower(AurumName), "bob").Return(models.RoleAdmin, nil)
 	ms.EXPECT().CreateGroup(gomock.Any(), groupL)
+	ms.EXPECT().AddGroupToUser(gomock.Any(), "bob", groupL.Name, models.RoleAdmin)
 
 	// SUT
 	err = au.AddGroup(ctx, token, group)
@@ -100,15 +101,15 @@ func testAddToGroupHelper(t *testing.T, registration bool) {
 
 	// Expect
 	ms.EXPECT().GetGroup(gomock.Any(), groupL.Name).Return(&groupL, nil)
-	if !registration {
-		ms.EXPECT().GetGroupRole(gomock.Any(), groupL.Name, username).Return(models.RoleAdmin, nil)
-		ms.EXPECT().AddGroupToUser(gomock.Any(), username, groupL.Name, models.RoleAdmin)
+	if registration {
+		ms.EXPECT().GetGroupRole(gomock.Any(), groupL.Name, username).Return(models.Role(0), nil)
 	} else {
-		ms.EXPECT().AddGroupToUser(gomock.Any(), username, groupL.Name, models.RoleUser)
+		ms.EXPECT().GetGroupRole(gomock.Any(), groupL.Name, username).Return(models.RoleAdmin, nil)
 	}
+	ms.EXPECT().AddGroupToUser(gomock.Any(), username, groupL.Name, models.RoleUser)
 
 	// SUT
-	err = au.AddUserToGroup(ctx, token, username, groupL.Name, models.RoleAdmin)
+	err = au.AddUserToGroup(ctx, token, username, groupL.Name, models.RoleUser)
 	assert.NoError(t, err)
 }
 
