@@ -1,10 +1,10 @@
 package models
 
 type AccessStatus struct {
-	GroupName string
-	Username        string
-	AllowedAccess   bool
-	Role            Role
+	GroupName     string
+	Username      string
+	AllowedAccess bool
+	Role          Role
 }
 
 type PublicKeyResponse struct {

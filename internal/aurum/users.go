@@ -34,6 +34,10 @@ func (au Aurum) SignUp(ctx context.Context, user models.User) error {
 		return errors.Wrap(err, "failed creating user in database")
 	}
 
+	if err := au.db.AddGroupToUser(ctx, user.Username, AurumName, models.RoleUser); err != nil {
+		return errors.Wrap(err, "couldn't add user to aurum group")
+	}
+
 	return nil
 }
 

@@ -71,9 +71,9 @@ func TestGetAccess(t *testing.T) {
 
 	access := models.AccessStatus{
 		GroupName: group,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            models.RoleAdmin,
+		Username:      user,
+		AllowedAccess: true,
+		Role:          models.RoleAdmin,
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -98,9 +98,9 @@ func TestSetAccess(t *testing.T) {
 
 	access := models.AccessStatus{
 		GroupName: group,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            models.RoleAdmin,
+		Username:      user,
+		AllowedAccess: true,
+		Role:          models.RoleAdmin,
 	}
 
 	tp := jwt.TokenPair{

@@ -1,5 +1,16 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="go test aurum" type="GoTestRunConfiguration" factoryName="Go Test" nameIsGenerated="true">
+  <configuration default="false" name="go test aurum short" type="GoTestRunConfiguration" factoryName="Go Test">
+    <module name="aurum" />
+    <working_directory value="$PROJECT_DIR$" />
+    <go_parameters value="-i -short" />
+    <framework value="gotest" />
+    <kind value="DIRECTORY" />
+    <package value="github.com/finitum/aurum" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+  <configuration default="false" name="go test aurum" type="GoTestRunConfiguration" factoryName="Go Test">
     <module name="aurum" />
     <working_directory value="$PROJECT_DIR$" />
     <go_parameters value="-i" />

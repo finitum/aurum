@@ -118,3 +118,4 @@ func GetGroupsForUser(host string, tp *jwt.TokenPair, user string) ([]models.Gro
 
 	return groups, nil
 }
+

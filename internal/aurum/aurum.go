@@ -71,7 +71,7 @@ func setup(ctx context.Context, db store.AurumStore) error {
 	}
 
 	if err := db.CreateGroup(ctx, models.Group{
-		Name: AurumName,
+		Name:              AurumName,
 		AllowRegistration: true,
 	}); err != nil {
 		return errors.Wrap(err, "create initial group")
