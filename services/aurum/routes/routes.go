@@ -28,6 +28,7 @@ const (
 	Duplicate
 	WeakPassword
 	Unauthorized
+	NotFound
 )
 
 type ErrorResponse struct {
@@ -40,7 +41,9 @@ func AutomaticRenderError(w http.ResponseWriter, err error) error {
 	switch err {
 	case store.ErrExists:
 		code = Duplicate
-	case store.ErrNotExists, aurum.ErrInvalidInput:
+	case store.ErrNotExists:
+		code = NotFound
+	case aurum.ErrInvalidInput:
 		code = InvalidRequest
 	case aurum.ErrWeakPassword:
 		code = WeakPassword
@@ -53,6 +56,8 @@ func AutomaticRenderError(w http.ResponseWriter, err error) error {
 
 func RenderError(w http.ResponseWriter, err error, code ErrorCode) error {
 	switch code {
+	case NotFound:
+		w.WriteHeader(http.StatusNotFound)
 	case Duplicate:
 		w.WriteHeader(http.StatusConflict)
 	case Unauthorized:
@@ -107,7 +112,6 @@ func (rs Routes) TokenExtractionMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
-
 
 func TokenFromContext(ctx context.Context) string {
 	val, ok := ctx.Value(contextKeyToken).(string)

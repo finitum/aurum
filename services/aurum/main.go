@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/finitum/aurum/internal/cors"
 	"github.com/finitum/aurum/internal/aurum"
+	"github.com/finitum/aurum/internal/cors"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/store/dgraph"
 	"github.com/finitum/aurum/services/aurum/routes"
@@ -38,7 +38,6 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.AllowAll)
-
 
 	rs := routes.NewRoutes(au, cfg)
 
