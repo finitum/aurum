@@ -7,6 +7,8 @@ import (
 	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
+	"github.com/pkg/errors"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -82,8 +84,18 @@ func AddUserToGroup(host string, tp *jwt.TokenPair, user, group string) error {
 		return err
 	}
 
-	_, err = authenticatedRequest(req, tp)
-	return err
+	resp, err := authenticatedRequest(req, tp)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := ioutil.ReadAll(resp.Body)
+		message := string(body)
+		return errors.Errorf("Unexpected status code: %d: %s", resp.StatusCode, message)
+	}
+
+	return nil
 }
 
 func RemoveUserFromGroup(host string, tp *jwt.TokenPair, user, group string) error {
@@ -94,8 +106,18 @@ func RemoveUserFromGroup(host string, tp *jwt.TokenPair, user, group string) err
 		return err
 	}
 
-	_, err = authenticatedRequest(req, tp)
-	return err
+	resp, err := authenticatedRequest(req, tp)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(resp.Body)
+		message := string(body)
+		return errors.Errorf("Unexpected status code: %d: %s", resp.StatusCode, message)
+	}
+
+	return nil
 }
 
 func GetGroupsForUser(host string, tp *jwt.TokenPair, user string) ([]models.GroupWithRole, error) {
@@ -118,4 +140,3 @@ func GetGroupsForUser(host string, tp *jwt.TokenPair, user string) ([]models.Gro
 
 	return groups, nil
 }
-

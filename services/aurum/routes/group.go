@@ -33,11 +33,11 @@ func (rs Routes) AddGroup(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(&group)
 }
 
-// DELETE /group/{name} (Authenticated)
+// DELETE /group/{group} (Authenticated)
 func (rs Routes) RemoveGroup(w http.ResponseWriter, r *http.Request) {
-	group := chi.URLParam(r, "name")
+	group := chi.URLParam(r, "group")
 	if group == "" {
-		_ = RenderError(w, aurum.ErrUnauthorized, Unauthorized)
+		_ = RenderError(w, aurum.ErrInvalidInput, InvalidRequest)
 		return
 	}
 
@@ -145,7 +145,7 @@ func (rs Routes) RemoveUserFromGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := TokenFromContext(ctx)
-	err := rs.au.RemoveUserFromGroup(ctx, token, group, user)
+	err := rs.au.RemoveUserFromGroup(ctx, token, user, group)
 	if err != nil {
 		_ = AutomaticRenderError(w, err)
 		return

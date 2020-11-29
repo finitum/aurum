@@ -143,6 +143,7 @@ func TestAddUserToGroup(t *testing.T) {
 
 		token := r.Header.Get("Authorization")
 		assert.Equal(t, "Bearer "+tp.LoginToken, token)
+		w.WriteHeader(http.StatusCreated)
 	}))
 	defer ts.Close()
 

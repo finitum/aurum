@@ -239,13 +239,13 @@ func TestSystemIntegration(t *testing.T) {
 
 	VerifyAccess(assert, client, group, userTwo, models.RoleAdmin)
 
-	err = client.SetAccess(&tpUserOne, models.AccessStatus{
-		GroupName:     group.Name,
-		Username:      userTwo.Username,
-		AllowedAccess: false,
-	})
+	err = client.RemoveUserFromGroup(&tpUserOne, userTwo.Username, group.Name)
 	assert.NoError(err)
 	time.Sleep(time.Second)
-
 	VerifyNoAccess(assert, client, group, userTwo)
+
+	err = client.RemoveGroup(&tpUserOne, group.Name)
+	assert.NoError(err)
+	time.Sleep(time.Second)
+	VerifyNoAccess(assert, client, group, userOne)
 }

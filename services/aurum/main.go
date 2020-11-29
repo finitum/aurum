@@ -58,7 +58,7 @@ func main() {
 
 		// Group
 		r.Post("/group", rs.AddGroup)
-		r.Delete("/group", rs.RemoveGroup)
+		r.Delete("/group/{group}", rs.RemoveGroup)
 
 		r.Put("/group/{group}/{user}", rs.SetAccess)
 		r.Post("/group/{group}/{user}", rs.AddUserToGroup)
