@@ -126,7 +126,7 @@ func MakeUserAdminDirectly(assert *assert.Assertions, username string) {
 	dg, err := dgraph.New(ctx, "localhost:9080")
 	assert.NoError(err)
 
- 	err = dg.AddGroupToUser(ctx, username, internal.AurumName, models.RoleAdmin)
+	err = dg.AddGroupToUser(ctx, username, internal.AurumName, models.RoleAdmin)
 	assert.NoError(err)
 }
 

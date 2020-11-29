@@ -260,7 +260,7 @@ query q($uname: string, $gname: string) {
 `
 	var r struct {
 		User  []User
-		Group  []Group
+		Group []Group
 	}
 
 	vars := map[string]string{

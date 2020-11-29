@@ -70,7 +70,7 @@ func TestGetAccess(t *testing.T) {
 	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	access := models.AccessStatus{
-		GroupName: group,
+		GroupName:     group,
 		Username:      user,
 		AllowedAccess: true,
 		Role:          models.RoleAdmin,
@@ -97,7 +97,7 @@ func TestSetAccess(t *testing.T) {
 	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	access := models.AccessStatus{
-		GroupName: group,
+		GroupName:     group,
 		Username:      user,
 		AllowedAccess: true,
 		Role:          models.RoleAdmin,
