@@ -3,6 +3,7 @@ package dgraph
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/finitum/aurum/pkg/models"

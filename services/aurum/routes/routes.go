@@ -3,13 +3,14 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+	"strings"
+
 	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"strings"
 )
 
 type Routes struct {
@@ -93,8 +94,10 @@ func (rs Routes) PublicKey(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type aurumContextKey string
+
 const (
-	contextKeyToken = "aurum web context key token"
+	contextKeyToken aurumContextKey = "aurum web context key token"
 )
 
 // TokenExtractionMiddleware extracts the Authorization token from the http request and stores it in the request context

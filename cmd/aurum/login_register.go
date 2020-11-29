@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/finitum/aurum/clients/go"
 	te "github.com/muesli/termenv"
-	"strings"
 )
 
 const focusedTextColor = "205"

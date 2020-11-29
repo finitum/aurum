@@ -2,13 +2,14 @@ package routes
 
 import (
 	"encoding/json"
+	"net/http"
+	"strings"
+
 	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
 	"github.com/go-chi/chi"
 	"github.com/pkg/errors"
-	"net/http"
-	"strings"
 )
 
 // POST /group (Authenticated)

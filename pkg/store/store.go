@@ -3,11 +3,14 @@ package store
 import (
 	"context"
 	"errors"
+
 	"github.com/finitum/aurum/pkg/models"
 )
 
-var ErrExists = errors.New("already exists")
-var ErrNotExists = errors.New("doesn't exist")
+var (
+	ErrExists    = errors.New("already exists")
+	ErrNotExists = errors.New("doesn't exist")
+)
 
 //go:generate mockgen -destination mock_store/mock_store.go . AurumStore
 

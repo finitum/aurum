@@ -2,12 +2,13 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/models"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/finitum/aurum/pkg/jwt"
+	"github.com/finitum/aurum/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSignUp(t *testing.T) {
@@ -88,7 +89,6 @@ func TestRefresh(t *testing.T) {
 
 		err = json.NewEncoder(w).Encode(&tp2)
 		assert.NoError(t, err)
-
 	}))
 	defer ts.Close()
 
@@ -100,7 +100,6 @@ func TestRefresh(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-
 	tp := jwt.TokenPair{
 		LoginToken:   "login",
 		RefreshToken: "refresh",
@@ -121,7 +120,6 @@ func TestGetUser(t *testing.T) {
 
 		err := json.NewEncoder(w).Encode(&u)
 		assert.NoError(t, err)
-
 	}))
 	defer ts.Close()
 
@@ -131,7 +129,6 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
-
 	tp := jwt.TokenPair{
 		LoginToken:   "login",
 		RefreshToken: "refresh",
@@ -161,7 +158,6 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestUpdateUserRefreshNeeded(t *testing.T) {
-
 	const initialLogin = "login"
 	const refreshLogin = "login2"
 
@@ -233,7 +229,6 @@ func TestUpdateUserRefreshNeeded(t *testing.T) {
 }
 
 func TestGetUserRefreshNeeded(t *testing.T) {
-
 	const initialLogin = "login"
 	const refreshLogin = "login2"
 

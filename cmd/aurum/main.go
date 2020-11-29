@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/finitum/aurum/clients/go"
 	"github.com/finitum/aurum/pkg/jwt"
 	te "github.com/muesli/termenv"
-	"os"
 )
 
 var host = flag.String("host", "http://localhost:8042", "Aurum host to connect to")
@@ -118,7 +119,7 @@ func (m model) View() string {
 	}
 
 	if m.au == nil {
-		return fmt.Sprint("Connecting...\n")
+		return "Connecting...\n"
 	}
 
 	var s string

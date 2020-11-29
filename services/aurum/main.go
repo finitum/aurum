@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"time"
+
 	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/internal/cors"
 	"github.com/finitum/aurum/pkg/config"
@@ -10,8 +13,6 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"time"
 )
 
 func init() {

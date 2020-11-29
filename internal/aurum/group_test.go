@@ -2,14 +2,15 @@ package aurum
 
 import (
 	"context"
+	"strings"
+	"testing"
+
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store/mock_store"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 func TestAurum_AddGroup(t *testing.T) {
@@ -202,5 +203,4 @@ func TestAurum_RemoveUserFromGroup(t *testing.T) {
 	// SUT
 	err = au.RemoveUserFromGroup(ctx, token, target, group)
 	assert.NoError(t, err)
-
 }

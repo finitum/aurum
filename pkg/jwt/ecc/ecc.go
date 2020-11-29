@@ -5,8 +5,10 @@ import (
 	"crypto/rand"
 )
 
-type PublicKey ed25519.PublicKey
-type SecretKey ed25519.PrivateKey
+type (
+	PublicKey ed25519.PublicKey
+	SecretKey ed25519.PrivateKey
+)
 
 // Generates a pair of ed25519 keys and wraps them into the ecc types
 func GenerateKey() (PublicKey, SecretKey, error) {

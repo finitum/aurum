@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	log "github.com/sirupsen/logrus"
 )

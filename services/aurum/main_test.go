@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/finitum/aurum/clients/go"
-	internal "github.com/finitum/aurum/internal/aurum"
-	"github.com/finitum/aurum/pkg/store/dgraph"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/finitum/aurum/clients/go"
+	internal "github.com/finitum/aurum/internal/aurum"
+	"github.com/finitum/aurum/pkg/store/dgraph"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
@@ -149,13 +150,13 @@ func TestSystemIntegration(t *testing.T) {
 	client, err := aurum.NewRemoteClient(url)
 	assert.NoError(err)
 
-	var userOne = models.User{
+	userOne := models.User{
 		Username: "UserOne",
 		Email:    "Tester@test.com",
 		Password: "4e1243bd22c66e76c2ba9eddc1f91394e57f9f83",
 	}
 
-	var userTwo = models.User{
+	userTwo := models.User{
 		Username: "UserTwo",
 		Email:    "Tester@test.com",
 		Password: "4e1243bd22c66e76c2ba9eddc1f91394e57f9f83",

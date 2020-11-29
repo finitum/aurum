@@ -3,12 +3,13 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/models"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/finitum/aurum/pkg/jwt"
+	"github.com/finitum/aurum/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddGroup(t *testing.T) {

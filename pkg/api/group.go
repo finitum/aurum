@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/pkg/errors"
-	"io/ioutil"
-	"net/http"
 )
 
 func AddGroup(host string, tp *jwt.TokenPair, group *models.Group) error {

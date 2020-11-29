@@ -1,13 +1,14 @@
 package aurum
 
 import (
+	"strings"
+
 	"github.com/finitum/aurum/pkg/api"
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
 type RemoteClient struct {
@@ -62,7 +63,7 @@ func (a *RemoteClient) Verify(token string) (*jwt.Claims, error) {
 	return jwt.VerifyJWT(token, a.pk)
 }
 
-func (a *RemoteClient) refresh(tp *jwt.TokenPair) error {
+func (a *RemoteClient) Refresh(tp *jwt.TokenPair) error {
 	return errors.Wrap(api.Refresh(a.url, tp), "refresh client request failed")
 }
 

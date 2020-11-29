@@ -2,6 +2,7 @@ package aurum
 
 import (
 	"context"
+
 	"github.com/finitum/aurum/internal/hash"
 	"github.com/finitum/aurum/internal/passwords"
 	"github.com/finitum/aurum/pkg/jwt"
@@ -91,7 +92,6 @@ func (au Aurum) GetUser(ctx context.Context, token string) (models.User, error) 
 }
 
 func (au Aurum) UpdateUser(ctx context.Context, token string, user models.User) (models.User, error) {
-
 	claims, err := au.checkToken(token)
 	if err != nil {
 		return models.User{}, err

@@ -2,10 +2,11 @@ package aurum
 
 import (
 	"context"
+	"strings"
+
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 func (au Aurum) AddGroup(ctx context.Context, token string, group models.Group) error {
