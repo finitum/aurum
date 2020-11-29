@@ -3,7 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/finitum/aurum/internal/aurum"
+	"github.com/finitum/aurum/clients/go"
+	internal "github.com/finitum/aurum/internal/aurum"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
@@ -18,66 +19,30 @@ import (
 
 const url = "http://localhost:8042"
 
-func VerifyLogin(assert *assert.Assertions, client *http.Client, u models.User) jwt.TokenPair {
-	body, err := json.Marshal(u)
+func VerifySignupLogin(assert *assert.Assertions, client aurum.Client, u models.User) jwt.TokenPair {
+	err := client.Register(u.Username, u.Password, u.Email)
 	assert.NoError(err)
 
-	req, err := http.NewRequest("POST", url+"/login", bytes.NewBuffer(body))
-	assert.NoError(err)
-
-	resp, err := client.Do(req)
-	assert.NoError(err)
-	assert.Equal(http.StatusOK, resp.StatusCode)
-
-	var tp jwt.TokenPair
-	err = json.NewDecoder(resp.Body).Decode(&tp)
-
-	assert.NotEmpty(tp.LoginToken)
-	assert.NotEmpty(tp.RefreshToken)
-
-	return tp
-}
-
-func VerifySignupLogin(assert *assert.Assertions, client *http.Client, u models.User) jwt.TokenPair {
-
-	body, err := json.Marshal(u)
-	assert.NoError(err)
-
-	// Signup
-	req, err := http.NewRequest("POST", url+"/signup", bytes.NewBuffer(body))
-	assert.NoError(err)
-
-	resp, err := client.Do(req)
-	assert.NoError(err)
-
-	assert.Equal(http.StatusCreated, resp.StatusCode)
-
-	time.Sleep(time.Second)
-
-	// Login
 	return VerifyLogin(assert, client, u)
 }
 
-func VerifyGetUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User) {
 
-	// get user
-	req, err := http.NewRequest("GET", url+"/user", nil)
+func VerifyLogin(assert *assert.Assertions, client aurum.Client, u models.User) jwt.TokenPair {
+	tp, err := client.Login(u.Username, u.Password)
 	assert.NoError(err)
-	req.Header.Add("Authorization", "Bearer "+tp.LoginToken)
 
-	resp, err := client.Do(req)
-	assert.NoError(err)
-	assert.Equal(http.StatusOK, resp.StatusCode)
-
-	var newuser models.User
-	err = json.NewDecoder(resp.Body).Decode(&newuser)
-
-	assert.Equal(u.Username, newuser.Username)
-	assert.Equal(u.Email, newuser.Email)
-
+	return *tp
 }
 
-func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User, pk ecc.PublicKey) {
+func VerifyGetUser(assert *assert.Assertions, client aurum.Client, tp jwt.TokenPair, expected models.User) {
+	user, err := client.GetUserInfo(&tp)
+	assert.NoError(err)
+
+	assert.Equal(expected.Username, user.Username)
+	assert.Equal(expected.Email, user.Email)
+}
+
+func VerifyRefresh(assert *assert.Assertions, client aurum.Client, tp jwt.TokenPair, u models.User, pk ecc.PublicKey) {
 	oldClaims, err := jwt.VerifyJWT(tp.LoginToken, pk)
 	assert.NoError(err)
 
@@ -88,10 +53,7 @@ func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenP
 	time.Sleep(2 * time.Second)
 
 	// Refresh
-	req, err := http.NewRequest("POST", url+"/refresh", bytes.NewBuffer(body))
-	assert.NoError(err)
-
-	resp, err := client.Do(req)
+	resp, err := http.Post(url+"/refresh", "application/json", bytes.NewBuffer(body))
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
 
@@ -108,30 +70,19 @@ func VerifyRefresh(assert *assert.Assertions, client *http.Client, tp jwt.TokenP
 	VerifyGetUser(assert, client, tp, u)
 }
 
-func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User) {
+func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client aurum.Client, tp jwt.TokenPair, u models.User) {
 	newuser := models.User{
 		Username: u.Username,
 		Password: "9054fbe0b622c638224d50d20824d2ff6782e308",
 		Email:    "yeet42@finitum.dev",
 	}
 
-	body, err := json.Marshal(newuser)
+	resp, err := client.UpdateUser(&tp, &newuser)
 	assert.NoError(err)
 
-	req, err := http.NewRequest("POST", url+"/user", bytes.NewBuffer(body))
-	assert.NoError(err)
-	req.Header.Add("Authorization", "Bearer "+tp.LoginToken)
-
-	resp, err := client.Do(req)
-	assert.NoError(err)
-	assert.Equal(http.StatusOK, resp.StatusCode)
-
-	var respuser models.User
-	err = json.NewDecoder(resp.Body).Decode(&respuser)
-
-	assert.Equal(u.Username, respuser.Username)
-	assert.Equal(newuser.Email, respuser.Email)
-	assert.Empty(respuser.Password)
+	assert.Equal(u.Username, resp.Username)
+	assert.Equal(newuser.Email, resp.Email)
+	assert.Empty(resp.Password)
 
 	u.Password = newuser.Password
 	u.Email = newuser.Email
@@ -142,27 +93,11 @@ func VerifyUpdateUserPasswordEmail(assert *assert.Assertions, client *http.Clien
 	VerifyGetUser(assert, client, tp, u)
 }
 
-func VerifyGetGroupsForUser(assert *assert.Assertions, client *http.Client, tp jwt.TokenPair, u models.User, expected models.Role) {
-	req, err := http.NewRequest(http.MethodGet, url+"/user/"+u.Username+"/groups", nil)
-	assert.NoError(err)
-	req.Header.Add("Authorization", "Bearer "+tp.LoginToken)
-
-	resp, err := client.Do(req)
-	assert.NoError(err)
-	assert.Equal(http.StatusOK, resp.StatusCode)
-
-	var groups []models.GroupWithRole
-	err = json.NewDecoder(resp.Body).Decode(&groups)
+func VerifyGetGroupsForUser(assert *assert.Assertions, client aurum.Client, tp jwt.TokenPair, u models.User, expected models.GroupWithRole) {
+	groups, err := client.GetGroupsForUser(&tp, u.Username)
 	assert.NoError(err)
 
-	aurums := 0
-	for _, group := range groups {
-		if group.Name == aurum.AurumName {
-			assert.Equal(expected, group.Role)
-			aurums += 1
-		}
-	}
-	assert.Equal(1, aurums)
+	assert.Contains(groups, expected)
 }
 
 func TestSystemIntegration(t *testing.T) {
@@ -181,19 +116,20 @@ func TestSystemIntegration(t *testing.T) {
 	// Wait for the server  to start up
 	time.Sleep(5 * time.Second)
 
-	userOne := models.User{
+	client, err := aurum.NewRemoteClient(url)
+	assert.NoError(err)
+
+	var userOne = models.User{
 		Username: "UserOne",
 		Email:    "Tester@test.com",
 		Password: "4e1243bd22c66e76c2ba9eddc1f91394e57f9f83",
 	}
 
-	userTwo := models.User{
+	var userTwo = models.User{
 		Username: "UserTwo",
 		Email:    "Tester@test.com",
 		Password: "4e1243bd22c66e76c2ba9eddc1f91394e57f9f83",
 	}
-
-	client := &http.Client{}
 
 	// Now run all the endpoint verifications
 
@@ -224,6 +160,20 @@ func TestSystemIntegration(t *testing.T) {
 	VerifyUpdateUserPasswordEmail(assert, client, tpUserOne, userOne)
 	VerifyUpdateUserPasswordEmail(assert, client, tpUserTwo, userTwo)
 
-	VerifyGetGroupsForUser(assert, client, tpUserOne, userOne, models.RoleUser)
-	VerifyGetGroupsForUser(assert, client, tpUserTwo, userTwo, models.RoleUser)
+	aurumGroup := models.GroupWithRole{
+		Group: models.Group{
+			Name:              internal.AurumName,
+			AllowRegistration: true,
+		},
+		Role: models.RoleUser,
+	}
+
+	VerifyGetGroupsForUser(assert, client, tpUserOne, userOne, aurumGroup)
+	VerifyGetGroupsForUser(assert, client, tpUserTwo, userTwo, aurumGroup)
+
+	//
+	//group := models.Group{
+	//	Name:              "SomeGroup",
+	//	AllowRegistration: true,
+	//}
 }
