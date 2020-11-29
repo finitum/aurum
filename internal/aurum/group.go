@@ -48,19 +48,19 @@ func (au Aurum) GetAccess(ctx context.Context, user, group string) (models.Acces
 
 	if err == store.ErrNotExists {
 		return models.AccessStatus{
-			GroupName: group,
-			Username:        user,
-			AllowedAccess:   false,
+			GroupName:     group,
+			Username:      user,
+			AllowedAccess: false,
 		}, nil
 	} else if err != nil {
 		return models.AccessStatus{}, err
 	}
 
 	return models.AccessStatus{
-		GroupName: group,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            role,
+		GroupName:     group,
+		Username:      user,
+		AllowedAccess: true,
+		Role:          role,
 	}, nil
 }
 
@@ -125,7 +125,6 @@ func (au Aurum) RemoveUserFromGroup(ctx context.Context, token, target, group st
 	return au.db.RemoveGroupFromUser(ctx, group, target)
 }
 
-
 func (au Aurum) GetGroupsForUser(ctx context.Context, token, user string) ([]models.GroupWithRole, error) {
 	claims, err := au.checkToken(token)
 	if err != nil {
@@ -146,4 +145,3 @@ func (au Aurum) GetGroupsForUser(ctx context.Context, token, user string) ([]mod
 
 	return au.db.GetGroupsForUser(ctx, user)
 }
-

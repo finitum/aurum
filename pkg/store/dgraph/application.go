@@ -169,7 +169,7 @@ func (dg DGraph) GetGroupsForUser(ctx context.Context, name string) ([]models.Gr
 query q($uname: string) {
   q(func: type(User)) @filter(eq(username, $uname)) {
 	username
-   	groups @facets(role) {
+   	groups @facets(role:role) {
       name
 	  allow_registration
   	} 
@@ -185,9 +185,8 @@ query q($uname: string) {
 		return nil, errors.Wrap(err, "query")
 	}
 
-	// TODO: explain dafuq is going on
 	var r struct {
-		Q []struct{
+		Q []struct {
 			Groups []models.GroupWithRole `json:"groups"`
 		} `json:"q"`
 	}
@@ -200,7 +199,6 @@ query q($uname: string) {
 	} else if len(r.Q[0].Groups) == 0 {
 		return nil, store.ErrNotExists
 	}
-
 
 	return r.Q[0].Groups, nil
 }

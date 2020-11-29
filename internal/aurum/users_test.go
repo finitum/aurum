@@ -31,6 +31,7 @@ func TestAurum_SignUp(t *testing.T) {
 	ms.EXPECT().CreateUser(gomock.AssignableToTypeOf(ctxT), gomock.Any()).Do(func(_ context.Context, gu models.User) {
 		assert.True(t, hash.CheckPasswordHash(u.Password, gu.Password))
 	}).Return(nil)
+	ms.EXPECT().AddGroupToUser(gomock.AssignableToTypeOf(ctxT), u.Username, AurumName, models.RoleUser)
 
 	au := Aurum{db: ms}
 	// SUT

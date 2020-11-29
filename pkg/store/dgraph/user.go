@@ -68,7 +68,6 @@ query q($uname: string, $aname: string) {
 		User []User
 	}
 
-
 	err = json.Unmarshal(resp.Json, &r)
 	if err != nil {
 		return User{}, errors.Wrap(err, "json unmarshal")
@@ -260,8 +259,8 @@ query q($uname: string, $aname: string) {
 }
 `
 	var r struct {
-		User []User
-		Group  []Group
+		User  []User
+		Group []Group
 	}
 
 	vars := map[string]string{

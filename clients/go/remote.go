@@ -106,7 +106,7 @@ func (a *RemoteClient) RemoveUserFromGroup(tp *jwt.TokenPair, user, group string
 	return errors.Wrap(err, "RemoveUserFromGroup api request failed")
 }
 
-func (a* RemoteClient) GetGroupsForUser(tp *jwt.TokenPair, user string) ([]models.GroupWithRole, error) {
+func (a *RemoteClient) GetGroupsForUser(tp *jwt.TokenPair, user string) ([]models.GroupWithRole, error) {
 	groups, err := api.GetGroupsForUser(a.url, tp, user)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetGroupsForUser api request failed")

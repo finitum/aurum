@@ -70,10 +70,10 @@ func TestGetAccess(t *testing.T) {
 	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	access := models.AccessStatus{
-		GroupName: group,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            models.RoleAdmin,
+		GroupName:     group,
+		Username:      user,
+		AllowedAccess: true,
+		Role:          models.RoleAdmin,
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -97,10 +97,10 @@ func TestSetAccess(t *testing.T) {
 	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	access := models.AccessStatus{
-		GroupName: group,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            models.RoleAdmin,
+		GroupName:     group,
+		Username:      user,
+		AllowedAccess: true,
+		Role:          models.RoleAdmin,
 	}
 
 	tp := jwt.TokenPair{

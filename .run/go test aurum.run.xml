@@ -2,7 +2,7 @@
   <configuration default="false" name="go test aurum" type="GoTestRunConfiguration" factoryName="Go Test" nameIsGenerated="true">
     <module name="aurum" />
     <working_directory value="$PROJECT_DIR$" />
-    <go_parameters value="-i" />
+    <go_parameters value="-i -short" />
     <framework value="gotest" />
     <kind value="DIRECTORY" />
     <package value="github.com/finitum/aurum" />
