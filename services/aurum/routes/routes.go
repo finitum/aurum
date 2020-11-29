@@ -7,6 +7,7 @@ import (
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 )
@@ -67,6 +68,7 @@ func RenderError(w http.ResponseWriter, err error, code ErrorCode) error {
 	case ServerError:
 		fallthrough
 	default:
+		log.Errorf("Internal Server Error: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 

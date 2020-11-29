@@ -242,18 +242,18 @@ func (dg DGraph) GetGroupRole(ctx context.Context, group string, user string) (m
 	return u.Groups[0].Role, nil
 }
 
-func (dg DGraph) AddGroupToUser(ctx context.Context, user string, name string, role models.Role) error {
+func (dg DGraph) AddGroupToUser(ctx context.Context, user string, group string, role models.Role) error {
 	// start a new transaction
 	txn := dg.NewTxn()
 	defer txn.Discard(ctx)
 
 	q := `
-query q($uname: string, $aname: string) {
+query q($uname: string, $gname: string) {
   User(func:eq(username, $uname)) {
     uid
   }
 
-  Group(func:eq(name, $aname)) {
+  Group(func:eq(name, $gname)) {
   	uid
   }
 }
@@ -265,7 +265,7 @@ query q($uname: string, $aname: string) {
 
 	vars := map[string]string{
 		"$uname": user,
-		"$aname": name,
+		"$gname": group,
 	}
 
 	resp, err := txn.QueryWithVars(ctx, q, vars)
@@ -302,7 +302,7 @@ query q($uname: string, $aname: string) {
 }
 
 func (dg DGraph) SetGroupRole(ctx context.Context, group string, user string, role models.Role) error {
-	return dg.AddGroupToUser(ctx, group, user, role)
+	return dg.AddGroupToUser(ctx, user, group, role)
 }
 
 func (dg DGraph) RemoveGroupFromUser(ctx context.Context, group string, user string) error {

@@ -49,7 +49,7 @@ type AurumStore interface {
 
 	// AddUserToGroup links a user to an group with a given role.
 	// This role is the role the user has within this group.
-	AddGroupToUser(ctx context.Context, user string, name string, role models.Role) error
+	AddGroupToUser(ctx context.Context, user string, group string, role models.Role) error
 
 	// RemoveUserFromGroup removes the link between a user and an group.
 	RemoveGroupFromUser(ctx context.Context, group string, user string) error

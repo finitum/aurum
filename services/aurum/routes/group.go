@@ -23,11 +23,7 @@ func (rs Routes) AddGroup(w http.ResponseWriter, r *http.Request) {
 	token := TokenFromContext(r.Context())
 
 	if err := rs.au.AddGroup(r.Context(), token, group); err != nil {
-		if err == store.ErrExists {
-			_ = RenderError(w, err, Duplicate)
-			return
-		}
-		_ = RenderError(w, err, ServerError)
+		_ = AutomaticRenderError(w, err)
 		return
 	}
 

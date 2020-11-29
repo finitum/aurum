@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"github.com/finitum/aurum/clients/go"
 	internal "github.com/finitum/aurum/internal/aurum"
+	"github.com/finitum/aurum/pkg/store/dgraph"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
@@ -19,19 +21,18 @@ import (
 
 const url = "http://localhost:8042"
 
-func VerifySignupLogin(assert *assert.Assertions, client aurum.Client, u models.User) jwt.TokenPair {
-	err := client.Register(u.Username, u.Password, u.Email)
-	assert.NoError(err)
-
-	return VerifyLogin(assert, client, u)
-}
-
-
 func VerifyLogin(assert *assert.Assertions, client aurum.Client, u models.User) jwt.TokenPair {
 	tp, err := client.Login(u.Username, u.Password)
 	assert.NoError(err)
 
 	return *tp
+}
+
+func VerifySignupLogin(assert *assert.Assertions, client aurum.Client, u models.User) jwt.TokenPair {
+	err := client.Register(u.Username, u.Password, u.Email)
+	assert.NoError(err)
+
+	return VerifyLogin(assert, client, u)
 }
 
 func VerifyGetUser(assert *assert.Assertions, client aurum.Client, tp jwt.TokenPair, expected models.User) {
@@ -100,6 +101,35 @@ func VerifyGetGroupsForUser(assert *assert.Assertions, client aurum.Client, tp j
 	assert.Contains(groups, expected)
 }
 
+func VerifyAccess(assert *assert.Assertions, client *aurum.RemoteClient, group models.Group, user models.User, role models.Role) {
+	access, err := client.GetAccess(group.Name, user.Username)
+	assert.NoError(err)
+
+	assert.Equal(group.Name, access.GroupName)
+	assert.Equal(user.Username, access.Username)
+	assert.True(access.AllowedAccess)
+	assert.Equal(role, access.Role)
+}
+
+func VerifyNoAccess(assert *assert.Assertions, client *aurum.RemoteClient, group models.Group, user models.User) {
+	access, err := client.GetAccess(group.Name, user.Username)
+	assert.NoError(err)
+
+	assert.Equal(group.Name, access.GroupName)
+	assert.Equal(user.Username, access.Username)
+	assert.False(access.AllowedAccess)
+	assert.Equal(models.Role(0), access.Role)
+}
+
+func MakeUserAdminDirectly(assert *assert.Assertions, username string) {
+	ctx := context.Background()
+	dg, err := dgraph.New(ctx, "localhost:9080")
+	assert.NoError(err)
+
+ 	err = dg.AddGroupToUser(ctx, username, internal.AurumName, models.RoleAdmin)
+	assert.NoError(err)
+}
+
 func TestSystemIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test")
@@ -149,7 +179,9 @@ func TestSystemIntegration(t *testing.T) {
 	tpUserOne := VerifySignupLogin(assert, client, userOne)
 	tpUserTwo := VerifySignupLogin(assert, client, userTwo)
 
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 3)
+
+	MakeUserAdminDirectly(assert, userOne.Username)
 
 	VerifyGetUser(assert, client, tpUserOne, userOne)
 	VerifyGetUser(assert, client, tpUserTwo, userTwo)
@@ -160,6 +192,8 @@ func TestSystemIntegration(t *testing.T) {
 	VerifyUpdateUserPasswordEmail(assert, client, tpUserOne, userOne)
 	VerifyUpdateUserPasswordEmail(assert, client, tpUserTwo, userTwo)
 
+	// Group tests
+
 	aurumGroup := models.GroupWithRole{
 		Group: models.Group{
 			Name:              internal.AurumName,
@@ -168,12 +202,50 @@ func TestSystemIntegration(t *testing.T) {
 		Role: models.RoleUser,
 	}
 
-	VerifyGetGroupsForUser(assert, client, tpUserOne, userOne, aurumGroup)
 	VerifyGetGroupsForUser(assert, client, tpUserTwo, userTwo, aurumGroup)
+	// Admin
+	aurumGroup.Role = models.RoleAdmin
+	VerifyGetGroupsForUser(assert, client, tpUserOne, userOne, aurumGroup)
 
-	//
-	//group := models.Group{
-	//	Name:              "SomeGroup",
-	//	AllowRegistration: true,
-	//}
+	group := models.Group{
+		Name:              "somegroup",
+		AllowRegistration: true,
+	}
+
+	err = client.AddGroup(&tpUserOne, &group)
+	assert.NoError(err)
+
+	time.Sleep(time.Second)
+
+	VerifyAccess(assert, client, group, userOne, models.RoleAdmin)
+	VerifyNoAccess(assert, client, group, userTwo)
+
+	err = client.AddUserToGroup(&tpUserOne, userTwo.Username, group.Name)
+	assert.NoError(err)
+
+	time.Sleep(time.Second)
+
+	VerifyAccess(assert, client, group, userTwo, models.RoleUser)
+
+	err = client.SetAccess(&tpUserOne, models.AccessStatus{
+		GroupName:     group.Name,
+		Username:      userTwo.Username,
+		AllowedAccess: true,
+		Role:          models.RoleAdmin,
+	})
+	assert.NoError(err)
+
+	time.Sleep(time.Second)
+
+	VerifyAccess(assert, client, group, userTwo, models.RoleAdmin)
+
+	err = client.SetAccess(&tpUserOne, models.AccessStatus{
+		GroupName:     group.Name,
+		Username:      userTwo.Username,
+		AllowedAccess: false,
+	})
+	assert.NoError(err)
+	time.Sleep(time.Second)
+
+	VerifyNoAccess(assert, client, group, userTwo)
 }
