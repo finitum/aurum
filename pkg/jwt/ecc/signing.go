@@ -8,13 +8,12 @@ import (
 	"crypto/ed25519"
 	"encoding/asn1"
 	"errors"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
-var (
-	// Sadly this is missing from crypto/ecdsa compared to crypto/rsa
-	ErrEdDSAVerification = errors.New("ecc: verification error")
-)
+// Sadly this is missing from crypto/ecdsa compared to crypto/rsa
+var ErrEdDSAVerification = errors.New("ecc: verification error")
 
 func init() {
 	var edDSASigningMethod SigningMethodEdDSA

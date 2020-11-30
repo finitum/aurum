@@ -3,11 +3,12 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/pkg/errors"
-	"io/ioutil"
-	"net/http"
 )
 
 func SignUp(host string, user models.User) error {

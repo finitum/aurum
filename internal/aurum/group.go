@@ -2,14 +2,15 @@ package aurum
 
 import (
 	"context"
+	"strings"
+
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 func (au Aurum) AddGroup(ctx context.Context, token string, group models.Group) error {
-	role, _, err := au.checkTokenAndRole(ctx, token, AurumName)
+	role, claims, err := au.checkTokenAndRole(ctx, token, AurumName)
 	if err != nil {
 		return err
 	}
@@ -19,7 +20,11 @@ func (au Aurum) AddGroup(ctx context.Context, token string, group models.Group) 
 	}
 
 	group.Name = strings.ToLower(group.Name)
-	return au.db.CreateGroup(ctx, group)
+	if err := au.db.CreateGroup(ctx, group); err != nil {
+		return err
+	}
+
+	return au.db.AddGroupToUser(ctx, claims.Username, group.Name, models.RoleAdmin)
 }
 
 func (au Aurum) RemoveGroup(ctx context.Context, token, group string) error {
@@ -48,19 +53,19 @@ func (au Aurum) GetAccess(ctx context.Context, user, group string) (models.Acces
 
 	if err == store.ErrNotExists {
 		return models.AccessStatus{
-			GroupName: group,
-			Username:        user,
-			AllowedAccess:   false,
+			GroupName:     group,
+			Username:      user,
+			AllowedAccess: false,
 		}, nil
 	} else if err != nil {
 		return models.AccessStatus{}, err
 	}
 
 	return models.AccessStatus{
-		GroupName: group,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            role,
+		GroupName:     group,
+		Username:      user,
+		AllowedAccess: true,
+		Role:          role,
 	}, nil
 }
 
@@ -79,7 +84,7 @@ func (au Aurum) SetAccess(ctx context.Context, token, group, username string, ta
 	return au.db.SetGroupRole(ctx, group, username, targetRole)
 }
 
-func (au Aurum) AddUserToGroup(ctx context.Context, token, username, groupName string, role models.Role) error {
+func (au Aurum) AddUserToGroup(ctx context.Context, token, username, groupName string, wanted models.Role) error {
 	groupName = strings.ToLower(groupName)
 
 	group, err := au.db.GetGroup(ctx, groupName)
@@ -87,27 +92,18 @@ func (au Aurum) AddUserToGroup(ctx context.Context, token, username, groupName s
 		return errors.Wrap(err, "getting group")
 	}
 
-	if !group.AllowRegistration {
-		role, _, err := au.checkTokenAndRole(ctx, token, groupName)
-		if err != nil {
-			return err
-		}
-
-		if role < models.RoleAdmin {
-			return ErrUnauthorized
-		}
-
-	} else {
-		claims, err := au.checkToken(token)
-		if err != nil {
-			return err
-		}
-
-		username = claims.Username
-		role = models.RoleUser
+	role, claims, err := au.checkTokenAndRole(ctx, token, group.Name)
+	if err != nil {
+		return errors.Wrap(err, "getting token and role")
 	}
 
-	return au.db.AddGroupToUser(ctx, username, groupName, role)
+	if role == models.RoleAdmin {
+		return au.db.AddGroupToUser(ctx, username, group.Name, wanted)
+	} else if wanted > models.RoleUser || username != claims.Username || !group.AllowRegistration {
+		return ErrUnauthorized
+	}
+
+	return au.db.AddGroupToUser(ctx, claims.Username, group.Name, models.RoleUser)
 }
 
 func (au Aurum) RemoveUserFromGroup(ctx context.Context, token, target, group string) error {
@@ -124,7 +120,6 @@ func (au Aurum) RemoveUserFromGroup(ctx context.Context, token, target, group st
 
 	return au.db.RemoveGroupFromUser(ctx, group, target)
 }
-
 
 func (au Aurum) GetGroupsForUser(ctx context.Context, token, user string) ([]models.GroupWithRole, error) {
 	claims, err := au.checkToken(token)
@@ -146,4 +141,3 @@ func (au Aurum) GetGroupsForUser(ctx context.Context, token, user string) ([]mod
 
 	return au.db.GetGroupsForUser(ctx, user)
 }
-

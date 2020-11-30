@@ -2,6 +2,9 @@ package aurum
 
 import (
 	"context"
+	"reflect"
+	"testing"
+
 	"github.com/finitum/aurum/internal/hash"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/jwt"
@@ -9,8 +12,6 @@ import (
 	"github.com/finitum/aurum/pkg/store/mock_store"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"reflect"
-	"testing"
 )
 
 func TestAurum_SignUp(t *testing.T) {
@@ -31,6 +32,7 @@ func TestAurum_SignUp(t *testing.T) {
 	ms.EXPECT().CreateUser(gomock.AssignableToTypeOf(ctxT), gomock.Any()).Do(func(_ context.Context, gu models.User) {
 		assert.True(t, hash.CheckPasswordHash(u.Password, gu.Password))
 	}).Return(nil)
+	ms.EXPECT().AddGroupToUser(gomock.AssignableToTypeOf(ctxT), u.Username, AurumName, models.RoleUser)
 
 	au := Aurum{db: ms}
 	// SUT
@@ -121,6 +123,7 @@ func TestAurum_GetUser(t *testing.T) {
 	assert.NoError(t, err)
 	// SUT
 	gu, err := au.GetUser(ctx, tp.LoginToken)
+	assert.NoError(t, err)
 
 	assert.Equal(t, models.User{
 		Username: u.Username,

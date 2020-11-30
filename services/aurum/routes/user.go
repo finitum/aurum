@@ -2,10 +2,11 @@ package routes
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/go-chi/chi"
-	"net/http"
 )
 
 func (rs Routes) SignUp(w http.ResponseWriter, r *http.Request) {

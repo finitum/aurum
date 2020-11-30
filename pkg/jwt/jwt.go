@@ -2,10 +2,11 @@ package jwt
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/google/uuid"
-	"time"
 )
 
 type Claims struct {

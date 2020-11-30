@@ -1,13 +1,14 @@
 package jwt
 
 import (
+	"testing"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/finitum/aurum/pkg/models"
 	tassert "github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestGenerateJWTSimple(t *testing.T) {

@@ -3,11 +3,14 @@ package store
 import (
 	"context"
 	"errors"
+
 	"github.com/finitum/aurum/pkg/models"
 )
 
-var ErrExists = errors.New("already exists")
-var ErrNotExists = errors.New("doesn't exist")
+var (
+	ErrExists    = errors.New("already exists")
+	ErrNotExists = errors.New("doesn't exist")
+)
 
 //go:generate mockgen -destination mock_store/mock_store.go . AurumStore
 
@@ -18,16 +21,16 @@ type AurumStore interface {
 
 	// RemoveGroup removes an group from the database based
 	// on it's name.
-	RemoveGroup(ctx context.Context, name string) error
+	RemoveGroup(ctx context.Context, group string) error
 
 	// GetGroup retrieves an group based on it name.
-	GetGroup(ctx context.Context, name string) (*models.Group, error)
+	GetGroup(ctx context.Context, group string) (*models.Group, error)
 
 	// GetGroups lists all groups.
 	GetGroups(ctx context.Context) ([]models.Group, error)
 
 	// GetGroupsForUser lists all groups a user has a specified role in.
-	GetGroupsForUser(ctx context.Context, name string) ([]models.GroupWithRole, error)
+	GetGroupsForUser(ctx context.Context, group string) ([]models.GroupWithRole, error)
 
 	// CreateUser creates a new user in the database.
 	// User names and ids must be unique
@@ -49,7 +52,7 @@ type AurumStore interface {
 
 	// AddUserToGroup links a user to an group with a given role.
 	// This role is the role the user has within this group.
-	AddGroupToUser(ctx context.Context, user string, name string, role models.Role) error
+	AddGroupToUser(ctx context.Context, user string, group string, role models.Role) error
 
 	// RemoveUserFromGroup removes the link between a user and an group.
 	RemoveGroupFromUser(ctx context.Context, group string, user string) error

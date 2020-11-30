@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go test aurum integration" type="GoTestRunConfiguration" factoryName="Go Test">
+    <module name="aurum" />
+    <working_directory value="$PROJECT_DIR$/services/aurum" />
+    <framework value="gotest" />
+    <kind value="PACKAGE" />
+    <package value="github.com/finitum/aurum/services/aurum" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <pattern value="^\QTestSystemIntegration\E$" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"syscall/js"
+
 	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"syscall/js"
 )
 
 func main() {

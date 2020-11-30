@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/finitum/aurum/pkg/models"
 	te "github.com/muesli/termenv"

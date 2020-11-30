@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/finitum/aurum/pkg/jwt/ecc"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/finitum/aurum/pkg/jwt/ecc"
+	"github.com/stretchr/testify/assert"
 )
 
 const nonExistingPath = "./non-existing-path/"

@@ -3,8 +3,9 @@ package ecc
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPKToFromPem(t *testing.T) {
@@ -15,6 +16,7 @@ func TestPKToFromPem(t *testing.T) {
 	assert.NoError(t, err)
 
 	pkFromPem, err := FromPem([]byte(pkPEM))
+	assert.NoError(t, err)
 	assert.Equal(t, pk, pkFromPem)
 }
 
@@ -26,6 +28,7 @@ func TestSKToFromPem(t *testing.T) {
 	assert.NoError(t, err)
 
 	skFromPem, err := FromPem([]byte(skPEM))
+	assert.NoError(t, err)
 	assert.Equal(t, sk, skFromPem)
 }
 

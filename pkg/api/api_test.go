@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/finitum/aurum/pkg/models"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/finitum/aurum/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetPublicKey(t *testing.T) {

@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"github.com/finitum/aurum/internal/cors"
+	"net/http"
+	"time"
+
 	"github.com/finitum/aurum/internal/aurum"
+	"github.com/finitum/aurum/internal/cors"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/store/dgraph"
 	"github.com/finitum/aurum/services/aurum/routes"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"time"
 )
 
 func init() {
@@ -39,7 +40,6 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(cors.AllowAll)
 
-
 	rs := routes.NewRoutes(au, cfg)
 
 	r.Get("/pk", rs.PublicKey)
@@ -59,7 +59,7 @@ func main() {
 
 		// Group
 		r.Post("/group", rs.AddGroup)
-		r.Delete("/group", rs.RemoveGroup)
+		r.Delete("/group/{group}", rs.RemoveGroup)
 
 		r.Put("/group/{group}/{user}", rs.SetAccess)
 		r.Post("/group/{group}/{user}", rs.AddUserToGroup)

@@ -6,6 +6,8 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"strings"
+
 	"github.com/finitum/aurum/internal/hash"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/jwt"
@@ -14,15 +16,18 @@ import (
 	"github.com/finitum/aurum/pkg/store"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
-var ErrInvalidInput = errors.New("password is too weak")
-var ErrWeakPassword = errors.New("password is too weak")
-var ErrUnauthorized = errors.New("unauthorized")
+var (
+	ErrInvalidInput = errors.New("password is too weak")
+	ErrWeakPassword = errors.New("password is too weak")
+	ErrUnauthorized = errors.New("unauthorized")
+)
 
-const adminUsername = "admin"
-const AurumName = "aurum"
+const (
+	adminUsername = "admin"
+	AurumName     = "aurum"
+)
 
 type Aurum struct {
 	db store.AurumStore
@@ -71,7 +76,7 @@ func setup(ctx context.Context, db store.AurumStore) error {
 	}
 
 	if err := db.CreateGroup(ctx, models.Group{
-		Name: AurumName,
+		Name:              AurumName,
 		AllowRegistration: true,
 	}); err != nil {
 		return errors.Wrap(err, "create initial group")

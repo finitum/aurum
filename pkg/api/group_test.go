@@ -3,12 +3,13 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/finitum/aurum/pkg/jwt"
-	"github.com/finitum/aurum/pkg/models"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/finitum/aurum/pkg/jwt"
+	"github.com/finitum/aurum/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddGroup(t *testing.T) {
@@ -70,10 +71,10 @@ func TestGetAccess(t *testing.T) {
 	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	access := models.AccessStatus{
-		GroupName: group,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            models.RoleAdmin,
+		GroupName:     group,
+		Username:      user,
+		AllowedAccess: true,
+		Role:          models.RoleAdmin,
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -97,10 +98,10 @@ func TestSetAccess(t *testing.T) {
 	url := fmt.Sprintf("/group/%s/%s", group, user)
 
 	access := models.AccessStatus{
-		GroupName: group,
-		Username:        user,
-		AllowedAccess:   true,
-		Role:            models.RoleAdmin,
+		GroupName:     group,
+		Username:      user,
+		AllowedAccess: true,
+		Role:          models.RoleAdmin,
 	}
 
 	tp := jwt.TokenPair{
@@ -143,6 +144,7 @@ func TestAddUserToGroup(t *testing.T) {
 
 		token := r.Header.Get("Authorization")
 		assert.Equal(t, "Bearer "+tp.LoginToken, token)
+		w.WriteHeader(http.StatusCreated)
 	}))
 	defer ts.Close()
 

@@ -3,12 +3,14 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+	"strings"
+
 	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/config"
 	"github.com/finitum/aurum/pkg/models"
 	"github.com/finitum/aurum/pkg/store"
-	"net/http"
-	"strings"
+	log "github.com/sirupsen/logrus"
 )
 
 type Routes struct {
@@ -28,6 +30,7 @@ const (
 	Duplicate
 	WeakPassword
 	Unauthorized
+	NotFound
 )
 
 type ErrorResponse struct {
@@ -40,7 +43,9 @@ func AutomaticRenderError(w http.ResponseWriter, err error) error {
 	switch err {
 	case store.ErrExists:
 		code = Duplicate
-	case store.ErrNotExists, aurum.ErrInvalidInput:
+	case store.ErrNotExists:
+		code = NotFound
+	case aurum.ErrInvalidInput:
 		code = InvalidRequest
 	case aurum.ErrWeakPassword:
 		code = WeakPassword
@@ -53,6 +58,8 @@ func AutomaticRenderError(w http.ResponseWriter, err error) error {
 
 func RenderError(w http.ResponseWriter, err error, code ErrorCode) error {
 	switch code {
+	case NotFound:
+		w.WriteHeader(http.StatusNotFound)
 	case Duplicate:
 		w.WriteHeader(http.StatusConflict)
 	case Unauthorized:
@@ -62,6 +69,7 @@ func RenderError(w http.ResponseWriter, err error, code ErrorCode) error {
 	case ServerError:
 		fallthrough
 	default:
+		log.Errorf("Internal Server Error: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
@@ -86,8 +94,10 @@ func (rs Routes) PublicKey(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type aurumContextKey string
+
 const (
-	contextKeyToken = "aurum web context key token"
+	contextKeyToken aurumContextKey = "aurum web context key token"
 )
 
 // TokenExtractionMiddleware extracts the Authorization token from the http request and stores it in the request context
@@ -107,7 +117,6 @@ func (rs Routes) TokenExtractionMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
-
 
 func TokenFromContext(ctx context.Context) string {
 	val, ok := ctx.Value(contextKeyToken).(string)

@@ -3,6 +3,7 @@ package dgraph
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/finitum/aurum/pkg/models"
@@ -10,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (dg DGraph) getGroup(ctx context.Context, txn *dgo.Txn, name string) (*Group, error) {
+func (dg DGraph) getGroup(ctx context.Context, txn *dgo.Txn, group string) (*Group, error) {
 	query := `
 		query q($aname: string) {
 		  q(func:eq(name, $aname)) {
@@ -20,7 +21,7 @@ func (dg DGraph) getGroup(ctx context.Context, txn *dgo.Txn, name string) (*Grou
 		  }
 		}
 	`
-	variables := map[string]string{"$aname": name}
+	variables := map[string]string{"$aname": group}
 
 	resp, err := txn.QueryWithVars(ctx, query, variables)
 	if err != nil {
@@ -37,17 +38,17 @@ func (dg DGraph) getGroup(ctx context.Context, txn *dgo.Txn, name string) (*Grou
 	}
 
 	if len(r.Q) == 0 {
-		return nil, errors.Errorf("group %s wasn't found", name)
+		return nil, errors.Errorf("group %s wasn't found", group)
 	} else if len(r.Q) != 1 {
-		return nil, errors.Errorf("expected unique (one) group with name %s, but found %d", name, len(r.Q))
+		return nil, errors.Errorf("expected unique (one) group with name %s, but found %d", group, len(r.Q))
 	}
 
 	return &r.Q[0], nil
 }
 
-func (dg DGraph) GetGroup(ctx context.Context, name string) (*models.Group, error) {
+func (dg DGraph) GetGroup(ctx context.Context, groupName string) (*models.Group, error) {
 	txn := dg.NewReadOnlyTxn().BestEffort()
-	group, err := dg.getGroup(ctx, txn, name)
+	group, err := dg.getGroup(ctx, txn, groupName)
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +141,10 @@ func (dg DGraph) CreateGroup(ctx context.Context, group models.Group) error {
 	return errors.Wrap(err, "mutate")
 }
 
-func (dg DGraph) RemoveGroup(ctx context.Context, name string) error {
+func (dg DGraph) RemoveGroup(ctx context.Context, groupName string) error {
 	txn := dg.NewTxn()
 
-	group, err := dg.getGroup(ctx, txn, name)
+	group, err := dg.getGroup(ctx, txn, groupName)
 	if err != nil {
 		return errors.Wrap(err, "get user (internal)")
 	}
@@ -164,12 +165,12 @@ func (dg DGraph) RemoveGroup(ctx context.Context, name string) error {
 	return errors.Wrap(err, "delete")
 }
 
-func (dg DGraph) GetGroupsForUser(ctx context.Context, name string) ([]models.GroupWithRole, error) {
+func (dg DGraph) GetGroupsForUser(ctx context.Context, user string) ([]models.GroupWithRole, error) {
 	query := `
 query q($uname: string) {
   q(func: type(User)) @filter(eq(username, $uname)) {
 	username
-   	groups @facets(role) {
+   	groups @facets(role:role) {
       name
 	  allow_registration
   	} 
@@ -177,7 +178,7 @@ query q($uname: string) {
 }`
 
 	variables := map[string]string{
-		"$uname": name,
+		"$uname": user,
 	}
 	txn := dg.NewReadOnlyTxn().BestEffort()
 	resp, err := txn.QueryWithVars(ctx, query, variables)
@@ -185,9 +186,8 @@ query q($uname: string) {
 		return nil, errors.Wrap(err, "query")
 	}
 
-	// TODO: explain dafuq is going on
 	var r struct {
-		Q []struct{
+		Q []struct {
 			Groups []models.GroupWithRole `json:"groups"`
 		} `json:"q"`
 	}
@@ -200,7 +200,6 @@ query q($uname: string) {
 	} else if len(r.Q[0].Groups) == 0 {
 		return nil, store.ErrNotExists
 	}
-
 
 	return r.Q[0].Groups, nil
 }

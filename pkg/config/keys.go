@@ -31,7 +31,6 @@ func writeKey(key ecc.Key, keyPath string) error {
 
 // TODO: Testing
 func findKeys(config *EnvConfig) (ecc.PublicKey, ecc.SecretKey, error) {
-
 	// Get keys from file or env (else nil)
 	pk, err := loadKey(config.PublicKey, config.PublicKeyPath, "public key")
 	if err != nil {
@@ -84,7 +83,6 @@ func findKeys(config *EnvConfig) (ecc.PublicKey, ecc.SecretKey, error) {
 		// If we don't have a secret key, but we can generate it, generate it, do so
 
 		publicKey, secretKey, err := ecc.GenerateKey()
-
 		if err != nil {
 			return nil, nil, errors.Errorf("An error occurred during key generation: %v", err.Error())
 		}

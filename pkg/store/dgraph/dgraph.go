@@ -2,6 +2,7 @@ package dgraph
 
 import (
 	"context"
+
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/pkg/errors"

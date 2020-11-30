@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       dgraph:
-        image: dgraph/standalone:v20.03.0
+        image: dgraph/standalone:v20.07.0
         ports:
           - 9080:9080
           - 8000:8000
