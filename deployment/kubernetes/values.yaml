@@ -75,10 +75,14 @@ config:
 
 # Generate these using aurum's keygen tool (see documentation)
 secrets:
-  publicKey: "LS0tLS1CRUdJqTiBQVUJMSUMgS0VZLS0tLS1cbk1Db3dCUVlESzJWd0F5RUFTQkpKbEhUSEJNZUlwczhCdVhHU3prSTYrWks3OHhBRW9FZTVxZmlLY3kwPVxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tXG4K"
-  secretKey: "LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS1cbk1DNENBUUF3QlFZREsyVndCQ0lFSVA2Q2o2SENmbVBVRjFCS0ZRTitVMzltUnFsMjQ2NG9TUHk0aG1sbE9VTXBcbi0tLS0tRU5EIEVEMjU1MTkgUFJJVkFURSBLRVktLS0tLVxuCg=="
+  publicKey: ""
+  secretKey: ""
 
 # Dgraph's helm chart: https://github.com/dgraph-io/charts/blob/master/charts/dgraph/values.yaml
-#dgraph:
+dgraph:
+  alpha:
+    configFile:
+      config.hcl: |
+        whitelist = "0.0.0.0/0"
 
 
