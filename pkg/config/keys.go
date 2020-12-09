@@ -4,10 +4,12 @@ import (
 	"github.com/finitum/aurum/pkg/jwt/ecc"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 func loadKey(key string, keyPath string, keyType string) (ecc.Key, error) {
 	if key != "" {
+		key = strings.ReplaceAll(key, "\\n", "\n")
 		k, err := ecc.FromPem([]byte(key))
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not parse key given in environment variable")
