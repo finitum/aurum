@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/finitum/aurum
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
@@ -75,8 +75,8 @@ config:
 
 # Generate these using aurum's keygen tool (see documentation)
 secrets:
-  publicKey: ""
-  secretKey: ""
+  publicKey: "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAZJastsEYar5uD5xw0ynRLWjBO286mlx6i4+GL8CaKHg=\n-----END PUBLIC KEY-----\n"
+  secretKey: "-----BEGIN ED25519 PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIL+yKm7zRagCY+9F/sJ2VX0OFr0FHtXs6a8KwACjLJvL\n-----END ED25519 PRIVATE KEY-----\n"
 
 # Dgraph's helm chart: https://github.com/dgraph-io/charts/blob/master/charts/dgraph/values.yaml
 dgraph:

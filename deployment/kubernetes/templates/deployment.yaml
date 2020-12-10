@@ -45,6 +45,12 @@ spec:
             httpGet:
               path: /
               port: http
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 12
+            periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /

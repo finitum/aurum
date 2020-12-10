@@ -27,11 +27,11 @@ func main() {
 
 	var dg *dgraph.DGraph
 	var err error
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		dg, err = dgraph.New(ctx, cfg.DgraphUrl)
 		if err != nil {
 			log.Errorf("Couldn't create Dgraph client, retrying in 3 seconds: %v", err)
-			time.Sleep(5 * time.Second)
+			time.Sleep(3 * time.Second)
 		} else {
 			break
 		}
