@@ -21,13 +21,14 @@ func init() {
 
 func main() {
 	ctx := context.Background()
-
 	cfg := config.GetConfig()
 
+	log.Infof("Starting Aurum")
 
 	var dg *dgraph.DGraph
 	var err error
 	for i := 0; i < 10; i++ {
+		log.Infof("Connecting to DGraph")
 		dg, err = dgraph.New(ctx, cfg.DgraphUrl)
 		if err != nil {
 			log.Errorf("Couldn't create Dgraph client, retrying in 3 seconds: %v", err)
