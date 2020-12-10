@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ include "aurum.fullname" . }}
 data:
-  WEB_ADDRESS: {{ default "0.0.0.0:8042" .Values.config.webAddress }}
+  WEB_ADDRESS: :{{ default "8042" .Values.config.port }}
   BASE_PATH: "/"
 
   NO_KEY_GENERATE: "true"

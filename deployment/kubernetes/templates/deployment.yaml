@@ -44,17 +44,17 @@ spec:
           livenessProbe:
             httpGet:
               path: /pk
-              port: 8042
+              port: {{ .Values.config.port }}
           startupProbe:
             httpGet:
               path: /pk
-              port: 8042
+              port: {{ .Values.config.port }}
             failureThreshold: 12
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /pk
-              port: 8042
+              port: {{ .Values.config.port }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

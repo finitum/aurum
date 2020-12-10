@@ -70,13 +70,13 @@ tolerations: []
 affinity: {}
 
 config:
-  webAddress: 0.0.0.0:8042
+  port: 8042
 
 
 # Generate these using aurum's keygen tool (see documentation)
 secrets:
-  publicKey: ""
-  secretKey: ""
+  publicKey: "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAEPITXm1epHiN5/Lo+Qb1bJXc35kXO4Ci6cQ7flxuZUU=\n-----END PUBLIC KEY-----\n"
+  secretKey: "-----BEGIN ED25519 PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIHsnOgNEH/EBN/exY26xwA+Z6x/Eef79igkIsVLY7KcX\n-----END ED25519 PRIVATE KEY-----\n"
 
 # Dgraph's helm chart: https://github.com/dgraph-io/charts/blob/master/charts/dgraph/values.yaml
 dgraph:
@@ -84,5 +84,27 @@ dgraph:
     configFile:
       config.hcl: |
         whitelist = "0.0.0.0/0"
+
+    persistence:
+      enabled: true
+      # storageClass: "-"
+      accessModes:
+        - ReadWriteOnce
+      size: 5Gi
+      annotations: {}
+
+  zero:
+    persistence:
+      enabled: true
+      # storageClass: "-"
+      accessModes:
+        - ReadWriteOnce
+      size: 5Gi
+
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
 
 

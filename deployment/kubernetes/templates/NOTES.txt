@@ -22,4 +22,4 @@
 {{- end }}
 
 2. An admin account has automatically been created. It's username is `admin` and you can get the password from the logs
-or with `kubectl get secret -o jsonpath="{.items[0].data.ADMIN_PASSWORD}" | base64 -d`
+or with `kubectl get secret -o jsonpath="{.items[0].data.ADMIN_PASSWORD}" --namespace {{ .Release.Namespace }}  | base64 -d`
