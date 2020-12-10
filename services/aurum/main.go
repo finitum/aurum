@@ -34,6 +34,7 @@ func main() {
 			log.Errorf("Couldn't create Dgraph client, retrying in 3 seconds: %v", err)
 			time.Sleep(3 * time.Second)
 		} else {
+			log.Infof("Connection with DGraph established")
 			break
 		}
 	}

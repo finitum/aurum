@@ -43,18 +43,18 @@ spec:
                 name: {{ include "aurum.fullname" . }}
           livenessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /pk
+              port: 8042
           startupProbe:
             httpGet:
-              path: /
-              port: http
+              path: /pk
+              port: 8042
             failureThreshold: 12
             periodSeconds: 5
           readinessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /pk
+              port: 8042
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
