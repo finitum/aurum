@@ -125,3 +125,30 @@ func TokenFromContext(ctx context.Context) string {
 	}
 	return val
 }
+
+func (rs Routes) HomePage(w http.ResponseWriter, r *http.Request) {
+	page := `
+<!doctype html>
+
+<html lang="en">
+<head>
+  	<meta charset="utf-8">
+
+  	<title>Aurum api homepage</title>
+
+	<style>
+		body {
+			margin: 30px;
+			text-align: center;
+		}
+	</style>
+</head>
+
+<body>
+	This is the homepage of the Aurum api. To interface with Aurum, use the aurum CLI tool which can be found <a href="https://github.com/finitum/aurum">on github</a>.
+</body>
+</html>
+	`
+
+	_, _ = w.Write([]byte(page))
+}

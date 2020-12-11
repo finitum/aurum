@@ -42,6 +42,8 @@ func main() {
 
 	rs := routes.NewRoutes(au, cfg)
 
+	r.Get("/", rs.HomePage)
+
 	r.Get("/pk", rs.PublicKey)
 
 	r.Post("/signup", rs.SignUp)
