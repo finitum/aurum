@@ -18,6 +18,15 @@ const (
 	RoleAdmin
 )
 
+func (r Role) String() string {
+	switch r {
+	case RoleUser: return "user"
+	case RoleAdmin: return "admin"
+	default:
+		return "non-standard"
+	}
+}
+
 type GroupWithRole struct {
 	Group
 	Role Role `json:"role,omitempty"`

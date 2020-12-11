@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aurum.fullname" . }}
+data:
+  WEB_ADDRESS: :{{ default "8042" .Values.config.port }}
+  BASE_PATH: "/"
+
+  NO_KEY_GENERATE: "true"
+  NO_KEY_WRITE: "true"
+
+  DGRAPH_URL: {{ .Release.Name }}-dgraph-alpha:9080

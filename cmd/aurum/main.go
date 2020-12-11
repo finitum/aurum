@@ -3,134 +3,254 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/finitum/aurum/clients/go"
-	"github.com/finitum/aurum/pkg/jwt"
+	"github.com/mattn/go-runewidth"
 	te "github.com/muesli/termenv"
+	"go.deanishe.net/env"
+	"strings"
 )
-
-var host = flag.String("host", "http://localhost:8042", "Aurum host to connect to")
 
 var (
 	color     = te.ColorProfile().Color
 	aurumText = te.String("Aurum").Foreground(color("#ffd700")).Bold().String()
 )
 
-func main() {
-	flag.Parse()
 
-	p := tea.NewProgram(initialModel())
-
-	if err := p.Start(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
-	}
-}
-
-type Screen int
-
+type View string
 const (
-	MainScreen Screen = iota
-	LoginScreen
-	RegisterScreen
-	UserScreen
+	ViewHome           View = "Home"
+	ViewLogin          View = "Login"
+	ViewRegister       View = "Register"
+	ViewUser           View = "User"
+	ViewUserList       View = "User List"
+	ViewGroupList      View = "Group list"
+	ViewChangePassword View = "Change Password"
+	ViewChangeEmail    View = "Change Email"
+	ViewEditUserGroups View = "Edit User Groups"
+	ViewChangeServer   View = "Change Server"
 )
 
-type model struct {
-	au     aurum.Client
-	tp     *jwt.TokenPair
-	screen Screen
-	err    error
+type Model struct {
+	login          LoginModel
+	home           HomeModel
+	register       RegisterModel
+	user           UserModel
+	userlist       UserListModel
+	changePassword ChangePasswordModel
+	changeEmail    ChangeEmailModel
+	groupList      GroupListModel
+	editUserGroups EditUserGroupModel
+	changeServer   ChangeServerModel
 
-	info string
+	currentView View
 
-	main  MainScreenModel
-	login LoginRegisterModel
-	user  UserModel
+	width int
+	err error
 }
 
-func initialModel() model {
-	return model{
-		au:     nil,
-		screen: MainScreen,
-		err:    nil,
-		main:   InitialMainScreenModel(),
-		login:  InitialLoginScreenModel(),
-		user:   InitialUserScreenModel(),
+func (m Model) Init() tea.Cmd {
+	return func() tea.Msg {
+		return AddClients{}
 	}
 }
 
-func (m model) Init() tea.Cmd {
-	return connect
-}
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
+	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
-	case screenLoginMsg:
-		m.screen = LoginScreen
-		m.login = InitialLoginScreenModel()
-		m.login.login = true
-		m.screen = RegisterScreen
-	case screenRegisterMsg:
-		m.login = InitialLoginScreenModel()
-		m.login.login = false
-		m.screen = RegisterScreen
-	case loginMsg:
-		m.screen = UserScreen
-		m.tp = msg.tp
-		cmds = append(cmds, getme(m.au, msg.tp))
-	case registerMsg:
-		m.info = te.String("Registered successfully!").Foreground(color("#0f0")).String()
-		m.screen = MainScreen
-	case errMsg:
-		m.err = msg
-		return m, tea.Quit
-	case connectMsg:
-		m.au = msg.au
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+	case ErrorMsg:
+		m.err = msg.err
+	case ChangeViewMsg:
+		prevview := m.currentView
+		m.currentView = msg.newView
+		switch m.currentView {
+		case ViewHome:
+		case ViewLogin:
+		case ViewRegister:
+		case ViewUser:
+		case ViewUserList:
+			m.userlist , cmd= m.userlist.Init(msg.params)
+			cmds = append(cmds, cmd)
+		case ViewChangePassword:
+		case ViewChangeEmail:
+		case ViewGroupList:
+		case ViewEditUserGroups:
+			m.editUserGroups, cmd = m.editUserGroups.Init(msg.params)
+			cmds = append(cmds, cmd)
+		case ViewChangeServer:
+			m.changeServer, cmd = m.changeServer.Init([]interface{}{prevview})
+			cmds = append(cmds, cmd)
+		}
+
+	case CompoundMsg:
+		var newm tea.Model
+		newm = m
+		for _, s := range msg.msgs {
+			newm, cmd = newm.Update(s)
+			cmds = append(cmds, cmd)
+		}
+
+		return newm, tea.Batch(cmds...)
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC:
 			return m, tea.Quit
 		case tea.KeyEsc:
-			m.screen = MainScreen
+			if m.err != nil {
+				m.err = nil
+				return m, nil
+			}
+		case tea.KeyCtrlS:
+			prevview := m.currentView
+			m.currentView = ViewChangeServer
+			m.changeServer, cmd = m.changeServer.Init([]interface{}{prevview})
+		}
+	case AddClients:
+		hostvar := env.Get("AURUM_TUI_HOST")
+		if hostvar != "" {
+			for _, i := range strings.Split(hostvar, ",") {
+				err := clientManager.AddClient(i)
+				if err != nil {
+					return m, ErrorCmd(fmt.Errorf("couldn't connect with client %s (%v)", i, err))
+				}
+			}
+		}
+
+		for _, i := range hostFlags {
+			err := clientManager.AddClient(i)
+			if err != nil {
+				return m, ErrorCmd(fmt.Errorf("couldn't connect with client %s (%v)", i, err))
+			}
 		}
 	}
 
-	var cmd tea.Cmd
-	switch m.screen {
-	case MainScreen:
-		m.main, cmd = m.main.Update(msg)
-	case LoginScreen, RegisterScreen:
-		m.login, cmd = m.login.Update(m.au, msg)
-	case UserScreen:
+	switch m.currentView {
+	case ViewHome:
+		m.home, cmd = m.home.Update(msg)
+	case ViewLogin:
+		m.login, cmd = m.login.Update(msg)
+	case ViewRegister:
+		m.register, cmd = m.register.Update(msg)
+	case ViewUser:
 		m.user, cmd = m.user.Update(msg)
+	case ViewUserList:
+		m.userlist, cmd = m.userlist.Update(msg)
+	case ViewChangePassword:
+		m.changePassword, cmd = m.changePassword.Update(msg)
+	case ViewChangeEmail:
+		m.changeEmail, cmd = m.changeEmail.Update(msg)
+	case ViewGroupList:
+		m.groupList, cmd = m.groupList.Update(msg)
+	case ViewEditUserGroups:
+		m.editUserGroups, cmd = m.editUserGroups.Update(msg)
+	case ViewChangeServer:
+		m.changeServer, cmd = m.changeServer.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
 }
 
-func (m model) View() string {
+
+func (m Model) View() string {
+	s := ""
+
+	client, err := clientManager.GetActiveClient()
+	var host string
+	if err != nil {
+		host = "<no host connected>"
+	} else {
+		host = client.GetUrl()
+	}
+
+	s += " " + aurumText + " at " + host + "\n"
+	s += " press [control s] to change Aurum server\n"
+	if m.width != -1 {
+		s += strings.Repeat("=", m.width) + "\n"
+	}
+
+	var screen string
+	switch m.currentView {
+	case ViewLogin:
+		screen = m.login.View()
+	case ViewRegister:
+		screen = m.register.View()
+	case ViewHome:
+		screen = m.home.View()
+	case ViewUser:
+		screen = m.user.View()
+	case ViewUserList:
+		screen = m.userlist.View(m.width)
+	case ViewChangePassword:
+		screen = m.changePassword.View()
+	case ViewChangeEmail:
+		screen = m.changeEmail.View()
+	case ViewGroupList:
+		screen = m.groupList.View(m.width)
+	case ViewEditUserGroups:
+		screen = m.editUserGroups.View(m.width)
+	case ViewChangeServer:
+		screen = m.changeServer.View()
+	}
+
+
+	for _, i := range strings.Split(screen, "\n") {
+		if  m.width != -1 && runewidth.StringWidth(i) >= m.width {
+			s += runewidth.Truncate(i, m.width, "") + "\n"
+		} else {
+			s += i + "\n"
+		}
+	}
+
+	// Show last error
 	if m.err != nil {
-		return fmt.Sprintf("\nAn error occured: %v\n\n", m.err)
-	}
-
-	if m.au == nil {
-		return "Connecting...\n"
-	}
-
-	var s string
-	switch m.screen {
-	case MainScreen:
-		s += m.main.View()
-	case LoginScreen, RegisterScreen:
-		s += m.login.View()
-	case UserScreen:
-		s += m.user.View()
+		s += te.String("\nError: ").Foreground(color("#f00")).String() + strings.TrimSpace(m.err.Error()) + "\n"
 	}
 
 	return s
+}
+
+func NewModel() Model {
+	return Model{
+		currentView:    ViewHome,
+		width: 			-1,
+		login:          NewLoginModel(),
+		register:       NewRegisterModel(),
+		home:           NewHomeModel(),
+		user:           NewUserModel(),
+		changePassword: NewChangePasswordModel(),
+		changeEmail:    NewChangeEmailModel(),
+		groupList: 		NewGroupListModel(),
+		editUserGroups: NewEditUserGroupModel(),
+		changeServer: 	NewChangeServerModel(),
+	}
+}
+
+var clientManager = NewClientManager()
+
+type arrayFlags []string
+func (i *arrayFlags) String() string {
+	return strings.Join(*i, ",")
+}
+
+func (i *arrayFlags) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
+var hostFlags arrayFlags
+
+func main() {
+	flag.Var(&hostFlags, "host", "A host to connect to (multiple values possible)")
+	flag.Parse()
+
+	p := tea.NewProgram(NewModel())
+	p.EnterAltScreen()
+	defer p.ExitAltScreen()
+
+	if err := p.Start(); err != nil {
+		fmt.Printf("Error starting Aurum TUI %v", err)
+	}
 }

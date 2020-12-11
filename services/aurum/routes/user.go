@@ -106,3 +106,16 @@ func (rs Routes) GetGroupsForUser(w http.ResponseWriter, r *http.Request) {
 
 	_ = json.NewEncoder(w).Encode(&grouproles)
 }
+
+
+func (rs Routes) GetUsers(w http.ResponseWriter, r *http.Request) {
+	token := TokenFromContext(r.Context())
+
+	users, err := rs.au.GetUsers(r.Context(), token)
+	if err != nil {
+		_ = AutomaticRenderError(w, err)
+		return
+	}
+
+	_ = json.NewEncoder(w).Encode(users)
+}

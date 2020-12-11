@@ -42,11 +42,14 @@ func main() {
 
 	rs := routes.NewRoutes(au, cfg)
 
+	r.Get("/", rs.HomePage)
+
 	r.Get("/pk", rs.PublicKey)
 
 	r.Post("/signup", rs.SignUp)
 	r.Post("/login", rs.Login)
 	r.Post("/refresh", rs.Refresh)
+	r.Get("/groups", rs.GetGroups)
 
 	r.Get("/group/{group}/{user}", rs.GetAccess)
 
@@ -56,6 +59,8 @@ func main() {
 		r.Get("/user", rs.GetMe)
 		r.Post("/user", rs.SetUser)
 		r.Get("/user/{user}/groups", rs.GetGroupsForUser)
+
+		r.Get("/users", rs.GetUsers)
 
 		// Group
 		r.Post("/group", rs.AddGroup)

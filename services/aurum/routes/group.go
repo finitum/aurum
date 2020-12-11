@@ -152,3 +152,13 @@ func (rs Routes) RemoveUserFromGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (rs Routes) GetGroups(w http.ResponseWriter, r *http.Request) {
+	users, err := rs.au.GetGroups(r.Context())
+	if err != nil {
+		_ = AutomaticRenderError(w, err)
+		return
+	}
+
+	_ = json.NewEncoder(w).Encode(users)
+}

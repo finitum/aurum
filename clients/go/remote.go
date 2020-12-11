@@ -16,13 +16,22 @@ type RemoteClient struct {
 	pk  ecc.PublicKey
 }
 
-func NewRemoteClient(url string) (*RemoteClient, error) {
-	if !strings.HasPrefix(url, "https") {
+func (a *RemoteClient) GetUrl() string {
+	return a.url
+}
+
+// NewRemoteClient won't print anything when notprint = true
+func NewRemoteClient(url string, noprint... bool) (*RemoteClient, error) {
+	if !strings.HasPrefix(url, "https") && (len(noprint) == 0 || !noprint[0]) {
 		log.Warnf("[aurum] using insecure url %s, security can not be guaranteed!", url)
 	}
 
 	pkr, err := api.GetPublicKey(url)
 	if err != nil {
+		return nil, errors.Wrap(err, "failed getting public key")
+	}
+
+	if pkr == nil {
 		return nil, errors.Wrap(err, "failed getting public key")
 	}
 
@@ -111,6 +120,22 @@ func (a *RemoteClient) GetGroupsForUser(tp *jwt.TokenPair, user string) ([]model
 	groups, err := api.GetGroupsForUser(a.url, tp, user)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetGroupsForUser api request failed")
+	}
+	return groups, nil
+}
+
+func (a *RemoteClient) GetUsers(tp *jwt.TokenPair) ([]models.User, error) {
+	users, err := api.GetUsers(a.url, tp)
+	if err != nil {
+		return nil, errors.Wrap(err, "GetUsers api request failed")
+	}
+	return users, nil
+}
+
+func (a *RemoteClient) GetGroups() ([]models.Group, error) {
+	groups, err := api.GetGroups(a.url)
+	if err != nil {
+		return nil, errors.Wrap(err, "GetGroups api request failed")
 	}
 	return groups, nil
 }

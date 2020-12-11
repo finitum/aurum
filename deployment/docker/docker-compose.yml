@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  zero:
+    image: dgraph/dgraph:latest
+    volumes:
+      - dgraph_data:/dgraph
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+    networks: [aurum]
+    container_name: aurum_dgraph_zero
+
+  alpha:
+    image: dgraph/dgraph:latest
+    volumes:
+      - dgraph_data:/dgraph
+    restart: on-failure
+    command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --whitelist 0.0.0.0/0
+    networks: [aurum]
+    container_name: aurum_dgraph
+
+  aurum:
+    container_name: aurum_server
+    image: ghcr.io/finitum/aurum:edge
+    environment:
+      - WEB_ADDRESS=0.0.0.0:8042
+      - BASE_PATH="/"
+
+      - PUBLIC_KEY_PATH=/data/key.pub
+      - SECRET_KEY_PATH=/data/key
+
+      - DGRAPH_URL=aurum_dgraph:9080
+    restart: on-failure
+    volumes:
+    - aurum_data:/data
+    ports:
+    - 8042:8042
+    networks: [aurum]
+
+networks:
+  aurum:
+
+volumes:
+  aurum_data:
+  dgraph_data:
