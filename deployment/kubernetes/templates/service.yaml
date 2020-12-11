@@ -3,13 +3,13 @@ kind: Service
 metadata:
   name: {{ include "aurum.fullname" . }}
   labels:
-    {{- include "aurum.labels" . | nindent 4 }}
+  {{- include "aurum.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: {{ default 8042 .Values.config.port }}
       protocol: TCP
       name: http
   selector:
-    {{- include "aurum.selectorLabels" . | nindent 4 }}
+  {{- include "aurum.selectorLabels" . | nindent 4 }}

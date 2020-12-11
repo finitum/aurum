@@ -70,7 +70,7 @@ tolerations: []
 affinity: {}
 
 config:
-  webAddress: 0.0.0.0:8042
+  port: 8042
 
 
 # Generate these using aurum's keygen tool (see documentation)
