@@ -30,9 +30,14 @@ func (c *ClientManager) NumClients() int {
 }
 
 func (c *ClientManager) AddClient(url string) error {
-	println("Adding client: " + url)
+	for i, client := range c.clients {
+		if client.GetUrl() == url {
+			c.active = i
+			return nil
+		}
+	}
 
-	client, err := aurum.NewRemoteClient(url)
+	client, err := aurum.NewRemoteClient(url, false)
 	if err != nil {
 		return err
 	}
@@ -40,19 +45,20 @@ func (c *ClientManager) AddClient(url string) error {
 		Client: client,
 	})
 
+	c.active = len(c.clients) - 1
+
 	return nil
 }
 
-func (c *ClientManager) GetActiveClient() (Client, error) {
+func (c *ClientManager) GetActiveClient() (*Client, error) {
 	if c.active >= len(c.clients) {
-		return Client{}, errors.New("no clients added yet")
+		return nil, errors.New("no clients added yet")
 	}
 
-	return c.clients[c.active], nil
+	return &c.clients[c.active], nil
 }
 
 func (c *ClientManager) GetActiveClientIndex() int {
-
 	return c.active
 }
 

@@ -46,11 +46,6 @@ func (c ChangeServerModel) Update(msg tea.Msg) (ChangeServerModel, tea.Cmd) {
 						return ErrorMsg{err}
 					}
 
-					err = clientManager.SetActiveClient(clientManager.NumClients() - 1)
-					if err != nil {
-						return ErrorMsg{err}
-					}
-
 					return nil
 				}
 
@@ -60,7 +55,7 @@ func (c ChangeServerModel) Update(msg tea.Msg) (ChangeServerModel, tea.Cmd) {
 					return c, ErrorCmd(err)
 				}
 
-				return NewChangeServerModel(), ChangeViewCmd(c.prevView)
+				return c, nil
 			}
 
 		case tea.KeyUp:

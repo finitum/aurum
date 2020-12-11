@@ -64,6 +64,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ErrorMsg:
 		m.err = msg.err
 	case ChangeViewMsg:
+		prevview := m.currentView
 		m.currentView = msg.newView
 		switch m.currentView {
 		case ViewHome:
@@ -78,6 +79,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case ViewGroupList:
 		case ViewEditUserGroups:
 			m.editUserGroups, cmd = m.editUserGroups.Init(msg.params)
+			cmds = append(cmds, cmd)
+		case ViewChangeServer:
+			m.changeServer, cmd = m.changeServer.Init([]interface{}{prevview})
 			cmds = append(cmds, cmd)
 		}
 
@@ -162,7 +166,7 @@ func (m Model) View() string {
 	s += " " + aurumText + " at " + host + "\n"
 	s += " press [control s] to change Aurum server\n"
 	if m.width != -1 {
-		s += strings.Repeat("—", m.width) + "\n"
+		s += strings.Repeat("=", m.width) + "\n"
 	}
 
 	var screen string
