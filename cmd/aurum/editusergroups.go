@@ -215,6 +215,10 @@ func (g EditUserGroupModel) View(width int) string {
 }
 
 func (g EditUserGroupModel) Init(params []interface{}) (EditUserGroupModel, tea.Cmd) {
+	if len(params) != 0 {
+		return g, ErrorCmd(errors.New("failed to load user for editing"))
+	}
+
 	var ok bool
 	g.user, ok = params[0].(*models.User)
 	g.triedGroups = false

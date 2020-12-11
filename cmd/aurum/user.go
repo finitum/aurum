@@ -74,7 +74,11 @@ func (u UserModel) Update(msg tea.Msg) (UserModel, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyEsc:
 			// Logout
-			tp = jwt.TokenPair{}
+			client, err := clientManager.GetActiveClient()
+			if err != nil {
+				return u, ErrorCmd(err)
+			}
+			client.tp = jwt.TokenPair{}
 			return NewUserModel(), ChangeViewCmd(ViewHome)
 		case tea.KeyUp:
 			u.cursor--
@@ -90,7 +94,11 @@ func (u UserModel) Update(msg tea.Msg) (UserModel, tea.Cmd) {
 			switch u.getChoices()[u.cursor] {
 			case logoutChoice:
 				// Logout
-				tp = jwt.TokenPair{}
+				client, err := clientManager.GetActiveClient()
+				if err != nil {
+					return u, ErrorCmd(err)
+				}
+				client.tp = jwt.TokenPair{}
 				return NewUserModel(), ChangeViewCmd(ViewHome)
 			default:
 				return u, ChangeViewCmd(u.getChoices()[u.cursor])

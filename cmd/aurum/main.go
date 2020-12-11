@@ -4,12 +4,9 @@ import (
 	"flag"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
-	aurum "github.com/finitum/aurum/clients/go"
-	"github.com/finitum/aurum/pkg/jwt"
 	"github.com/mattn/go-runewidth"
 	te "github.com/muesli/termenv"
 	"go.deanishe.net/env"
-	"log"
 	"strings"
 )
 
@@ -30,6 +27,7 @@ const (
 	ViewChangePassword View = "Change Password"
 	ViewChangeEmail    View = "Change Email"
 	ViewEditUserGroups View = "Edit User Groups"
+	ViewChangeServer   View = "Change Server"
 )
 
 type Model struct {
@@ -42,6 +40,7 @@ type Model struct {
 	changeEmail    ChangeEmailModel
 	groupList      GroupListModel
 	editUserGroups EditUserGroupModel
+	changeServer   ChangeServerModel
 
 	currentView View
 
@@ -49,14 +48,10 @@ type Model struct {
 	err error
 }
 
-var hostdefault = "http://localhost:8042"
-var host = flag.String("host", hostdefault, "Aurum host to connect to")
-
-var client aurum.Client
-var tp jwt.TokenPair
-
 func (m Model) Init() tea.Cmd {
-	return nil
+	return func() tea.Msg {
+		return AddClients{}
+	}
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -104,6 +99,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.err = nil
 				return m, nil
 			}
+		case tea.KeyCtrlS:
+			prevview := m.currentView
+			m.currentView = ViewChangeServer
+			m.changeServer, cmd = m.changeServer.Init([]interface{}{prevview})
+		}
+	case AddClients:
+		hostvar := env.Get("AURUM_TUI_HOST")
+		for _, i := range strings.Split(hostvar, ",") {
+			err := clientManager.AddClient(i)
+			if err != nil {
+				return m, ErrorCmd(fmt.Errorf("couldn't connect with client %s (%v)", i, err))
+			}
+		}
+
+		for _, i := range hostFlags {
+			err := clientManager.AddClient(i)
+			if err != nil {
+				return m, ErrorCmd(fmt.Errorf("couldn't connect with client %s (%v)", i, err))
+			}
 		}
 	}
 
@@ -126,6 +140,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.groupList, cmd = m.groupList.Update(msg)
 	case ViewEditUserGroups:
 		m.editUserGroups, cmd = m.editUserGroups.Update(msg)
+	case ViewChangeServer:
+		m.changeServer, cmd = m.changeServer.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
@@ -133,7 +149,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 
 func (m Model) View() string {
-	s := " " + aurumText + " at " + *host
+	s := ""
+
+	client, err := clientManager.GetActiveClient()
+	var host string
+	if err != nil {
+		host = "<no host connected>"
+	} else {
+		host = client.GetUrl()
+	}
+
+	s += " " + aurumText + " at " + host + "\n"
+	s += " press [control s] to change Aurum server\n"
+	if m.width != -1 {
+		s += strings.Repeat("—", m.width) + "\n"
+	}
 
 	var screen string
 	switch m.currentView {
@@ -155,6 +185,8 @@ func (m Model) View() string {
 		screen = m.groupList.View(m.width)
 	case ViewEditUserGroups:
 		screen = m.editUserGroups.View(m.width)
+	case ViewChangeServer:
+		screen = m.changeServer.View()
 	}
 
 
@@ -186,22 +218,27 @@ func NewModel() Model {
 		changeEmail:    NewChangeEmailModel(),
 		groupList: 		NewGroupListModel(),
 		editUserGroups: NewEditUserGroupModel(),
+		changeServer: 	NewChangeServerModel(),
 	}
 }
 
+var clientManager = NewClientManager()
+
+type arrayFlags []string
+func (i *arrayFlags) String() string {
+	return strings.Join(*i, ",")
+}
+
+func (i *arrayFlags) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
+var hostFlags arrayFlags
+
 func main() {
-	hostvar := env.Get("AURUM_TUI_HOST")
-	if env.Get("AURUM_TUI_HOST") != "" {
-		hostdefault = hostvar
-	}
-
+	flag.Var(&hostFlags, "host", "A host to connect to (multiple values possible)")
 	flag.Parse()
-
-	var err error
-	client, err = aurum.NewRemoteClient(*host)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	p := tea.NewProgram(NewModel())
 	p.EnterAltScreen()

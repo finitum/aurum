@@ -16,6 +16,10 @@ type RemoteClient struct {
 	pk  ecc.PublicKey
 }
 
+func (a *RemoteClient) GetUrl() string {
+	return a.url
+}
+
 func NewRemoteClient(url string) (*RemoteClient, error) {
 	if !strings.HasPrefix(url, "https") {
 		log.Warnf("[aurum] using insecure url %s, security can not be guaranteed!", url)
@@ -23,6 +27,10 @@ func NewRemoteClient(url string) (*RemoteClient, error) {
 
 	pkr, err := api.GetPublicKey(url)
 	if err != nil {
+		return nil, errors.Wrap(err, "failed getting public key")
+	}
+
+	if pkr == nil {
 		return nil, errors.Wrap(err, "failed getting public key")
 	}
 

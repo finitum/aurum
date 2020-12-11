@@ -25,4 +25,6 @@ type Client interface {
 
 	GetGroupsForUser(tp *jwt.TokenPair, user string) ([]models.GroupWithRole, error)
 	GetGroups() ([]models.Group, error)
+
+	GetUrl() string
 }

@@ -10,6 +10,7 @@ const exitChoice = "Exit"
 var HomeChoices = []View{
 	ViewLogin,
 	ViewRegister,
+	ViewChangeServer,
 	View(exitChoice),
 }
 

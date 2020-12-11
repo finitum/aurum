@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+type AddClients struct {}
+
 type ChangeViewMsg struct {
 	newView View
 	params  []interface{}
@@ -30,18 +32,29 @@ func ErrorCmd(err error) func() tea.Msg {
 
 func login(username, password string) func() tea.Msg {
 	return func() tea.Msg {
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
 		rtp, err := client.Login(username, password)
 		if err != nil {
 			return ErrorMsg{err}
 		}
-		tp = *rtp
+		client.tp = *rtp
+
 		return ChangeViewMsg{ViewUser, nil}
 	}
 }
 
 func register(username, email, password string) func() tea.Msg {
 	return func() tea.Msg {
-		err := client.Register(username, password, email)
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		err = client.Register(username, password, email)
 		if err != nil {
 			return ErrorMsg{err}
 		}
@@ -55,7 +68,12 @@ type UserMsg struct {
 }
 
 func getUser() tea.Msg {
-	user, err := client.GetUserInfo(&tp)
+	client, err := clientManager.GetActiveClient()
+	if err != nil {
+		return ErrorMsg{err}
+	}
+
+	user, err := client.GetUserInfo(&client.tp)
 	if err != nil {
 		return ErrorMsg{err}
 	}
@@ -77,7 +95,12 @@ type UsersMsg struct {
 }
 
 func getUsers() tea.Msg {
-	users, err := client.GetUsers(&tp)
+	client, err := clientManager.GetActiveClient()
+	if err != nil {
+		return ErrorMsg{err}
+	}
+
+	users, err := client.GetUsers(&client.tp)
 	if err != nil {
 		return ErrorMsg{err}
 	}
@@ -93,6 +116,11 @@ type GroupsMsg struct {
 }
 
 func getGroups() tea.Msg {
+	client, err := clientManager.GetActiveClient()
+	if err != nil {
+		return ErrorMsg{err}
+	}
+
 	groups, err := client.GetGroups()
 	if err != nil {
 		return ErrorMsg{err}
@@ -111,7 +139,12 @@ type UserGroupsMsg struct {
 
 func getGroupsForUser(user string, index int) func() tea.Msg {
 	return func() tea.Msg {
-		groups, err := client.GetGroupsForUser(&tp, user)
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		groups, err := client.GetGroupsForUser(&client.tp, user)
 		if err != nil {
 			return ErrorMsg{err}
 		}
@@ -129,7 +162,12 @@ type UpdateUserMsg struct {
 
 func changePassword(password string) func() tea.Msg {
 	return func() tea.Msg {
-		_, err := client.UpdateUser(&tp, &models.User{
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		_, err = client.UpdateUser(&client.tp, &models.User{
 			Password: password,
 		})
 		if err != nil {
@@ -142,7 +180,12 @@ func changePassword(password string) func() tea.Msg {
 
 func changeEmail(email string) func() tea.Msg {
 	return func() tea.Msg {
-		_, err := client.UpdateUser(&tp, &models.User{
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		_, err = client.UpdateUser(&client.tp, &models.User{
 			Email: email,
 		})
 		if err != nil {
@@ -155,7 +198,12 @@ func changeEmail(email string) func() tea.Msg {
 
 func newGroup(name string) func() tea.Msg {
 	return func() tea.Msg {
-		err := client.AddGroup(&tp, &models.Group{
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		err = client.AddGroup(&client.tp, &models.Group{
 			Name: name,
 			AllowRegistration: true,
 		})
@@ -169,7 +217,12 @@ func newGroup(name string) func() tea.Msg {
 
 func deleteGroup(name string) func() tea.Msg {
 	return func() tea.Msg {
-		err := client.RemoveGroup(&tp, name)
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		err = client.RemoveGroup(&client.tp, name)
 		if err != nil {
 			return ErrorMsg{err}
 		}
@@ -181,7 +234,12 @@ func deleteGroup(name string) func() tea.Msg {
 
 func addUserToGroup(username, groupname string) func() tea.Msg {
 	return func() tea.Msg {
-		err := client.AddUserToGroup(&tp, username, groupname)
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		err = client.AddUserToGroup(&client.tp, username, groupname)
 		if err != nil {
 			return ErrorMsg{err}
 		}
@@ -193,7 +251,12 @@ func addUserToGroup(username, groupname string) func() tea.Msg {
 
 func removeUserFromGroup(username, groupname string) func() tea.Msg {
 	return func() tea.Msg {
-		err := client.RemoveUserFromGroup(&tp, username, groupname)
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		err = client.RemoveUserFromGroup(&client.tp, username, groupname)
 		if err != nil {
 			return ErrorMsg{err}
 		}
@@ -205,7 +268,12 @@ func removeUserFromGroup(username, groupname string) func() tea.Msg {
 
 func setAccess(username, groupname string, role models.Role) func() tea.Msg {
 	return func() tea.Msg {
-		err := client.SetAccess(&tp, models.AccessStatus{
+		client, err := clientManager.GetActiveClient()
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		err = client.SetAccess(&client.tp, models.AccessStatus{
 			GroupName:     groupname,
 			Username:      username,
 			Role:          role,
