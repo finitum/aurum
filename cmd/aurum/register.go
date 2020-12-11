@@ -24,7 +24,6 @@ func NewRegisterModel() RegisterModel {
 
 	email := textinput.NewModel()
 	email.Placeholder = "email"
-	email.Focus()
 	email.Prompt = focusedPrompt
 	email.TextColor = focusedTextColor
 

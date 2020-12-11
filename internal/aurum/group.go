@@ -15,6 +15,10 @@ func (au Aurum) AddGroup(ctx context.Context, token string, group models.Group) 
 		return err
 	}
 
+	if group.Name == "" || len(group.Name) > 100 {
+		return errors.New("group name is invalid (too short or too long)")
+	}
+
 	if role < models.RoleAdmin {
 		return ErrUnauthorized
 	}
@@ -116,6 +120,10 @@ func (au Aurum) RemoveUserFromGroup(ctx context.Context, token, target, group st
 
 	if role < models.RoleAdmin && target != claims.Username {
 		return ErrUnauthorized
+	}
+
+	if group == AurumName {
+		return errors.New("can't remove user from the Aurum group")
 	}
 
 	return au.db.RemoveGroupFromUser(ctx, group, target)

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/models"
 	te "github.com/muesli/termenv"
 	"strings"
@@ -14,6 +16,9 @@ var focusedBackButton = "[ " + te.String("Back").Foreground(color(focusedTextCol
 
 var blurredNewGroupButton = "[ " + te.String("New group").Foreground(color("240")).String() + " ]"
 var focusedNewGroupButton = "[ " + te.String("New group").Foreground(color(focusedTextColor)).String() + " ]"
+
+var blurredDeleteGroupButton = "[ " + te.String("Delete group").Foreground(color("240")).String() + " ]"
+var focusedDeleteGroupButton = "[ " + te.String("Delete group").Foreground(color(focusedTextColor)).String() + " ]"
 
 
 type Button struct {
@@ -45,6 +50,7 @@ func NewGroupListModel() GroupListModel {
 		buttons: []Button{
 			{"back", blurredBackButton, focusedBackButton, true},
 			{"new group", blurredNewGroupButton, focusedNewGroupButton, false},
+			{"delete group", blurredDeleteGroupButton, focusedDeleteGroupButton, false},
 		},
 		groups: nil,
 		triedGroups: false,
@@ -65,8 +71,12 @@ func (g GroupListModel) Update(msg tea.Msg) (GroupListModel, tea.Cmd) {
 		switch key := msg.Type; key {
 		case tea.KeyEnter:
 			if g.newGroup {
+				if g.newGroupInput.Value() == "" {
+					return g, ErrorCmd(errors.New("group name can't be empty"))
+				}
 				g.newGroup = false
 				g.buttons[g.buttonIndex].focused = true
+
 				cmds = append(cmds, newGroup(g.newGroupInput.Value()))
 			} else {
 				switch g.buttons[g.buttonIndex].name {
@@ -77,11 +87,21 @@ func (g GroupListModel) Update(msg tea.Msg) (GroupListModel, tea.Cmd) {
 						g.buttons[i].focused = false
 					}
 
-
 					g.newGroup = true
 					g.newGroupInput.Reset()
 					g.newGroupInput.Focus()
+				case "delete group":
+					if g.groups[g.listIndex].Name == aurum.AurumName {
+						return g, ErrorCmd(errors.New("can't remove the aurum group"))
+					}
+
+					cmds = append(cmds, deleteGroup(g.groups[g.listIndex].Name))
+
+					// Remove group from list
+					copy(g.groups[g.listIndex:], g.groups[g.listIndex+1:])
+					g.groups = g.groups[:len(g.groups)-1]
 				}
+
 			}
 
 		case tea.KeyUp:
@@ -106,7 +126,7 @@ func (g GroupListModel) Update(msg tea.Msg) (GroupListModel, tea.Cmd) {
 				break
 			}
 
-			if key == tea.KeyUp || key == tea.KeyShiftTab {
+			if key == tea.KeyLeft || key == tea.KeyShiftTab {
 				g.buttonIndex--
 			} else {
 				g.buttonIndex++
@@ -130,6 +150,7 @@ func (g GroupListModel) Update(msg tea.Msg) (GroupListModel, tea.Cmd) {
 		case tea.KeyEsc:
 			if g.newGroup {
 				g.newGroup = false
+				g.buttons[g.buttonIndex].focused = true
 			} else {
 				return NewGroupListModel(), ChangeViewCmd(ViewUser)
 			}

@@ -13,10 +13,6 @@ type DGraph struct {
 	*dgo.Dgraph
 }
 
-func (dg DGraph) ClearAllImSure(ctx context.Context) error {
-	return dg.Alter(ctx, &api.Operation{DropOp: api.Operation_ALL})
-}
-
 func New(ctx context.Context, address string) (*DGraph, error) {
 	d, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {

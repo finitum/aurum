@@ -29,6 +29,7 @@ const (
 	ViewGroupList      View = "Group list"
 	ViewChangePassword View = "Change Password"
 	ViewChangeEmail    View = "Change Email"
+	ViewEditUserGroups View = "Edit User Groups"
 )
 
 type Model struct {
@@ -40,6 +41,7 @@ type Model struct {
 	changePassword ChangePasswordModel
 	changeEmail    ChangeEmailModel
 	groupList      GroupListModel
+	editUserGroups EditUserGroupModel
 
 	currentView View
 
@@ -68,9 +70,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.err = msg.err
 	case ChangeViewMsg:
 		m.currentView = msg.newView
-		if msg.newView == ViewUserList {
-			m.userlist.triedUsers = false
+		switch m.currentView {
+		case ViewHome:
+		case ViewLogin:
+		case ViewRegister:
+		case ViewUser:
+		case ViewUserList:
+			m.userlist , cmd= m.userlist.Init(msg.params)
+			cmds = append(cmds, cmd)
+		case ViewChangePassword:
+		case ViewChangeEmail:
+		case ViewGroupList:
+		case ViewEditUserGroups:
+			m.editUserGroups, cmd = m.editUserGroups.Init(msg.params)
+			cmds = append(cmds, cmd)
 		}
+
 	case CompoundMsg:
 		var newm tea.Model
 		newm = m
@@ -109,6 +124,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.changeEmail, cmd = m.changeEmail.Update(msg)
 	case ViewGroupList:
 		m.groupList, cmd = m.groupList.Update(msg)
+	case ViewEditUserGroups:
+		m.editUserGroups, cmd = m.editUserGroups.Update(msg)
 	}
 	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
@@ -136,6 +153,8 @@ func (m Model) View() string {
 		screen = m.changeEmail.View()
 	case ViewGroupList:
 		screen = m.groupList.View(m.width)
+	case ViewEditUserGroups:
+		screen = m.editUserGroups.View(m.width)
 	}
 
 
@@ -166,6 +185,7 @@ func NewModel() Model {
 		changePassword: NewChangePasswordModel(),
 		changeEmail:    NewChangeEmailModel(),
 		groupList: 		NewGroupListModel(),
+		editUserGroups: NewEditUserGroupModel(),
 	}
 }
 

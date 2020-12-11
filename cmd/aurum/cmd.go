@@ -4,15 +4,17 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/finitum/aurum/internal/aurum"
 	"github.com/finitum/aurum/pkg/models"
+	"time"
 )
 
 type ChangeViewMsg struct {
 	newView View
+	params  []interface{}
 }
 
-func ChangeViewCmd(view View) func() tea.Msg {
+func ChangeViewCmd(view View, params... interface{}) func() tea.Msg {
 	return func() tea.Msg {
-		return ChangeViewMsg{view}
+		return ChangeViewMsg{view, params}
 	}
 }
 
@@ -33,7 +35,7 @@ func login(username, password string) func() tea.Msg {
 			return ErrorMsg{err}
 		}
 		tp = *rtp
-		return ChangeViewMsg{ViewUser}
+		return ChangeViewMsg{ViewUser, nil}
 	}
 }
 
@@ -43,7 +45,7 @@ func register(username, email, password string) func() tea.Msg {
 		if err != nil {
 			return ErrorMsg{err}
 		}
-		return ChangeViewMsg{ViewHome}
+		return ChangeViewMsg{ViewHome, nil}
 	}
 }
 
@@ -164,6 +166,59 @@ func newGroup(name string) func() tea.Msg {
 		return getGroups()
 	}
 }
+
+func deleteGroup(name string) func() tea.Msg {
+	return func() tea.Msg {
+		err := client.RemoveGroup(&tp, name)
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		time.Sleep(2 * time.Second)
+		return getGroups()
+	}
+}
+
+func addUserToGroup(username, groupname string) func() tea.Msg {
+	return func() tea.Msg {
+		err := client.AddUserToGroup(&tp, username, groupname)
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		return getGroupsForUser(username, -1)
+	}
+}
+
+
+func removeUserFromGroup(username, groupname string) func() tea.Msg {
+	return func() tea.Msg {
+		err := client.RemoveUserFromGroup(&tp, username, groupname)
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		return getGroupsForUser(username, -1)
+	}
+}
+
+
+func setAccess(username, groupname string, role models.Role) func() tea.Msg {
+	return func() tea.Msg {
+		err := client.SetAccess(&tp, models.AccessStatus{
+			GroupName:     groupname,
+			Username:      username,
+			Role:          role,
+			AllowedAccess: true,
+		})
+		if err != nil {
+			return ErrorMsg{err}
+		}
+
+		return getGroupsForUser(username, -1)
+	}
+}
+
 
 type CompoundMsg struct {
 	msgs []tea.Msg

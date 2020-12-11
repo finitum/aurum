@@ -58,7 +58,7 @@ func (u UserListModel) Update(msg tea.Msg) (UserListModel, tea.Cmd) {
 				u.cursor = 0
 			}
 		case tea.KeyEnter:
-
+			cmds = append(cmds, ChangeViewCmd(ViewEditUserGroups, &u.users[u.cursor].User))
 		case tea.KeyEsc:
 			cmds = append(cmds, ChangeViewCmd(ViewUser))
 		}
@@ -133,4 +133,9 @@ func (u UserListModel) View(width int) string {
 	}
 
 	return s
+}
+
+func (u UserListModel) Init(params []interface{}) (UserListModel, tea.Cmd)  {
+	u.triedUsers = false
+	return u, nil
 }
