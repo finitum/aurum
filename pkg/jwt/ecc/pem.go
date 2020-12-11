@@ -121,7 +121,5 @@ func FromFile(path string) (Key, error) {
 		return nil, err
 	}
 
-	println(string(key))
-
 	return FromPem(key)
 }

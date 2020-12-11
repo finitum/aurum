@@ -21,27 +21,13 @@ func init() {
 
 func main() {
 	ctx := context.Background()
+
 	cfg := config.GetConfig()
 
-	log.Infof("Starting Aurum")
-
-	var dg *dgraph.DGraph
-	var err error
-	for i := 0; i < 10; i++ {
-		log.Infof("Connecting to DGraph")
-		dg, err = dgraph.New(ctx, cfg.DgraphUrl)
-		if err != nil {
-			log.Errorf("Couldn't create Dgraph client, retrying in 3 seconds: %v", err)
-			time.Sleep(3 * time.Second)
-		} else {
-			log.Infof("Connection with DGraph established")
-			break
-		}
-	}
+	dg, err := dgraph.New(ctx, cfg.DgraphUrl)
 	if err != nil {
 		log.Fatalf("Couldn't create Dgraph client: %v", err)
 	}
-
 
 	au, err := aurum.New(ctx, dg, cfg)
 	if err != nil {
@@ -61,6 +47,7 @@ func main() {
 	r.Post("/signup", rs.SignUp)
 	r.Post("/login", rs.Login)
 	r.Post("/refresh", rs.Refresh)
+	r.Get("/groups", rs.GetGroups)
 
 	r.Get("/group/{group}/{user}", rs.GetAccess)
 
@@ -70,6 +57,8 @@ func main() {
 		r.Get("/user", rs.GetMe)
 		r.Post("/user", rs.SetUser)
 		r.Get("/user/{user}/groups", rs.GetGroupsForUser)
+
+		r.Get("/users", rs.GetUsers)
 
 		// Group
 		r.Post("/group", rs.AddGroup)

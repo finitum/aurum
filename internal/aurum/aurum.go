@@ -36,13 +36,13 @@ type Aurum struct {
 }
 
 func New(ctx context.Context, db store.AurumStore, cfg *config.Config) (Aurum, error) {
-	if err := setup(ctx, db, cfg); err != nil {
+	if err := setup(ctx, db); err != nil {
 		return Aurum{}, err
 	}
 	return Aurum{db, cfg.PublicKey, cfg.SecretKey}, nil
 }
 
-func setup(ctx context.Context, db store.AurumStore, cfg *config.Config) error {
+func setup(ctx context.Context, db store.AurumStore) error {
 	nu, err := db.CountUsers(ctx)
 	if err != nil {
 		return errors.Wrap(err, "count users")
@@ -54,16 +54,14 @@ func setup(ctx context.Context, db store.AurumStore, cfg *config.Config) error {
 
 	log.Info("Detected first run - Initializing Aurum")
 
-	pass := cfg.AdminPassword
-	if cfg.AdminPassword == "" {
-		buf := make([]byte, 32)
-		_, err = rand.Read(buf)
-		if err != nil {
+	buf := make([]byte, 32)
+	_, err = rand.Read(buf)
+	if err != nil {
 		return errors.Wrap(err, "random")
 	}
+	pass := base64.StdEncoding.EncodeToString(buf)
 
-		pass = base64.StdEncoding.EncodeToString(buf)
-	}
+	log.Infof("Created initial user: '%s' with password '%s'", adminUsername, pass)
 
 	hashed, err := hash.HashPassword(pass)
 	if err != nil {
@@ -87,8 +85,6 @@ func setup(ctx context.Context, db store.AurumStore, cfg *config.Config) error {
 	if err := db.AddGroupToUser(ctx, adminUsername, AurumName, models.RoleAdmin); err != nil {
 		return errors.Wrap(err, "add initial user to Aurum group")
 	}
-
-	log.Infof("Created initial user: '%s' with password '%s'", adminUsername, pass)
 
 	return nil
 }
@@ -134,3 +130,4 @@ func (au Aurum) checkRole(ctx context.Context, claims *jwt.Claims, group string)
 
 	return role, nil
 }
+

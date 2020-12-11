@@ -119,3 +119,23 @@ func UpdateUser(host string, tp *jwt.TokenPair, user *models.User) (ret *models.
 
 	return ret, errors.Wrap(json.NewDecoder(resp.Body).Decode(&ret), "json decoding response")
 }
+
+
+func GetUsers(host string, tp *jwt.TokenPair) ([]models.User, error) {
+	req, err := http.NewRequest(http.MethodGet, host+"/users", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := authenticatedRequest(req, tp)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []models.User
+	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

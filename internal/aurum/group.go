@@ -141,3 +141,13 @@ func (au Aurum) GetGroupsForUser(ctx context.Context, token, user string) ([]mod
 
 	return au.db.GetGroupsForUser(ctx, user)
 }
+
+
+func (au Aurum) GetGroups(ctx context.Context) ([]models.Group, error) {
+	groups, err := au.db.GetGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return groups, nil
+}
