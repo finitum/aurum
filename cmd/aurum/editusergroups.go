@@ -59,8 +59,8 @@ func (g EditUserGroupModel) Update(msg tea.Msg) (EditUserGroupModel, tea.Cmd) {
 				cmds = append(cmds, addUserToGroup(g.user.Username, g.allGroups[g.listIndex].Name))
 
 				g.userGroups = append(g.userGroups, models.GroupWithRole{
-					g.allGroups[g.listIndex],
-					models.RoleUser,
+					Group: g.allGroups[g.listIndex],
+					Role:  models.RoleUser,
 				})
 				g.listIndex = 0
 			} else {
