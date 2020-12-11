@@ -75,8 +75,8 @@ config:
 
 # Generate these using aurum's keygen tool (see documentation)
 secrets:
-  publicKey: "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAN9amXVjYMRETgQb4riuaSerb3GaY5vIKcRixtt3rusg=\n-----END PUBLIC KEY-----\n"
-  secretKey: "-----BEGIN ED25519 PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIJ9HMoUfpBDkpJfPpMU3z1lzp9iSjKOaiR919C8spk0b\n-----END ED25519 PRIVATE KEY-----\n"
+  publicKey: ""
+  secretKey: ""
 
 # Dgraph's helm chart: https://github.com/dgraph-io/charts/blob/master/charts/dgraph/values.yaml
 dgraph:
