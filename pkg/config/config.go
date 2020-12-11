@@ -22,6 +22,8 @@ type EnvConfig struct {
 	SecretKeyPath string `env:"SECRET_KEY_PATH"`
 
 	DgraphUrl string `env:"DGRAPH_URL"`
+
+	AdminPassword string `env:"ADMIN_PASSWORD"`
 }
 
 type Config struct {
@@ -32,6 +34,7 @@ type Config struct {
 	SecretKey ecc.SecretKey
 
 	DgraphUrl string
+	AdminPassword string
 }
 
 func defaultEnvConfig() EnvConfig {
@@ -45,6 +48,7 @@ func defaultEnvConfig() EnvConfig {
 		NoKeyGen:      false,
 		NoKeyWrite:    false,
 		DgraphUrl:     "localhost:9080",
+		AdminPassword: "",
 	}
 }
 
@@ -73,6 +77,7 @@ func GetConfig(e ...env.Env) *Config {
 		SecretKey: sk,
 
 		DgraphUrl: ec.DgraphUrl,
+		AdminPassword: ec.AdminPassword,
 	}
 }
 
