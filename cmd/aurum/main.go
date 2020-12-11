@@ -110,10 +110,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case AddClients:
 		hostvar := env.Get("AURUM_TUI_HOST")
-		for _, i := range strings.Split(hostvar, ",") {
-			err := clientManager.AddClient(i)
-			if err != nil {
-				return m, ErrorCmd(fmt.Errorf("couldn't connect with client %s (%v)", i, err))
+		if hostvar != "" {
+			for _, i := range strings.Split(hostvar, ",") {
+				err := clientManager.AddClient(i)
+				if err != nil {
+					return m, ErrorCmd(fmt.Errorf("couldn't connect with client %s (%v)", i, err))
+				}
 			}
 		}
 

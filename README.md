@@ -16,13 +16,10 @@ Then when performing an action for which a user needs to be authorized,
 it asks Aurum if the user is indeed authorized. 
 
 # Usage
-## Microservice
-// TODO
+## Aurum server
 
-## Client library
-// TODO
 
-## Embedded
-// TODO
 
-# Components
+## In applications
+
+To use aurum in applications, you can interface with the Aurum api. 

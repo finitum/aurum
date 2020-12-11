@@ -22,7 +22,7 @@ func (a *RemoteClient) GetUrl() string {
 
 // NewRemoteClient won't print anything when notprint = true
 func NewRemoteClient(url string, noprint... bool) (*RemoteClient, error) {
-	if !strings.HasPrefix(url, "https") && (len(noprint) == 0 || noprint[0]) {
+	if !strings.HasPrefix(url, "https") && (len(noprint) == 0 || !noprint[0]) {
 		log.Warnf("[aurum] using insecure url %s, security can not be guaranteed!", url)
 	}
 

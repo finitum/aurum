@@ -37,7 +37,7 @@ func (c *ClientManager) AddClient(url string) error {
 		}
 	}
 
-	client, err := aurum.NewRemoteClient(url, false)
+	client, err := aurum.NewRemoteClient(url, true)
 	if err != nil {
 		return err
 	}
