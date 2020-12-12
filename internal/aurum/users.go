@@ -91,29 +91,6 @@ func (au Aurum) GetUser(ctx context.Context, token string) (models.User, error) 
 	return user, nil
 }
 
-func (au Aurum) GetUsers(ctx context.Context, token string) ([]models.User, error) {
-	role, _, err := au.checkTokenAndRole(ctx, token, AurumName)
-	if err != nil {
-		return nil, err
-	}
-
-	if role < models.RoleAdmin {
-		return nil, ErrUnauthorized
-	}
-
-	users, err := au.db.GetUsers(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	for i, _ := range users {
-		users[i].Password = ""
-	}
-
-	return users, nil
-}
-
-
 func (au Aurum) UpdateUser(ctx context.Context, token string, user models.User) (models.User, error) {
 	claims, err := au.checkToken(token)
 	if err != nil {

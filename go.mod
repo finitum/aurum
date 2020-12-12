@@ -11,15 +11,12 @@ require (
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/golang/mock v1.4.4
 	github.com/google/uuid v1.1.2
-	github.com/mattn/go-runewidth v0.0.9
 	github.com/muesli/termenv v0.7.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
-	github.com/test-go/testify v1.1.4 // indirect
 	github.com/trustelem/zxcvbn v1.0.1
 	go.deanishe.net/env v0.5.1
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
-	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 	google.golang.org/grpc v1.33.2
 )

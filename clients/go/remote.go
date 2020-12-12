@@ -114,19 +114,3 @@ func (a *RemoteClient) GetGroupsForUser(tp *jwt.TokenPair, user string) ([]model
 	}
 	return groups, nil
 }
-
-func (a *RemoteClient) GetUsers(tp *jwt.TokenPair) ([]models.User, error) {
-	users, err := api.GetUsers(a.url, tp)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetUsers api request failed")
-	}
-	return users, nil
-}
-
-func (a *RemoteClient) GetGroups() ([]models.Group, error) {
-	groups, err := api.GetGroups(a.url)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetGroups api request failed")
-	}
-	return groups, nil
-}

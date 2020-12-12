@@ -141,29 +141,3 @@ func GetGroupsForUser(host string, tp *jwt.TokenPair, user string) ([]models.Gro
 
 	return groups, nil
 }
-
-func GetGroups(host string) ([]models.Group, error) {
-	url := fmt.Sprintf("%s/groups", host)
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, errors.New(string(b))
-	}
-
-	var groups []models.Group
-	if err := json.NewDecoder(resp.Body).Decode(&groups); err != nil {
-		return nil, err
-	}
-
-	return groups, nil
-}
-

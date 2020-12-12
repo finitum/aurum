@@ -13,8 +13,6 @@ type Client interface {
 	GetUserInfo(tp *jwt.TokenPair) (*models.User, error)
 	UpdateUser(tp *jwt.TokenPair, user *models.User) (*models.User, error)
 
-	GetUsers(tp *jwt.TokenPair) ([]models.User, error)
-
 	// Group
 	AddGroup(tp *jwt.TokenPair, group *models.Group) error
 	RemoveGroup(tp *jwt.TokenPair, group string) error
@@ -24,5 +22,4 @@ type Client interface {
 	RemoveUserFromGroup(tp *jwt.TokenPair, user, group string) error
 
 	GetGroupsForUser(tp *jwt.TokenPair, user string) ([]models.GroupWithRole, error)
-	GetGroups() ([]models.Group, error)
 }
