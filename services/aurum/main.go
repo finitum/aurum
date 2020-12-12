@@ -21,13 +21,27 @@ func init() {
 
 func main() {
 	ctx := context.Background()
-
 	cfg := config.GetConfig()
 
-	dg, err := dgraph.New(ctx, cfg.DgraphUrl)
+	log.Infof("Starting Aurum")
+
+	var dg *dgraph.DGraph
+	var err error
+	for i := 0; i < 10; i++ {
+		log.Infof("Connecting to DGraph")
+		dg, err = dgraph.New(ctx, cfg.DgraphUrl)
+		if err != nil {
+			log.Errorf("Couldn't create Dgraph client, retrying in 3 seconds: %v", err)
+			time.Sleep(3 * time.Second)
+		} else {
+			log.Infof("Connection with DGraph established")
+			break
+		}
+	}
 	if err != nil {
 		log.Fatalf("Couldn't create Dgraph client: %v", err)
 	}
+
 
 	au, err := aurum.New(ctx, dg, cfg)
 	if err != nil {

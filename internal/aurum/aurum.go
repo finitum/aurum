@@ -61,7 +61,7 @@ func setup(ctx context.Context, db store.AurumStore) error {
 	}
 	pass := base64.StdEncoding.EncodeToString(buf)
 
-	log.Infof("Created initial user: \"%s\" with password \"%s\"", adminUsername, pass)
+	log.Infof("Created initial user: '%s' with password '%s'", adminUsername, pass)
 
 	hashed, err := hash.HashPassword(pass)
 	if err != nil {
@@ -130,3 +130,4 @@ func (au Aurum) checkRole(ctx context.Context, claims *jwt.Claims, group string)
 
 	return role, nil
 }
+
