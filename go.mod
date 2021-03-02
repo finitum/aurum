@@ -1,6 +1,6 @@
 module github.com/finitum/aurum
 
-go 1.15
+go 1.16
 
 require (
 	github.com/charmbracelet/bubbles v0.7.4
@@ -15,6 +15,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
+	github.com/test-go/testify v1.1.4 // indirect
 	github.com/trustelem/zxcvbn v1.0.1
 	go.deanishe.net/env v0.5.1
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
