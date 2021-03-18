@@ -6,10 +6,9 @@ package mock_store
 
 import (
 	context "context"
-	reflect "reflect"
-
 	models "github.com/finitum/aurum/pkg/models"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockAurumStore is a mock of AurumStore interface

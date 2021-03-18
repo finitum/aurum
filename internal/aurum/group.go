@@ -20,6 +20,15 @@ func (au Aurum) AddGroup(ctx context.Context, token string, group models.Group) 
 	}
 
 	group.Name = strings.ToLower(group.Name)
+	_, err = au.db.GetGroup(ctx, group.Name)
+	if err != store.ErrNotExists {
+		if err == nil {
+			return store.ErrExists
+		} else {
+			return err
+		}
+	}
+
 	if err := au.db.CreateGroup(ctx, group); err != nil {
 		return err
 	}
